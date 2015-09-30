@@ -1,6 +1,6 @@
-suppressMessages(library(dplyr))
-suppressMessages(library(VariantAnnotation))
-suppressMessages(library(magrittr))
+library(dplyr)
+library(VariantAnnotation)
+library(magrittr)
 
 
 ###  Functions  BLOCK Start ###################
@@ -23,7 +23,8 @@ add_a_field <- function(x, vcf = vcf, vAF_result = vAF_result){
   return(vcf)
 }
 
-# Caller specific Function
+##Caller specific Function
+#HaplotypeCaller
 HaplotypeCaller <- function(vcf){
   #make VAF for HaplotypeCaller /Unified Genotyper
   VCF_Stat <- as.data.frame(geno(vcf)$AD)
@@ -37,6 +38,7 @@ HaplotypeCaller <- function(vcf){
   return(t(VAF_df))
 }
 
+#FreeBayes
 FreeBayes <- function(vcf){
   samples <- samples(header(vcf))
   Ref_df <- cbind( geno(vcf)$RO)
@@ -51,6 +53,7 @@ FreeBayes <- function(vcf){
   return(vaf_df)
 }
 
+#PlatyPus
 PlatyPus <- function(vcf){
   samples <- samples(header(vcf))
   Ref_df <- cbind( geno(vcf)$NR)
@@ -65,6 +68,7 @@ PlatyPus <- function(vcf){
   return(vaf_df)
 }
 
+#Strelka
 Strelka <- function(vcf){
   samples <- samples(header(vcf))
   #make VAF for Strelka
