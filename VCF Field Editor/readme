@@ -1,0 +1,20 @@
+# VCF File Editor
+Script to add a field/s "VAF" in VCF Header and in the INFO Column of a given VCF file.
+In the following cases
+a) Multiallelic : Variant Allele Frequency, for each ALT allele, in the same order as listed in VCF
+b) Multi sample : Variant Allele Frequency for each Sample is given as VAF1...VAFn (for samples 1...n) in the same order as listed in VCF.
+
+
+Following Callers can be used
+UnifiedGenotyper
+HaplotypeCaller
+FreeBayes
+PlatyPus
+Strelka
+
+Commandline 
+cat VCF_field_editor.R | R --vanilla --slave --args <UnifiedGenotyper,HaplotypeCaller,FreeBayes,PlatyPus,Strelka> 
+NA19240_clin.snv.v1.unifiedgenotyper.raw.vcf
+
+Following field/s in info section is/are added
+1) VAF
