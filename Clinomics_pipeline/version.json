@@ -1,0 +1,8 @@
+{
+        "platform"              : "Illumina",
+        "samtools"              : "0.1.19",
+	"ea_utils"		: "r822",
+        "bwa"                   : "0.7.10",
+        "picard"                : "1.129",
+        "gatk"                  : "3.4-46"
+}

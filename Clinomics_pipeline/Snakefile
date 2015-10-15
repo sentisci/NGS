@@ -1,0 +1,90 @@
+#Load python modules
+import itertools
+import os
+import collections
+from snakemake.utils import R
+from snakemake.exceptions import MissingInputException
+
+# Environment variable for serpentine base directory location
+try:
+    SERPENTINE_HOME=os.environ['SERPENTINE_HOME']
+except KeyError:
+    SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen/"
+    pass
+
+#Basic utility functions
+def _get_rule_path(rule_file_path):
+    "Combines the serpentine base directory with serpentine rule paths"
+    return(os.path.join(SERPENTINE_HOME,rule_file_path))
+
+#Include all config files
+configfile: _get_rule_path("cluster.json")
+configfile: _get_rule_path("config.json")
+configfile: _get_rule_path("version.json")
+configfile: _get_rule_path("samplesheet.json")
+
+#Include all rule files
+include: _get_rule_path("alignment.rules")
+
+#Store Entity in Dicts
+UNIT_TO_LIBRARY = {}
+for lib,units in config['libraries'].items():
+	for unit in units:
+	        UNIT_TO_LIBRARY[unit]=lib
+
+LIBRARY_TO_SAMPLE  = {}
+for sample,libs in config['samples'].items():
+	for lib in libs:
+        	LIBRARY_TO_SAMPLE[lib]=sample
+
+SAMPLE_TO_SUBJECT  = {}
+for subject,samples in config['subjects'].items():
+	for sample in samples:
+        	SAMPLE_TO_SUBJECT[sample]=subject
+
+SAMPLE_TO_STUDY  = {}
+for study,samples in config['studies'].items():
+	for sample in samples:
+		SAMPLE_TO_STUDY[sample]=study
+
+
+UNIT_TO_SAMPLE = {}
+for unit in config['units'].keys():
+	UNIT_TO_SAMPLE[unit]=LIBRARY_TO_SAMPLE[UNIT_TO_LIBRARY[unit]]
+
+
+UNIT_TO_SUBJECT = {}
+for unit in config['units'].keys():
+    	UNIT_TO_SUBJECT[unit]=SAMPLE_TO_STUDY[LIBRARY_TO_SAMPLE[UNIT_TO_LIBRARY[unit]]]
+
+UNIT_TO_STUDY = {}
+for unit in config['units'].keys():
+    	UNIT_TO_STUDY[unit]=SAMPLE_TO_SUBJECT[LIBRARY_TO_SAMPLE[UNIT_TO_LIBRARY[unit]]]
+
+SAMPLE_TO_UNIT = collections.defaultdict(list)
+for unit,sample in UNIT_TO_SAMPLE.items():
+    	SAMPLE_TO_UNIT[sample].append(unit)
+
+SUBJECT_TO_UNIT = collections.defaultdict(list)
+for unit,subject in UNIT_TO_SUBJECT.items():
+    	SUBJECT_TO_UNIT[subject].append(unit)
+
+STUDY_TO_UNIT = collections.defaultdict(list)
+for unit,study in UNIT_TO_STUDY.items():
+    	STUDY_TO_UNIT[study].append(unit)
+
+## bam files
+#BAMS = ["SUBJECT/{subject}/{sample}/{reference}.{aligner}/bam/{sample}.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys() ]
+#BAIS = [BAM + ".bai" for BAM in BAMS]
+#BAMS_all = [(BAM + ' ' + BAM + ".tdf " + BAM + ".bai").split(' ') for BAM in BAMS]
+
+BAMS		= ["{sample}.bam".format(sample=s) for s in config['units'].keys()]
+BAMS_gatk	= ["{sample}.final.bam".format(sample=s) for s in config['units'].keys()]
+FLAGSTAT 	= ["{sample}.bam.flagstat".format(sample=s) for s in config['units'].keys()]	
+##print(BAMS_gatk)
+
+rule final:
+	input:
+		FLAGSTAT,
+		BAMS_gatk
+		#BAMS

@@ -1,0 +1,191 @@
+
+
+def _knownIndels_to_GATK(known):
+    """Convert a list of file locations to a format for the GATK command line"""
+    try:
+        return(' '.join(["-known " + x for x in known]))
+    except KeyError:
+        return(' ')
+
+
+rule bwamem_map:
+	input:
+		index = lambda wildcards: config['align_algo_index']['bwa']+config['bwa']+"/"+config['reference_name']+".pac",
+		fastq = lambda wildcards: config['units'][wildcards.unit]
+	output:
+		"{unit}.bam",
+		"{unit}.bam.bai"
+	version: 
+		config['bwa']
+	params:
+        	rulename 		= "bwamem_map",
+        	sample 			= lambda wildcards:	UNIT_TO_SAMPLE[wildcards.unit],
+        	library 		= lambda wildcards:	UNIT_TO_LIBRARY[wildcards.unit],
+        	platform 		= config['platform'],
+        	bwa_index 		= lambda wildcards: config['align_algo_index']['bwa']+config['bwa']+"/"+config['reference_name'],
+		adapters		= config['adapters'],
+       		output_prefix 		= "{unit}",
+		samtools_version	= config['samtools'],
+		ea_utils_version	= config['ea_utils'],
+        	batch			= config['alignment_clust']['bwa']
+	log:	"{unit}.log"
+    	shell:	"""
+	
+	module load bwa/{version}
+	module load samtools/{params.samtools_version}
+	module load ea-utils/{params.ea_utils_version}
+	
+	R1={input.fastq[0]}
+	R2={input.fastq[1]}
+	mcf_log={wildcards.unit}.mcf_log	
+
+	fastq-mcf -C 1000000 -q 2 -p 10 -u -x 20 -o $R1 -o $R2 {params.adapters} <(gunzip -c {input.fastq[0]}) <(gunzip -c {input.fastq[1]}) > $mcf_log 2>&1
+	bwa mem -M  -t 16 -R "@RG\tID:{wildcards.unit}\tSM:{params.sample}\tLB:{params.library}\tPL:Illumina" {params.bwa_index} $R1 $R2 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {params.output_prefix}	
+	
+	#indexing BAM file
+	samtools index {params.output_prefix}.bam
+		"""
+
+
+rule markdups:
+	input:	
+		"{unit}.bam",
+		"{unit}.bam.bai"
+	output:
+		bam="{unit}.md.bam",
+		bai="{unit}.md.bam.bai",
+		metrics="{unit}.bam.dupmetrics"
+	version:
+		config['picard']
+	params:
+		rulename	= "markdups",
+		picard_version	= config['picard'],
+		batch		= config['picard_clust']['picard_md']
+	log:	"{unit}.md.bam.log"
+	shell:	"""
+	
+	module load picard/{version}
+	
+	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/picard/{version}/picard.jar MarkDuplicates AS=true M={output.metrics} O={output.bam} I={input[0]} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT > {log} 2>&1
+	
+	samtools index {output.bam}	
+		"""
+
+rule flagstat:
+	input:
+		bam="{unit}.bam",
+		bam_bai="{unit}.bam.bai"
+	output:
+		"{unit}.bam.flagstat"
+	version:
+		config['samtools']
+	params:
+		rulename	= "flagstat",
+		batch		= config['flagstat_clust']
+	log:	"{unit}.flagstat.log"
+	shell:	"""
+	
+	module load samtools/{version}
+	
+	samtools flagstat {input.bam} > {output} 2> {log}
+		
+		"""
+
+rule gatk_realigner_target_creator:
+	input:
+		bam="{unit}.md.bam",
+                phase1=config['resources']['knownIndels']['phase1'],
+                mills=config['resources']['knownIndels']['mills'],
+                reference=config['reference_fasta'][config['reference_name']]
+	output:
+		ri="{unit}.realignment.intervals"
+	version:
+                config['gatk']
+	params:
+                rulename        = "gatk_realigner_target_creator",
+                batch           = config['gatk_clust']
+	log:
+                "{unit}.gatk.realigner_target.log"
+	shell:  """
+
+        module load GATK/{version}
+        module load java
+
+        java -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T RealignerTargetCreator -R {input.reference} -known {input.phase1} -known {input.mills} -I {input.bam} -o {output.ri} -nt 8 >{log} 2>&1
+		"""		
+
+rule gatk_IndelRealigner:
+	input:
+		bam="{unit}.md.bam",	
+		ri="{unit}.realignment.intervals",
+                phase1=config['resources']['knownIndels']['phase1'],
+                mills=config['resources']['knownIndels']['mills'],
+                reference=config['reference_fasta'][config['reference_name']]
+	output:
+		lr_bam="{unit}.lr.bam"
+	version:
+                config['gatk']
+	params:
+                rulename        = "gatk_IndelRealigner",
+                batch           = config['gatk_clust']
+	log:
+                "{unit}.gatk.IndelRealigner.log"
+	shell:  """
+
+        module load GATK/{version}
+        module load java
+	
+	java -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T IndelRealigner -R {input.reference}  -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals {input.ri} -o {output.lr_bam} >>{log} 2>&1	
+
+		"""
+
+rule gatk_BaseRecalibrator:
+	input:
+		lr_bam="{unit}.lr.bam",
+                phase1=config['resources']['knownIndels']['phase1'],
+                mills=config['resources']['knownIndels']['mills'],
+                reference=config['reference_fasta'][config['reference_name']]
+	output:
+		rmat="{unit}.recalibration.matrix.txt"
+	version:
+                config['gatk']
+	params:
+                rulename        = "gatk_BaseRecalibrator",
+                batch           = config['gatk_clust']
+	log:
+                "{unit}.gatk.BaseRecalibrator.log"
+	shell:  """
+
+        module load GATK/{version}
+        module load java
+
+	java -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T BaseRecalibrator -R {input.reference} -knownSites {input.phase1} -knownSites {input.mills} -I {input.lr_bam} -o {output.rmat} >>{log} 2>&1	
+		"""
+
+rule gatk_PrintReads:
+	input:
+                lr_bam="{unit}.lr.bam",
+		rmat="{unit}.recalibration.matrix.txt",
+                reference=config['reference_fasta'][config['reference_name']]
+	output:
+                bam="{unit}.final.bam",
+                index="{unit}.final.bam.bai"
+	version:
+                config['gatk']
+	params:
+                rulename        = "gatk_PrintReads",
+                batch           = config['gatk_clust']
+	log:
+                "{unit}.gatk.PrintReads.log"
+	shell:  """
+
+        module load GATK/{version}
+        module load java
+
+	java -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T PrintReads -R {input.reference} -I {input.lr_bam} -o {output.bam} -BQSR {input.rmat} >>{log} 2>&1				
+		"""
+
+
+
+
+
