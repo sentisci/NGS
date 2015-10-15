@@ -1,0 +1,59 @@
+{	
+	
+	"studies":	{
+    		"ClinVal": ["NCI0276blood_E","NCI0276blood_100ng_P","NCI0276blood_200ng_P"]
+			},
+
+        "subjects": 	{
+        	"NCI0276": 	[ "NCI0276blood_E","NCI0276blood_100ng_P","NCI0276blood_200ng_P" ]	
+        	   	},
+
+	"samples": 	{
+				"NCI0276blood_E":	[ "NCI0276blood_E" ],
+				"NCI0276blood_100ng_P": [ "NCI0276blood_100ng_P" ],
+				"NCI0276blood_200ng_P":	[ "NCI0276blood_200ng_P" ]
+			},
+
+	"libraries": 	{
+				"NCI0276blood_E":	[ "100" ],
+				"NCI0276blood_100ng_P": [ "101" ],
+				"NCI0276blood_200ng_P": [ "102" ]
+			},
+
+	"units":	{
+		"100":		[
+					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_E_HGCGYBGXX_R1.fastq",
+					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_E_HGCGYBGXX_R2.fastq"
+				],
+		"101":		[
+					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R1.fastq",
+					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R2.fastq"
+				],
+		"102":		[
+					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R1.fastq",
+					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R2.fastq"
+				]
+			},
+
+	"sample_TN":	{
+		"NCI0276blood_E":	[ "Normal" ],
+		"NCI0276blood_100ng_P":	[ "Normal" ],
+		"NCI0276blood_200ng_P":	[ "Normal" ]
+			},
+	
+	"subject_TN":	{
+		"NCI0276":	[ "Normal" ]
+			},
+
+	"subject_captures":	{
+		"NCI0276":	[
+					"clin.ex.v1",
+ 					"clin.snv.v1"
+				]
+				},
+	"sample_captures":	{
+		"NCI0276blood_E":	[ "clin.ex.v1" ],
+		"NCI0276blood_100ng_P":	[ "clin.snv.v1" ],
+		"NCI0276blood_200ng_P":	[ "clin.snv.v1" ]
+				}
+}
