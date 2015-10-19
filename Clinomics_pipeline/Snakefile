@@ -27,6 +27,7 @@ configfile: _get_rule_path("samplesheet.json")
 include: _get_rule_path("alignment.rules")
 
 #Store Entity in Dicts
+#START####Basic dicts###################################################
 UNIT_TO_LIBRARY = {}
 for lib,units in config['libraries'].items():
 	for unit in units:
@@ -42,24 +43,29 @@ for subject,samples in config['subjects'].items():
 	for sample in samples:
         	SAMPLE_TO_SUBJECT[sample]=subject
 
-SAMPLE_TO_STUDY  = {}
-for study,samples in config['studies'].items():
-	for sample in samples:
-		SAMPLE_TO_STUDY[sample]=study
+SUBJECT_TO_STUDY  = {}
+for study,subjects in config['studies'].items():
+	for subject in subjects:
+		SUBJECT_TO_STUDY[subject]=study
 
+#END################################################################
 
+#START## Forward one step #########################################
 UNIT_TO_SAMPLE = {}
 for unit in config['units'].keys():
 	UNIT_TO_SAMPLE[unit]=LIBRARY_TO_SAMPLE[UNIT_TO_LIBRARY[unit]]
 
-
 UNIT_TO_SUBJECT = {}
 for unit in config['units'].keys():
-    	UNIT_TO_SUBJECT[unit]=SAMPLE_TO_STUDY[LIBRARY_TO_SAMPLE[UNIT_TO_LIBRARY[unit]]]
+    	UNIT_TO_SUBJECT[unit]=SAMPLE_TO_SUBJECT[LIBRARY_TO_SAMPLE[UNIT_TO_LIBRARY[unit]]]
 
 UNIT_TO_STUDY = {}
 for unit in config['units'].keys():
-    	UNIT_TO_STUDY[unit]=SAMPLE_TO_SUBJECT[LIBRARY_TO_SAMPLE[UNIT_TO_LIBRARY[unit]]]
+    	UNIT_TO_STUDY[unit]=SUBJECT_TO_STUDY[SAMPLE_TO_SUBJECT[LIBRARY_TO_SAMPLE[UNIT_TO_LIBRARY[unit]]]]
+#END# ############################################################
+
+
+#START## BAckward one step ######################################
 
 SAMPLE_TO_UNIT = collections.defaultdict(list)
 for unit,sample in UNIT_TO_SAMPLE.items():
@@ -73,18 +79,20 @@ STUDY_TO_UNIT = collections.defaultdict(list)
 for unit,study in UNIT_TO_STUDY.items():
     	STUDY_TO_UNIT[study].append(unit)
 
+#END ##########################################################
+
 ## bam files
 #BAMS = ["SUBJECT/{subject}/{sample}/{reference}.{aligner}/bam/{sample}.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys() ]
 #BAIS = [BAM + ".bai" for BAM in BAMS]
 #BAMS_all = [(BAM + ' ' + BAM + ".tdf " + BAM + ".bai").split(' ') for BAM in BAMS]
 
-BAMS		= ["{sample}.bam".format(sample=s) for s in config['units'].keys()]
-BAMS_gatk	= ["{sample}.final.bam".format(sample=s) for s in config['units'].keys()]
-FLAGSTAT 	= ["{sample}.bam.flagstat".format(sample=s) for s in config['units'].keys()]	
-##print(BAMS_gatk)
+BAMS		= ["{sample}.merge.bam".format(sample=s) for s in config['samples'].keys()]
+BAMS_gatk	= ["{sample}.final.bam.flagstat".format(sample=s) for s in config['samples'].keys()]
+#print(BAMS_gatk)
+#FLAGSTAT 	= ["{sample}.bam.flagstat".format(sample=s) for s in config['subjects'].keys()]	
 
 rule final:
 	input:
-		FLAGSTAT,
+		#FLAGSTAT,
 		BAMS_gatk
 		#BAMS
