@@ -1,30 +1,19 @@
-
-
-def _knownIndels_to_GATK(known):
-    """Convert a list of file locations to a format for the GATK command line"""
-    try:
-        return(' '.join(["-known " + x for x in known]))
-    except KeyError:
-        return(' ')
-
-
 rule bwamem_map:
 	input:
 		index = lambda wildcards: config['align_algo_index']['bwa']+config['bwa']+"/"+config['reference_name']+".pac",
 		fastq = lambda wildcards: config['units'][wildcards.unit]
 	output:
-		"{unit}.bam",
-		"{unit}.bam.bai"
+		bam= "{unit}.bam",
+		bai= "{unit}.bam.bai"
 	version: 
 		config['bwa']
 	params:
         	rulename 		= "bwamem_map",
-        	sample 			= lambda wildcards:	UNIT_TO_SAMPLE[wildcards.unit],
+		sample			= lambda wildcards:     UNIT_TO_SAMPLE[wildcards.unit],
         	library 		= lambda wildcards:	UNIT_TO_LIBRARY[wildcards.unit],
         	platform 		= config['platform'],
         	bwa_index 		= lambda wildcards: config['align_algo_index']['bwa']+config['bwa']+"/"+config['reference_name'],
 		adapters		= config['adapters'],
-       		output_prefix 		= "{unit}",
 		samtools_version	= config['samtools'],
 		ea_utils_version	= config['ea_utils'],
         	batch			= config['alignment_clust']['bwa']
@@ -39,18 +28,18 @@ rule bwamem_map:
 	R2={input.fastq[1]}
 	mcf_log={wildcards.unit}.mcf_log	
 
-	fastq-mcf -C 1000000 -q 2 -p 10 -u -x 20 -o $R1 -o $R2 {params.adapters} <(gunzip -c {input.fastq[0]}) <(gunzip -c {input.fastq[1]}) > $mcf_log 2>&1
-	bwa mem -M  -t 16 -R "@RG\tID:{wildcards.unit}\tSM:{params.sample}\tLB:{params.library}\tPL:Illumina" {params.bwa_index} $R1 $R2 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {params.output_prefix}	
+	##fastq-mcf -C 1000000 -q 2 -p 10 -u -x 20 -o $R1 -o $R2 {params.adapters} <(gunzip -c {input.fastq[0]}) <(gunzip -c {input.fastq[1]}) > $mcf_log 2>&1
+	bwa mem -M  -t 16 -R "@RG\tID:{wildcards.unit}\tSM:{params.sample}\tLB:{params.library}\tPL:Illumina" {params.bwa_index} $R1 $R2 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - {wildcards.unit}	
 	
 	#indexing BAM file
-	samtools index {params.output_prefix}.bam
+	samtools index {wildcards.unit}.bam
 		"""
 
 
 rule markdups:
 	input:	
-		"{unit}.bam",
-		"{unit}.bam.bai"
+		bam="{unit}.bam",
+		bai="{unit}.bam.bai"
 	output:
 		bam="{unit}.md.bam",
 		bai="{unit}.md.bam.bai",
@@ -66,23 +55,23 @@ rule markdups:
 	
 	module load picard/{version}
 	
-	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/picard/{version}/picard.jar MarkDuplicates AS=true M={output.metrics} O={output.bam} I={input[0]} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT > {log} 2>&1
+	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/picard/{version}/picard.jar MarkDuplicates AS=true M={output.metrics} O={output.bam} I={input.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT > {log} 2>&1
 	
 	samtools index {output.bam}	
 		"""
 
 rule flagstat:
 	input:
-		bam="{unit}.bam",
-		bam_bai="{unit}.bam.bai"
+		bam="{sample}.final.bam",
+		bam_bai="{sample}.final.bai"
 	output:
-		"{unit}.bam.flagstat"
+		"{sample}.final.bam.flagstat"
 	version:
 		config['samtools']
 	params:
 		rulename	= "flagstat",
 		batch		= config['flagstat_clust']
-	log:	"{unit}.flagstat.log"
+	log:	"{sample}.flagstat.log"
 	shell:	"""
 	
 	module load samtools/{version}
@@ -91,21 +80,42 @@ rule flagstat:
 		
 		"""
 
+rule mergeBams:
+	input:
+		bam=lambda wildcards:	expand("{unit}.md.bam", unit = SAMPLE_TO_UNIT[wildcards.sample]),
+	output:
+        	bam="{sample}.merge.bam",
+		bai="{sample}.merge.bam.bai"
+	version:
+		config['picard']
+	params:
+		rulename	= "mergeBams",
+		batch		= config['picard_clust']['picard_md']
+	log:	"{sample}.merge.bam.log"
+	run:
+		inputBams = ' '.join(['I={bam}'.format(bam=bam) for bam in input])
+		print(inputBams)
+		shell("""
+			module load picard/{version}
+			java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/picard/{version}/picard.jar  MergeSamFiles AS=true USE_THREADING=true VALIDATION_STRINGENCY=SILENT {inputBams} O={output.bam} 2>> {log}
+			samtools index {output.bam}
+		""")
+
 rule gatk_realigner_target_creator:
 	input:
-		bam="{unit}.md.bam",
+		bam="{sample}.merge.bam",
                 phase1=config['resources']['knownIndels']['phase1'],
                 mills=config['resources']['knownIndels']['mills'],
                 reference=config['reference_fasta'][config['reference_name']]
 	output:
-		ri="{unit}.realignment.intervals"
+		ri="{sample}.realignment.intervals"
 	version:
                 config['gatk']
 	params:
                 rulename        = "gatk_realigner_target_creator",
                 batch           = config['gatk_clust']
 	log:
-                "{unit}.gatk.realigner_target.log"
+                "{sample}.gatk.realigner_target.log"
 	shell:  """
 
         module load GATK/{version}
@@ -116,20 +126,20 @@ rule gatk_realigner_target_creator:
 
 rule gatk_IndelRealigner:
 	input:
-		bam="{unit}.md.bam",	
-		ri="{unit}.realignment.intervals",
+		bam="{sample}.merge.bam",	
+		ri="{sample}.realignment.intervals",
                 phase1=config['resources']['knownIndels']['phase1'],
                 mills=config['resources']['knownIndels']['mills'],
                 reference=config['reference_fasta'][config['reference_name']]
 	output:
-		lr_bam="{unit}.lr.bam"
+		lr_bam="{sample}.lr.bam"
 	version:
                 config['gatk']
 	params:
                 rulename        = "gatk_IndelRealigner",
                 batch           = config['gatk_clust']
 	log:
-                "{unit}.gatk.IndelRealigner.log"
+                "{sample}.gatk.IndelRealigner.log"
 	shell:  """
 
         module load GATK/{version}
@@ -141,19 +151,19 @@ rule gatk_IndelRealigner:
 
 rule gatk_BaseRecalibrator:
 	input:
-		lr_bam="{unit}.lr.bam",
+		lr_bam="{sample}.lr.bam",
                 phase1=config['resources']['knownIndels']['phase1'],
                 mills=config['resources']['knownIndels']['mills'],
                 reference=config['reference_fasta'][config['reference_name']]
 	output:
-		rmat="{unit}.recalibration.matrix.txt"
+		rmat="{sample}.recalibration.matrix.txt"
 	version:
                 config['gatk']
 	params:
                 rulename        = "gatk_BaseRecalibrator",
                 batch           = config['gatk_clust']
 	log:
-                "{unit}.gatk.BaseRecalibrator.log"
+                "{sample}.gatk.BaseRecalibrator.log"
 	shell:  """
 
         module load GATK/{version}
@@ -164,19 +174,19 @@ rule gatk_BaseRecalibrator:
 
 rule gatk_PrintReads:
 	input:
-                lr_bam="{unit}.lr.bam",
-		rmat="{unit}.recalibration.matrix.txt",
+                lr_bam="{sample}.lr.bam",
+		rmat="{sample}.recalibration.matrix.txt",
                 reference=config['reference_fasta'][config['reference_name']]
 	output:
-                bam="{unit}.final.bam",
-                index="{unit}.final.bam.bai"
+                bam="{sample}.final.bam",
+                index="{sample}.final.bai"
 	version:
                 config['gatk']
 	params:
                 rulename        = "gatk_PrintReads",
                 batch           = config['gatk_clust']
 	log:
-                "{unit}.gatk.PrintReads.log"
+                "{sample}.gatk.PrintReads.log"
 	shell:  """
 
         module load GATK/{version}
@@ -184,8 +194,3 @@ rule gatk_PrintReads:
 
 	java -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T PrintReads -R {input.reference} -I {input.lr_bam} -o {output.bam} -BQSR {input.rmat} >>{log} 2>&1				
 		"""
-
-
-
-
-

@@ -8,5 +8,6 @@
 			"picard_md":    "-l nodes=1:ppn=1,mem=3,walltime=96:00:00"
 		},
 	"flagstat_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
-	"gatk_clust":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00"
+	"gatk_clust":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
+	"samtools":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00"
 }
