@@ -2,6 +2,7 @@
 import itertools
 import os
 import collections
+import pprint
 from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
 
@@ -86,13 +87,38 @@ for unit,study in UNIT_TO_STUDY.items():
 #BAIS = [BAM + ".bai" for BAM in BAMS]
 #BAMS_all = [(BAM + ' ' + BAM + ".tdf " + BAM + ".bai").split(' ') for BAM in BAMS]
 
+ALL_SOMATIC  = []
+somaticPairs = {}
+PairsCapture = {}
+if len(config['sample_references']) > 0:
+        for Tumor in config['sample_references']:
+                for Normal in config['sample_references'][Tumor]:
+                        TumorBam = "{sample}.final".format(sample=Tumor)
+                        NormalBam = "{sample}.final".format(sample=Normal)
+                        PairsCapture[Tumor] = config['sample_captures'][Tumor]
+                        somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
+
+#print(PairsCapture)
+#print(somaticPairs)
+
 BAMS		= ["{sample}.merge.bam".format(sample=s) for s in config['samples'].keys()]
-BAMS_gatk	= ["{sample}.final.bam.flagstat".format(sample=s) for s in config['samples'].keys()]
-#print(BAMS_gatk)
-#FLAGSTAT 	= ["{sample}.bam.flagstat".format(sample=s) for s in config['subjects'].keys()]	
+BAMS_flagstat	= ["{sample}.final.bam.flagstat".format(sample=s) for s in config['samples'].keys()]
+BAMS_caller_hc	= ["{sample}.haplotypecaller.raw.vcf".format(sample=s) for s in config['samples'].keys()]
+BAMS_caller_ps  = ["{sample}.platypus.raw.vcf".format(sample=s) for s in config['samples'].keys()]
+BAMS_caller_fb  = ["{sample}.freebayes.raw.vcf".format(sample=s) for s in config['samples'].keys()]
+BAMS_caller_sa_snv  = ["{sample}.strelka.snvs.raw.vcf".format(sample=s) for s in config['sample_references'].keys()]
+BAMS_caller_sa_indel  = ["{sample}.strelka.indels.raw.vcf".format(sample=s) for s in config['sample_references'].keys()]
+BAMS_caller_mt  = ["{sample}.mutect.raw.vcf".format(sample=s) for s in config['sample_references'].keys()]
+
+
+#print(BAMS_caller_hc)
+#print(BAMS_caller_ps)
+#print(BAMS_caller_fb)
+#print(BAMS_caller_sa)
+#print(BAMS_caller_mt)
 
 rule final:
 	input:
 		#FLAGSTAT,
-		BAMS_gatk
-		#BAMS
+		#BAMS_gatk
+		BAMS_caller_hc,BAMS_caller_mt,BAMS_caller_ps,BAMS_caller_fb,BAMS_caller_sa_snv,BAMS_caller_sa_indel
