@@ -194,3 +194,138 @@ rule gatk_PrintReads:
 
 	java -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T PrintReads -R {input.reference} -I {input.lr_bam} -o {output.bam} -BQSR {input.rmat} >>{log} 2>&1				
 		"""
+
+rule HaplotypeCaller:
+	input:
+		bam="{sample}.final.bam",
+		bai="{sample}.final.bai"
+	output:	
+		vcf="{sample}.haplotypecaller.raw.vcf"
+	version:
+		config['gatk']
+	params:
+		rulename	="HaplotypeCaller",
+		reference	=config['reference_fasta'][config['reference_name']],
+		dbsnp		=config["resources"]["dbsnp"],
+		target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		batch           = config['gatk_clust']
+		
+	log :	
+		"{sample}.haplotypecaller.raw.vcf.log"
+	shell: """
+	module load GATK/{version}
+			
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/target_intervals.bed
+	java -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar  -T HaplotypeCaller -R {params.reference} -I {input.bam} -L /projects/scratch/target_intervals.bed -o {output.vcf} --dbsnp {params.dbsnp} -mbq 20 -log {log}
+	
+	       """
+
+rule freebayes:
+        input:
+                bam="{sample}.final.bam",
+                bai="{sample}.final.bai"
+        output:
+                vcf="{sample}.freebayes.raw.vcf"
+        version:
+                config['freebayes']
+        params:
+                rulename        ="Freebayes",
+                reference       =config['reference_fasta'][config['reference_name']],
+                dbsnp           =config["resources"]["dbsnp"],
+                target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+                batch           = config['freebayes_clust']
+
+        log :
+                "{sample}.freeayes.raw.vcf.log"
+        shell: """
+        module load freebayes/{version}
+	module load vcftools/{version}
+
+        gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/target_intervals.bed
+        freebayes -f {params.reference} --haplotype-length 50 -b {input.bam} -v {output} > {log} 2>&1
+
+	vcftools --vcf {output} --bed /lscratch/${{SLURM_JOBID}}/target_intervals.bed --out {output} --recode --keep-INFO-all
+	mv {output}.recode.vcf {output.vcf}
+               """
+
+rule platypus:
+        input:
+                bam="{sample}.final.bam",
+                bai="{sample}.final.bai"
+        output:
+                vcf="{sample}.platypus.raw.vcf"
+        version:
+                config['platypus']
+        params:
+                rulename        ="Platypus",
+                reference       =config['reference_fasta'][config['reference_name']],
+                dbsnp           =config["resources"]["dbsnp"],
+                target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+                batch           = config['platypus_clust']
+
+        log :
+                "{sample}.platypus.raw.vcf.log"
+        shell: """
+        module load platypus/{version}
+	
+	gawk '{{print $1 ":" $2 "-" $3}}' {params.target_intervals} > /project/scratch/target_intervals.txt
+	platypus callVariants --nCPU=16 --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions=/project/scratch/target_intervals.txt --output={output.vcf} --refFile={params.reference} --logFileName={log}
+               """
+
+rule mutect:
+        input:
+                lambda wildcards: somaticPairs[wildcards.somaticPair]
+        output:
+	        call_stats="{somaticPair}.mutect.call_stats.txt",
+	        coverage="{somaticPair}.mutect.coverage.wig.txt",
+	        vcf="{somaticPair}.mutect.raw.vcf"
+        version:
+                config['MuTect']
+        params:
+                rulename        ="MuTect",
+                reference       =config['reference_fasta'][config['reference_name']],
+                dbsnp           =config["resources"]["dbsnp"],
+		cosmic		=config["resources"]["cosmic"],
+                target_intervals=lambda wildcards: config['target_intervals'][PairsCapture[wildcards.somaticPair][0]],
+                batch           = config['MuTect_clust']
+
+        log :
+                "{somaticPair}.mutect.raw.vcf.log"
+        shell: """
+        module load mutect/{version}
+	
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /project/scratch/target_intervals.bed
+	muTect --memory 40g --tmpdir /projects/scratch/ --analysis_type MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /project/scratch/target_intervals.bed --vcf  {output.vcf} > {log} 2>&1  
+               """
+
+
+rule strelka:
+        input:
+                lambda wildcards: somaticPairs[wildcards.somaticPair]
+        output:
+	        snv_vcf="{somaticPair}.strelka.snvs.raw.vcf",
+	        indel_vcf="{somaticPair}.strelka.indels.raw.vcf"
+	version:
+                config['Strelka']
+	params:
+        	rulename        ="Strelka",
+        	reference       =config['reference_fasta'][config['reference_name']],
+		strelka_config  =config['strelka_config'],
+        	target_intervals=lambda wildcards: config['target_intervals'][PairsCapture[wildcards.somaticPair][0]],
+        	batch           = config['Strelka_clust']
+	log :
+                "{somaticPair}.strelka.raw.vcf.log"
+	shell: """
+	module load strelka/{version}
+	
+	configureStrelkaWorkflow.pl --normal={input[0]} --tumor={input[2]} --ref={params.reference} --config={params.strelka_config} --output-dir=/project/scratch/strelka/ > {log} 2>&1
+	
+	make -j 16 -f /project/scratch/strelka/strelka/Makefile 2>> {log}
+
+	vcftools --vcf /project/scratch/strelka/results/all.somatic.snvs.vcf --bed {params.target_intervals} --out {output.snv_vcf} --recode --keep-INFO-all
+	mv {output.snv_vcf}.recode.vcf {output.snv_vcf}
+
+	vcftools --vcf /project/scratch/strelka/results/all.somatic.indels.vcf --bed {params.target_intervals} --out {output.indel_vcf} --recode --keep-INFO-all
+	mv {output.indel_vcf}.recode.vcf {output.indel_vcf}
+
+               """

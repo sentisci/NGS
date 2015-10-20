@@ -37,7 +37,10 @@
                 "clinvar": "/projects/Clinomics/ref/serpentine_resources/clinvar_dbsnp138_GRCh37_20140211.vcf"
         },
         "target_intervals": {
-                "clin.ex.v1": "/projects/Clinomics/ref/serpentine_resources/design/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
+                "clin.ex.v1":  "/projects/Clinomics/ref/serpentine_resources/design/Agilent_SureSelect_Clinical_Research_Exome.design.hg19.bed",
                 "clin.snv.v1": "/projects/Clinomics/ref/serpentine_resources/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed"
-        }
+        },
+	"strelka_config": {
+		"strelka_config": "/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/Strelka.config.ini"
+	}
 }

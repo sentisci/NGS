@@ -9,5 +9,10 @@
 		},
 	"flagstat_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
 	"gatk_clust":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
-	"samtools":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00"
+	"samtools":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
+	"freebayes_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
+	"platypus_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
+	"MuTect_clust":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
+	"Strelka_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00"
+
 }
