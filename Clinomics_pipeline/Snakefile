@@ -67,6 +67,9 @@ for unit in config['units'].keys():
 
 
 #START## BAckward one step ######################################
+LIBRARY_TO_UNIT = collections.defaultdict(list)
+for unit,sample in UNIT_TO_LIBRARY.items():
+        LIBRARY_TO_UNIT[sample].append(unit)
 
 SAMPLE_TO_UNIT = collections.defaultdict(list)
 for unit,sample in UNIT_TO_SAMPLE.items():
@@ -81,11 +84,12 @@ for unit,study in UNIT_TO_STUDY.items():
     	STUDY_TO_UNIT[study].append(unit)
 
 #END ##########################################################
-
 ## bam files
-#BAMS = ["SUBJECT/{subject}/{sample}/{reference}.{aligner}/bam/{sample}.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys() ]
-#BAIS = [BAM + ".bai" for BAM in BAMS]
-#BAMS_all = [(BAM + ' ' + BAM + ".tdf " + BAM + ".bai").split(' ') for BAM in BAMS]
+BAMS = ["SUBJECT/{subject}/{sample}/{reference_name}/bam/{sample}.final.bam".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ]
+BAMS_tdf = ["SUBJECT/{subject}/{sample}/{reference_name}/bam/{sample}.final.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ] 
+BAM_readDepth= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/{sample}.final.bam.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ]
+BAM_hsmetrics= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/{sample}.final.bam.hsmetrics".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ]
+BAM_hsmetrics= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/{sample}.final.bam.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ]
 
 ALL_SOMATIC  = []
 somaticPairs = {}
@@ -96,29 +100,35 @@ if len(config['sample_references']) > 0:
                         TumorBam = "{sample}.final".format(sample=Tumor)
                         NormalBam = "{sample}.final".format(sample=Normal)
                         PairsCapture[Tumor] = config['sample_captures'][Tumor]
-                        somaticPairs[Tumor] = [TumorBam + ".bam" , TumorBam + ".bai", NormalBam + ".bam", NormalBam + ".bai"]
+                        somaticPairs[Tumor] = [NormalBam + ".bam" , NormalBam + ".bai", TumorBam + ".bam", TumorBam + ".bai"]
 
 #print(PairsCapture)
 #print(somaticPairs)
 
-BAMS		= ["{sample}.merge.bam".format(sample=s) for s in config['samples'].keys()]
-BAMS_flagstat	= ["{sample}.final.bam.flagstat".format(sample=s) for s in config['samples'].keys()]
-BAMS_caller_hc	= ["{sample}.haplotypecaller.raw.vcf".format(sample=s) for s in config['samples'].keys()]
-BAMS_caller_ps  = ["{sample}.platypus.raw.vcf".format(sample=s) for s in config['samples'].keys()]
-BAMS_caller_fb  = ["{sample}.freebayes.raw.vcf".format(sample=s) for s in config['samples'].keys()]
-BAMS_caller_sa_snv  = ["{sample}.strelka.snvs.raw.vcf".format(sample=s) for s in config['sample_references'].keys()]
-BAMS_caller_sa_indel  = ["{sample}.strelka.indels.raw.vcf".format(sample=s) for s in config['sample_references'].keys()]
-BAMS_caller_mt  = ["{sample}.mutect.raw.vcf".format(sample=s) for s in config['sample_references'].keys()]
+ALL_FASTQC  	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/fastqc/{unit}_R1_fastqc.html".format(sample=UNIT_TO_SAMPLE[s], subject=UNIT_TO_SUBJECT[s], unit=s, reference_name=config['reference_name']) for s in config['units'].keys()]
+##BAMS		= ["{sample}.merge.bam".format(sample=s) for s in config['samples'].keys()]
+BAMS_flagstat	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/flagstat/{sample}.final.bam.flagstat".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+BAMS_bamqc	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/bamqc/{sample}.final.bam.qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+BAMS_caller_hc	= ["SUBJECT/{subject}/{sample}/{reference_name}/haplotypecaller/{sample}.haplotypecaller.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+BAMS_caller_ps  = ["SUBJECT/{subject}/{sample}/{reference_name}/platypus/{sample}.platypus.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+BAMS_caller_fb  = ["SUBJECT/{subject}/{sample}/{reference_name}/freebayes/{sample}.freebayes.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+BAMS_caller_sa_snv  = ["SUBJECT/{subject}/{sample}/{reference_name}/strelka/{sample}.strelka.snvs.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
+BAMS_caller_sa_indel  = ["SUBJECT/{subject}/{sample}/{reference_name}/strelka/{sample}.strelka.indels.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
+BAMS_caller_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}/mutect/{sample}.mutect.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
 
-
+#print(ALL_FASTQC)
+#print(BAMS_flagstat)
+#print(BAMS_bamqc)
 #print(BAMS_caller_hc)
 #print(BAMS_caller_ps)
 #print(BAMS_caller_fb)
 #print(BAMS_caller_sa)
 #print(BAMS_caller_mt)
-
+print(BAMS)
+print(BAMS_tdf)
 rule final:
 	input:
-		#FLAGSTAT,
-		#BAMS_gatk
-		BAMS_caller_hc,BAMS_caller_mt,BAMS_caller_ps,BAMS_caller_fb,BAMS_caller_sa_snv,BAMS_caller_sa_indel
+		#BAMS
+		BAMS_tdf,BAM_readDepth,BAM_hsmetrics,BAMS_flagstat,ALL_FASTQC,BAMS_bamqc
+
+		#BAMS_caller_hc,BAMS_caller_mt,BAMS_caller_ps,BAMS_caller_fb,BAMS_caller_sa_snv,BAMS_caller_sa_indel
