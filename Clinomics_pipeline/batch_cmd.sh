@@ -15,7 +15,6 @@ SNAKEFILE=${SERPENTINE_HOME}/Snakefile
 cd $WORKING_DIR
 snakemake\
 	--nolock \
-        --notemp \
         --jobname 'cln.{rulename}.{jobid}' \
         --directory $WORKING_DIR \
         --snakefile $SNAKEFILE \

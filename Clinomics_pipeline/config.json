@@ -1,7 +1,12 @@
 {
 
-	"platform": "Illumina",
-        "reference_name": "ucsc.hg19",
+	"platform": 		"Illumina",
+        "reference_name": 	"ucsc.hg19",
+	"aligner"	: 	"bwamem",
+        "hotspot_intervals": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/hg19_Hotspot.07.07.15.bed",
+        "genotyping_sites": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/1000gSites4genotyping.bed",
+        "snpEff_config": 	"/projects/Clinomics/ref/serpentine_resources/snpEff_b2.config",
+        "snpEff_genome": 	"GRCh37.75",
 	"reference_fasta":
 		{
 			"human_g1k_v37":	"/projects/Clinomics/ref/serpentine_resources/human_g1k_v37/human_g1k_v37.fasta",
@@ -37,10 +42,8 @@
                 "clinvar": "/projects/Clinomics/ref/serpentine_resources/clinvar_dbsnp138_GRCh37_20140211.vcf"
         },
         "target_intervals": {
-                "clin.ex.v1":  "/projects/Clinomics/ref/serpentine_resources/design/Agilent_SureSelect_Clinical_Research_Exome.design.hg19.bed",
-                "clin.snv.v1": "/projects/Clinomics/ref/serpentine_resources/design/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed"
+                "clin.ex.v1":  "/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
+                "clin.snv.v1": "/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed"
         },
-	"strelka_config": {
-		"strelka_config": "/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/Strelka.config.ini"
-	}
+	"strelka_config":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/Strelka.config.ini"
 }
