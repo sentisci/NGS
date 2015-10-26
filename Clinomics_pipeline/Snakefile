@@ -89,9 +89,13 @@ BAMS = ["SUBJECT/{subject}/{sample}/{reference_name}/bam/{sample}.final.bam".for
 BAMS_tdf = ["SUBJECT/{subject}/{sample}/{reference_name}/bam/{sample}.final.tdf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ] 
 BAM_readDepth= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/{sample}.final.bam.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ]
 BAM_hsmetrics= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/{sample}.final.bam.hsmetrics".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ]
-BAM_hsmetrics= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/{sample}.final.bam.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ]
+BAM_hotspotCov= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/{sample}.final.bam.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys() ]
+BAMS_flagstat	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/flagstat/{sample}.final.bam.flagstat".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+BAMS_bamqc	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/bamqc/{sample}.final.bam.qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+ALL_FASTQC  	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/fastqc/{unit}_R1_fastqc.html".format(sample=UNIT_TO_SAMPLE[s], subject=UNIT_TO_SUBJECT[s], unit=s, reference_name=config['reference_name']) for s in config['units'].keys()]
 
-ALL_SOMATIC  = []
+All_QC = BAMS_tdf + BAM_readDepth + BAM_hsmetrics + BAM_hotspotCov + BAMS_flagstat + BAMS_bamqc + ALL_FASTQC
+
 somaticPairs = {}
 PairsCapture = {}
 if len(config['sample_references']) > 0:
@@ -105,16 +109,26 @@ if len(config['sample_references']) > 0:
 #print(PairsCapture)
 #print(somaticPairs)
 
-ALL_FASTQC  	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/fastqc/{unit}_R1_fastqc.html".format(sample=UNIT_TO_SAMPLE[s], subject=UNIT_TO_SUBJECT[s], unit=s, reference_name=config['reference_name']) for s in config['units'].keys()]
+
 ##BAMS		= ["{sample}.merge.bam".format(sample=s) for s in config['samples'].keys()]
-BAMS_flagstat	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/flagstat/{sample}.final.bam.flagstat".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
-BAMS_bamqc	= ["SUBJECT/{subject}/{sample}/{reference_name}/qc/bamqc/{sample}.final.bam.qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
 BAMS_caller_hc	= ["SUBJECT/{subject}/{sample}/{reference_name}/haplotypecaller/{sample}.haplotypecaller.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
 BAMS_caller_ps  = ["SUBJECT/{subject}/{sample}/{reference_name}/platypus/{sample}.platypus.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
 BAMS_caller_fb  = ["SUBJECT/{subject}/{sample}/{reference_name}/freebayes/{sample}.freebayes.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
 BAMS_caller_sa_snv  = ["SUBJECT/{subject}/{sample}/{reference_name}/strelka/{sample}.strelka.snvs.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
 BAMS_caller_sa_indel  = ["SUBJECT/{subject}/{sample}/{reference_name}/strelka/{sample}.strelka.indels.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
 BAMS_caller_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}/mutect/{sample}.mutect.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
+
+All_caller_raw_vcf = BAMS_caller_hc + BAMS_caller_ps + BAMS_caller_fb + BAMS_caller_sa_snv + BAMS_caller_sa_indel + BAMS_caller_mt
+
+#filtered VCFs
+filtered_vcf_hc  = ["SUBJECT/{subject}/{sample}/{reference_name}/haplotypecaller/{sample}.haplotypecaller.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+filtered_vcf_ps  = ["SUBJECT/{subject}/{sample}/{reference_name}/platypus/{sample}.platypus.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+filtered_vcf_fb  = ["SUBJECT/{subject}/{sample}/{reference_name}/freebayes/{sample}.freebayes.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['samples'].keys()]
+filtered_vcf_sa_snv  = ["SUBJECT/{subject}/{sample}/{reference_name}/strelka/{sample}.strelka.snvs.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
+filtered_vcf_sa_indel  = ["SUBJECT/{subject}/{sample}/{reference_name}/strelka/{sample}.strelka.indels.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
+filtered_vcf_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}/mutect/{sample}.mutect.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name']) for s in config['sample_references'].keys()]
+
+ALL_filtered_vcf = filtered_vcf_hc + filtered_vcf_ps + filtered_vcf_fb+ filtered_vcf_sa_snv + filtered_vcf_sa_indel + filtered_vcf_mt
 
 #print(ALL_FASTQC)
 #print(BAMS_flagstat)
@@ -124,11 +138,9 @@ BAMS_caller_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}/mutect/{sample}.
 #print(BAMS_caller_fb)
 #print(BAMS_caller_sa)
 #print(BAMS_caller_mt)
-print(BAMS)
-print(BAMS_tdf)
+#print(BAMS)
+#print(BAMS_tdf)
 rule final:
 	input:
 		#BAMS
-		BAMS_tdf,BAM_readDepth,BAM_hsmetrics,BAMS_flagstat,ALL_FASTQC,BAMS_bamqc
-
-		#BAMS_caller_hc,BAMS_caller_mt,BAMS_caller_ps,BAMS_caller_fb,BAMS_caller_sa_snv,BAMS_caller_sa_indel
+		All_QC,ALL_filtered_vcf	

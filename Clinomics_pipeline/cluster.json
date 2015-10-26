@@ -9,7 +9,7 @@
 		},
 	"flagstat_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
 	"gatk_clust":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
-	"samtools":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
+	"samtools_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
 	"freebayes_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
 	"platypus_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
 	"MuTect_clust":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
@@ -20,5 +20,6 @@
 	"readDepth_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
 	"targetIntervals_clust":"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
 	"hsMetrics_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
-	"hotspotCov_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00"
+	"hotspotCov_clust":	"-l nodes=1:ppn=1,mem=3,walltime=96:00:00",
+	"snpEff_clust":		"-l nodes=1:ppn=1,mem=3,walltime=96:00:00"
 }

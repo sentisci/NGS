@@ -344,8 +344,6 @@ rule hsMetrics:
 	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/picard/{version}/picard.jar CalculateHsMetrics BAIT_INTERVALS={input.bam_probe_intervals} TARGET_INTERVALS={input.bam_target_intervals} INPUT={input.bam} OUTPUT={output} METRIC_ACCUMULATION_LEVEL=ALL_READS REFERENCE_SEQUENCE={params.reference} QUIET=true  VALIDATION_STRINGENCY=SILENT > {log} 2>&1
 		
 	"""
-
-
 rule hotspotCov:
 	input:
         	bam="{base}/bam/{sample}.final.bam"
@@ -363,7 +361,7 @@ rule hotspotCov:
 	shell: """
 	
 	module load samtools/{version} 
-	module load bedtools/{bedtools_version}
+	module load bedtools/{params.bedtools_version}
 	
 	samtools view -hF 0x400 -q 30 {input} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {params.hotspot_intervals} > {output}
 	
@@ -508,3 +506,31 @@ rule strelka:
 	mv {output.indel_vcf}.recode.vcf {output.indel_vcf}
 
                """
+
+rule snpEff:
+	input:
+		vcf = "{base}.raw.vcf",
+	output:
+		"{base}.annotated.vcf"
+	version:
+		config['snpEff']
+	params:
+		rulename	="snpEff",
+		snpEff_genome	=config["snpEff_genome"],
+		snpEff_config	=config["snpEff_config"],
+		CosmicCodingMuts=config["resources"]['CosmicCodingMuts'],
+		dbsnp		=config["resources"]['dbsnp'],
+		clinvar		=config["resources"]['clinvar'],
+		ESP_snps	=config["resources"]['ESP_snps'],
+		batch		=config["snpEff_clust"] 
+	log:
+		"{base}.annotated.vcf.log"
+	shell: 	"""
+	
+	module load snpEff/{version}
+	SnpSift_path="/apps/snpEff/{version}/SnpSift.jar"	
+        SnpEff_path="/apps/snpEff/{version}/snpEff.jar"
+
+	java -Xmx16g -Djava.io.tmpdir=/project/scratch/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx4g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx4g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx4g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx12g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output} 2> {log}
+	
+		"""

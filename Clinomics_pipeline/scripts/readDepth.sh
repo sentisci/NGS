@@ -1,5 +1,5 @@
 #!/bin/bash
-
+module load bedtools/2.24.0
 ## caculate read depth for a given bed file or bam file
 
 
@@ -25,18 +25,18 @@ fi
 
 outBase=`basename $1`
 echo $'chr\tstart\tend\tgene\tbaits\tbases_covered\ttotal_bases\tfraction_covered' >  ${outDir}/${outBase}.basecoverage
-/home/zhujack/bin/coverageBed $a ${1} -b <(cut -f1-4 ${2}) >> ${outDir}/${outBase}.basecoverage
+bedtools coverage $a ${1} -b <(cut -f1-4 ${2}) >> ${outDir}/${outBase}.basecoverage
 
 echo $'chr\tstart\tend\tgene\tdepth\tbases_covered\ttotal_bases\tfraction_covered' >  ${outDir}/${outBase}.depth.tmp
-/home/zhujack/bin/coverageBed $a ${1} -b <(cut -f1-4 ${2}) -hist >>  ${outDir}/${outBase}.depth.tmp
+bedtools coverage  $a ${1} -b <(cut -f1-4 ${2}) -hist >>  ${outDir}/${outBase}.depth.tmp
 
 grep "^all" ${outDir}/${outBase}.depth.tmp | cut -f 2-3 > ${outDir}/${outBase}.hist
 grep -v "^all" ${outDir}/${outBase}.depth.tmp > ${outDir}/${outBase}.depth
 rm -f ${outDir}/${outBase}.depth.tmp
-/home/zhujack/bin/do_hist.R -f ${outDir}/${outBase}.hist -o ${outDir}
+/projects/Clinomics/Tools/serpentine_Tgen/scripts/do_hist.R -f ${outDir}/${outBase}.hist -o ${outDir}
 
 echo $'chr\tstart\tend\tgene\tposition\tdepth' >  ${outDir}/${outBase}.depth_per_base
-/home/zhujack/bin/coverageBed  $a ${1} -b <(cut -f1-4 ${2}) -d >> ${outDir}/${outBase}.depth_per_base
+bedtools coverage $a ${1} -b <(cut -f1-4 ${2}) -d >> ${outDir}/${outBase}.depth_per_base
 
 # do_sumDepth.R -f ${outDir}/${outBase}.depth -b  ${2/cds/design}.depth -o $outDir
 #########################################################################
