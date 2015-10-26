@@ -5,7 +5,7 @@
 	"aligner"	: 	"bwamem",
         "hotspot_intervals": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/hg19_Hotspot.07.07.15.bed",
         "genotyping_sites": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/1000gSites4genotyping.bed",
-        "snpEff_config": 	"/projects/Clinomics/ref/serpentine_resources/snpEff_b2.config",
+        "snpEff_config": 	"/projects/Clinomics/ref/serpentine_resources/snpEff.config",
         "snpEff_genome": 	"GRCh37.75",
 	"reference_fasta":
 		{
