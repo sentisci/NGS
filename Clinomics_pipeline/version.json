@@ -8,10 +8,11 @@
 	"freebayes"		: "v0.9.21",
 	"vcftools"		: "0.1.13",
 	"platypus"		: "0.8.1",
-	"MuTect"		: "1.1.4",
+	"MuTect"		: "1.1.7",
 	"Strelka"		: "1.0.14",
 	"qualimap"		: "2.1.1",
 	"fastqc"		: "0.11.2",
 	"igvtools"		: "2.3.31",
-	"bedtools"		: "2.24.0"
+	"bedtools"		: "2.22.0",
+	"snpEff"		: "4.1c"
 }
