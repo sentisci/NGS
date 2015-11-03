@@ -1,0 +1,300 @@
+##fileformat=VCFv4.1
+##FILTER=<ID=PASS,Description="Accept as a confident somatic mutation">
+##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation">
+##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
+##FORMAT=<ID=BQ,Number=A,Type=Float,Description="Average base quality for reads supporting alleles">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth (reads with MQ=255 or with bad mates are filtered)">
+##FORMAT=<ID=FA,Number=A,Type=Float,Description="Allele fraction of the alternate allele with regard to reference">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification">
+##FORMAT=<ID=SS,Number=1,Type=Integer,Description="Variant status relative to non-adjacent Normal,0=wildtype,1=germline,2=somatic,3=LOH,4=post-transcriptional modification,5=unknown">
+##GATKCommandLine=<ID=MuTect,Version=3.1-0-g72492bb,Date="Fri Oct 09 12:40:32 EDT 2015",Epoch=1444408832222,CommandLineOptions="analysis_type=MuTect input_file=[SUBJECT/NCI0276/NCI0276_B_Exome/ucsc.hg19.bwamem/bam/NCI0276_B_Exome.final.bam, SUBJECT/NCI0276/NCI0276_T_Exome/ucsc.hg19.bwamem/bam/NCI0276_T_Exome.final.bam] showFullBamList=false read_buffer_size=null phone_home=AWS gatk_key=null tag=NA read_filter=[] intervals=[/lscratch/3833941/target_intervals.bed] excludeIntervals=null interval_set_rule=UNION interval_merging=ALL interval_padding=0 reference_sequence=/data/Clinomics/Ref/serpentine_resources/ucsc.hg19/ucsc.hg19.fasta nonDeterministicRandomSeed=false disableDithering=false maxRuntime=-1 maxRuntimeUnits=MINUTES downsampling_type=BY_SAMPLE downsample_to_fraction=null downsample_to_coverage=1000 baq=OFF baqGapOpenPenalty=40.0 fix_misencoded_quality_scores=false allow_potentially_misencoded_quality_scores=false useOriginalQualities=false defaultBaseQualities=-1 performanceLog=null BQSR=null quantize_quals=0 disable_indel_quals=false emit_original_quals=false preserve_qscores_less_than=6 globalQScorePrior=-1.0 validation_strictness=SILENT remove_program_records=false keep_program_records=false sample_rename_mapping_file=null unsafe=null disable_auto_index_creation_and_locking_when_reading_rods=false num_threads=1 num_cpu_threads_per_data_thread=1 num_io_threads=0 monitorThreadEfficiency=false num_bam_file_handles=null read_group_black_list=null pedigree=[] pedigreeString=[] pedigreeValidationType=STRICT allow_intervals_with_unindexed_bam=false generateShadowBCF=false variant_index_type=DYNAMIC_SEEK variant_index_parameter=-1 logging_level=INFO log_to_file=null help=false version=false noop=false enable_extended_output=false enable_qscore_output=false artifact_detection_mode=false tumor_sample_name=NCI0276_T_Exome bam_tumor_sample_name=null normal_sample_name=NCI0276_B_Exome force_output=false force_alleles=false only_passing_calls=false initial_tumor_lod=4.0 tumor_lod=6.3 fraction_contamination=0.02 minimum_mutation_cell_fraction=0.0 normal_lod=2.2 normal_artifact_lod=1.0 strand_artifact_lod=2.0 strand_artifact_power_threshold=0.9 dbsnp_normal_lod=5.5 minimum_normal_allele_fraction=0.0 tumor_f_pretest=0.005 min_qscore=5 gap_events_threshold=3 heavily_clipped_read_fraction=0.3 fraction_mapq0_threshold=0.5 pir_median_threshold=10.0 pir_mad_threshold=3.0 required_maximum_alt_allele_mapping_quality_score=20 max_alt_alleles_in_normal_count=2 max_alt_alleles_in_normal_qscore_sum=20 max_alt_allele_in_normal_fraction=0.03 power_constant_qscore=30 power_constant_af=0.30000001192092896 vcf=org.broadinstitute.sting.gatk.io.stubs.VariantContextWriterStub no_cmdline_in_header=org.broadinstitute.sting.gatk.io.stubs.VariantContextWriterStub sites_only=org.broadinstitute.sting.gatk.io.stubs.VariantContextWriterStub bcf=org.broadinstitute.sting.gatk.io.stubs.VariantContextWriterStub dbsnp=[(RodBinding name=dbsnp source=/data/Clinomics/Ref/serpentine_resources/ucsc.hg19/dbsnp_138.hg19.vcf.gz)] cosmic=[(RodBinding name=cosmic source=/data/Clinomics/Ref/serpentine_resources/ucsc.hg19/cosmic_v67.hg19.vcf)] normal_panel=[] coverage_20_q20_file=null power_file=null tumor_depth_file=null normal_depth_file=null filter_reads_with_N_cigar=false filter_mismatching_base_and_quals=false filter_bases_not_stored=false">
+##INFO=<ID=DB,Number=0,Type=Flag,Description="dbSNP Membership">
+##INFO=<ID=MQ0,Number=1,Type=Integer,Description="Total Mapping Quality Zero Reads">
+##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic event">
+##INFO=<ID=VT,Number=1,Type=String,Description="Variant type, can be SNP, INS or DEL">
+##contig=<ID=chrM,length=16571,assembly=hg19>
+##contig=<ID=chr1,length=249250621,assembly=hg19>
+##contig=<ID=chr2,length=243199373,assembly=hg19>
+##contig=<ID=chr3,length=198022430,assembly=hg19>
+##contig=<ID=chr4,length=191154276,assembly=hg19>
+##contig=<ID=chr5,length=180915260,assembly=hg19>
+##contig=<ID=chr6,length=171115067,assembly=hg19>
+##contig=<ID=chr7,length=159138663,assembly=hg19>
+##contig=<ID=chr8,length=146364022,assembly=hg19>
+##contig=<ID=chr9,length=141213431,assembly=hg19>
+##contig=<ID=chr10,length=135534747,assembly=hg19>
+##contig=<ID=chr11,length=135006516,assembly=hg19>
+##contig=<ID=chr12,length=133851895,assembly=hg19>
+##contig=<ID=chr13,length=115169878,assembly=hg19>
+##contig=<ID=chr14,length=107349540,assembly=hg19>
+##contig=<ID=chr15,length=102531392,assembly=hg19>
+##contig=<ID=chr16,length=90354753,assembly=hg19>
+##contig=<ID=chr17,length=81195210,assembly=hg19>
+##contig=<ID=chr18,length=78077248,assembly=hg19>
+##contig=<ID=chr19,length=59128983,assembly=hg19>
+##contig=<ID=chr20,length=63025520,assembly=hg19>
+##contig=<ID=chr21,length=48129895,assembly=hg19>
+##contig=<ID=chr22,length=51304566,assembly=hg19>
+##contig=<ID=chrX,length=155270560,assembly=hg19>
+##contig=<ID=chrY,length=59373566,assembly=hg19>
+##contig=<ID=chr1_gl000191_random,length=106433,assembly=hg19>
+##contig=<ID=chr1_gl000192_random,length=547496,assembly=hg19>
+##contig=<ID=chr4_ctg9_hap1,length=590426,assembly=hg19>
+##contig=<ID=chr4_gl000193_random,length=189789,assembly=hg19>
+##contig=<ID=chr4_gl000194_random,length=191469,assembly=hg19>
+##contig=<ID=chr6_apd_hap1,length=4622290,assembly=hg19>
+##contig=<ID=chr6_cox_hap2,length=4795371,assembly=hg19>
+##contig=<ID=chr6_dbb_hap3,length=4610396,assembly=hg19>
+##contig=<ID=chr6_mann_hap4,length=4683263,assembly=hg19>
+##contig=<ID=chr6_mcf_hap5,length=4833398,assembly=hg19>
+##contig=<ID=chr6_qbl_hap6,length=4611984,assembly=hg19>
+##contig=<ID=chr6_ssto_hap7,length=4928567,assembly=hg19>
+##contig=<ID=chr7_gl000195_random,length=182896,assembly=hg19>
+##contig=<ID=chr8_gl000196_random,length=38914,assembly=hg19>
+##contig=<ID=chr8_gl000197_random,length=37175,assembly=hg19>
+##contig=<ID=chr9_gl000198_random,length=90085,assembly=hg19>
+##contig=<ID=chr9_gl000199_random,length=169874,assembly=hg19>
+##contig=<ID=chr9_gl000200_random,length=187035,assembly=hg19>
+##contig=<ID=chr9_gl000201_random,length=36148,assembly=hg19>
+##contig=<ID=chr11_gl000202_random,length=40103,assembly=hg19>
+##contig=<ID=chr17_ctg5_hap1,length=1680828,assembly=hg19>
+##contig=<ID=chr17_gl000203_random,length=37498,assembly=hg19>
+##contig=<ID=chr17_gl000204_random,length=81310,assembly=hg19>
+##contig=<ID=chr17_gl000205_random,length=174588,assembly=hg19>
+##contig=<ID=chr17_gl000206_random,length=41001,assembly=hg19>
+##contig=<ID=chr18_gl000207_random,length=4262,assembly=hg19>
+##contig=<ID=chr19_gl000208_random,length=92689,assembly=hg19>
+##contig=<ID=chr19_gl000209_random,length=159169,assembly=hg19>
+##contig=<ID=chr21_gl000210_random,length=27682,assembly=hg19>
+##contig=<ID=chrUn_gl000211,length=166566,assembly=hg19>
+##contig=<ID=chrUn_gl000212,length=186858,assembly=hg19>
+##contig=<ID=chrUn_gl000213,length=164239,assembly=hg19>
+##contig=<ID=chrUn_gl000214,length=137718,assembly=hg19>
+##contig=<ID=chrUn_gl000215,length=172545,assembly=hg19>
+##contig=<ID=chrUn_gl000216,length=172294,assembly=hg19>
+##contig=<ID=chrUn_gl000217,length=172149,assembly=hg19>
+##contig=<ID=chrUn_gl000218,length=161147,assembly=hg19>
+##contig=<ID=chrUn_gl000219,length=179198,assembly=hg19>
+##contig=<ID=chrUn_gl000220,length=161802,assembly=hg19>
+##contig=<ID=chrUn_gl000221,length=155397,assembly=hg19>
+##contig=<ID=chrUn_gl000222,length=186861,assembly=hg19>
+##contig=<ID=chrUn_gl000223,length=180455,assembly=hg19>
+##contig=<ID=chrUn_gl000224,length=179693,assembly=hg19>
+##contig=<ID=chrUn_gl000225,length=211173,assembly=hg19>
+##contig=<ID=chrUn_gl000226,length=15008,assembly=hg19>
+##contig=<ID=chrUn_gl000227,length=128374,assembly=hg19>
+##contig=<ID=chrUn_gl000228,length=129120,assembly=hg19>
+##contig=<ID=chrUn_gl000229,length=19913,assembly=hg19>
+##contig=<ID=chrUn_gl000230,length=43691,assembly=hg19>
+##contig=<ID=chrUn_gl000231,length=27386,assembly=hg19>
+##contig=<ID=chrUn_gl000232,length=40652,assembly=hg19>
+##contig=<ID=chrUn_gl000233,length=45941,assembly=hg19>
+##contig=<ID=chrUn_gl000234,length=40531,assembly=hg19>
+##contig=<ID=chrUn_gl000235,length=34474,assembly=hg19>
+##contig=<ID=chrUn_gl000236,length=41934,assembly=hg19>
+##contig=<ID=chrUn_gl000237,length=45867,assembly=hg19>
+##contig=<ID=chrUn_gl000238,length=39939,assembly=hg19>
+##contig=<ID=chrUn_gl000239,length=33824,assembly=hg19>
+##contig=<ID=chrUn_gl000240,length=41933,assembly=hg19>
+##contig=<ID=chrUn_gl000241,length=42152,assembly=hg19>
+##contig=<ID=chrUn_gl000242,length=43523,assembly=hg19>
+##contig=<ID=chrUn_gl000243,length=43341,assembly=hg19>
+##contig=<ID=chrUn_gl000244,length=39929,assembly=hg19>
+##contig=<ID=chrUn_gl000245,length=36651,assembly=hg19>
+##contig=<ID=chrUn_gl000246,length=38154,assembly=hg19>
+##contig=<ID=chrUn_gl000247,length=36422,assembly=hg19>
+##contig=<ID=chrUn_gl000248,length=39786,assembly=hg19>
+##contig=<ID=chrUn_gl000249,length=38502,assembly=hg19>
+##reference=file:///data/Clinomics/Ref/serpentine_resources/ucsc.hg19/ucsc.hg19.fasta
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NCI0276_B_Exome	NCI0276_T_Exome
+chr1	69511	rs75062661	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,35:.:32:1.00	0/1:1,89:30:90:0.989
+chr1	721450	rs2977675	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:86,26:.:102:0.232	0/1:206,47:30:253:0.186
+chr1	721757	rs189147642	T	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:58,31:.:85:0.348	0/1:129,104:31:233:0.446
+chr1	762109	.	C	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:156,54:.:204:0.257	0/1:451,157:31:610:0.258
+chr1	762273	rs3115849	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:54,57:.:98:0.514	0/1:37,284:32:323:0.885
+chr1	876499	rs4372192	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,11:.:11:1.00	0/1:0,43:33:43:1.00
+chr1	877715	rs6605066	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,8:.:8:1.00	0/1:0,25:31:25:1.00
+chr1	877831	rs6672356	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,4:.:4:1.00	0/1:0,24:31:24:1.00
+chr1	880238	rs3748592	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,103:.:103:1.00	0/1:0,239:34:240:1.00
+chr1	883625	rs4970378	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,43:.:43:1.00	0/1:0,112:33:112:1.00
+chr1	886668	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:50,6:.:60:0.107	0/1:116,10:11:129:0.079
+chr1	886674	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:51,4:.:55:0.073	0/1:126,9:11:135:0.067
+chr1	887560	rs3748595	A	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,122:.:122:1.00	0/1:1,310:34:311:0.997
+chr1	887801	rs3828047	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,46:.:46:1.00	0/1:0,123:33:123:1.00
+chr1	888639	rs201746872	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,99:.:99:1.00	0/1:0,262:33:262:1.00
+chr1	888659	rs3748597	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,100:.:100:1.00	0/1:0,271:33:271:1.00
+chr1	894573	rs13303010	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,66:.:66:1.00	0/1:0,240:32:240:1.00
+chr1	897325	rs4970441	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,151:.:151:1.00	0/1:0,459:33:459:1.00
+chr1	897446	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:52,4:.:56:0.071	0/1:125,10:16:135:0.074
+chr1	897451	.	T	A	.	REJECT	.	GT:AD:BQ:DP:FA	0:28,11:.:45:0.282	0/1:98,7:13:115:0.067
+chr1	897460	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:19,3:.:22:0.136	0/1:90,5:23:96:0.053
+chr1	897465	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:22,3:.:25:0.120	0/1:95,5:27:102:0.050
+chr1	897470	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:23,3:.:26:0.115	0/1:125,4:25:130:0.031
+chr1	897564	rs13303229	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,132:.:132:1.00	0/1:0,377:34:377:1.00
+chr1	898323	rs6605071	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,45:.:45:1.00	0/1:0,155:33:155:1.00
+chr1	900505	rs28705211	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,91:.:91:1.00	0/1:0,257:34:257:1.00
+chr1	906272	rs28507236	A	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:28,29:.:57:0.509	0/1:191,15:34:207:0.073
+chr1	906614	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:31,1:.:32:0.031	0/1:112,14:12:128:0.111
+chr1	906621	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:27,1:.:28:0.036	0/1:109,9:16:118:0.076
+chr1	906625	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:26,1:.:27:0.037	0/1:92,11:12:112:0.107
+chr1	906688	rs376898081	A	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:18,2:.:21:0.100	0/1:63,5:20:68:0.074
+chr1	907631	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:58,7:.:69:0.108	0/1:199,11:15:216:0.052
+chr1	907642	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:60,22:.:82:0.268	0/1:198,29:14:227:0.128
+chr1	909309	rs3829738	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,32:.:32:1.00	0/1:0,94:32:94:1.00
+chr1	909768	rs2340593	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,94:.:94:1.00	0/1:0,265:33:265:1.00
+chr1	911916	rs74045046	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,97:.:98:1.00	0/1:1,266:31:268:0.996
+chr1	914876	rs13302983	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,75:.:75:1.00	0/1:0,209:32:209:1.00
+chr1	915227	rs13303355	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,77:.:77:1.00	0/1:0,159:34:159:1.00
+chr1	915495	rs200050434	G	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:60,7:.:66:0.104	0/1:153,19:12:176:0.110
+chr1	916549	rs6660139	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,105:.:106:1.00	0/1:0,232:30:232:1.00
+chr1	916662	rs56028034	A	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,83:.:83:1.00	0/1:0,157:34:157:1.00
+chr1	935037	rs370001003	A	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:39,30:.:69:0.435	0/1:21,207:32:228:0.908
+chr1	948921	rs15842	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,45:.:45:1.00	0/1:0,173:32:173:1.00
+chr1	949608	rs1921	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:65,38:.:103:0.369	0/1:41,312:29:353:0.884
+chr1	949654	rs8997	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,93:.:93:1.00	0/1:0,321:35:321:1.00
+chr1	955619	rs201073369	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:8,7:.:15:0.467	0/1:4,97:33:101:0.960
+chr1	957640	rs6657048	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:89,94:.:183:0.514	0/1:45,443:31:488:0.908
+chr1	977330	rs2799066	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,110:.:110:1.00	0/1:0,270:33:271:1.00
+chr1	978801	rs377608464	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:111,0:.:111:0.00	0/1:321,3:34:324:9.259e-03
+chr1	978852	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:85,5:.:94:0.056	0/1:200,16:12:221:0.074
+chr1	978862	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:82,10:.:92:0.109	0/1:185,16:15:202:0.080
+chr1	979437	rs151102274	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:44,44:.:88:0.500	0/1:19,181:29:200:0.905
+chr1	980460	rs3128097	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,29:.:29:1.00	0/1:0,58:31:58:1.00
+chr1	981087	rs3128098	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,135:.:135:1.00	0/1:0,253:30:253:1.00
+chr1	981295	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:61,4:.:65:0.062	0/1:167,8:15:175:0.046
+chr1	981300	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:57,10:.:67:0.149	0/1:156,19:15:175:0.109
+chr1	981713	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:25,7:.:32:0.219	0/1:84,6:21:91:0.067
+chr1	981717	.	G	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:28,1:.:29:0.034	0/1:78,6:19:84:0.071
+chr1	981869	.	G	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:27,9:.:36:0.250	0/1:67,7:22:74:0.095
+chr1	981931	rs2465128	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:34,41:.:75:0.547	0/1:189,12:29:201:0.060
+chr1	982105	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:77,4:.:81:0.049	0/1:238,8:17:246:0.033
+chr1	982136	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:62,1:.:63:0.016	0/1:170,6:17:178:0.034
+chr1	982141	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:53,14:.:67:0.209	0/1:153,15:17:168:0.089
+chr1	982145	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:54,15:.:69:0.217	0/1:144,14:17:158:0.089
+chr1	982722	rs142416636	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:57,72:.:129:0.558	0/1:19,260:31:280:0.932
+chr1	982941	rs3128102	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,143:.:143:1.00	0/1:0,332:32:332:1.00
+chr1	982994	rs10267	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,165:.:165:1.00	0/1:0,394:34:394:1.00
+chr1	983509	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:30,0:.:30:0.00	0/1:79,10:15:89:0.112
+chr1	984441	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:26,2:.:28:0.071	0/1:89,4:18:93:0.043
+chr1	984445	rs199977575	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:22,0:.:22:0.00	0/1:73,4:14:77:0.052
+chr1	984860	rs146377446	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:55,62:.:117:0.530	0/1:26,335:31:361:0.928
+chr1	985450	.	G	A	.	REJECT	.	GT:AD:BQ:DP:FA	0:2,6:.:8:0.750	0/1:4,6:32:13:0.600
+chr1	985460	rs2275811	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:5,5:.:10:0.500	0/1:0,18:28:18:1.00
+chr1	986038	rs28758798	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:10,19:.:29:0.655	0/1:5,91:33:96:0.948
+chr1	986443	rs2710887	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:50,25:.:75:0.333	0/1:171,10:32:181:0.055
+chr1	986467	.	C	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:39,30:.:69:0.435	0/1:171,13:32:184:0.071
+chr1	986761	rs376611912	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:43,0:.:43:0.00	0/1:106,2:15:108:0.019
+chr1	986788	.	C	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:22,1:.:23:0.043	0/1:66,5:21:71:0.070
+chr1	986792	.	C	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:21,0:.:21:0.00	0/1:58,4:23:62:0.065
+chr1	986797	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:19,1:.:20:0.050	0/1:58,4:19:62:0.065
+chr1	987200	rs9803031	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:77,63:.:140:0.450	0/1:303,29:31:333:0.087
+chr1	988932	rs2710871	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:15,12:.:27:0.444	0/1:69,5:34:74:0.068
+chr1	990380	rs3121561	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:28,27:.:55:0.491	0/1:189,17:30:206:0.083
+chr1	990417	rs2465136	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,66:.:66:1.00	0/1:0,223:31:223:1.00
+chr1	1019513	.	C	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:49,10:.:59:0.169	0/1:87,7:15:94:0.074
+chr1	1019518	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:25,20:.:53:0.444	0/1:63,16:11:87:0.203
+chr1	1021346	rs10907177	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:35,33:.:68:0.485	0/1:174,19:34:193:0.098
+chr1	1026707	rs4074137	C	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,33:.:33:1.00	0/1:0,103:29:103:1.00
+chr1	1026801	rs4562563	T	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:29,23:.:52:0.442	0/1:9,143:29:153:0.941
+chr1	1115846	rs375543553	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:7,0:.:7:0.00	0/1:34,2:15:36:0.056
+chr1	1115994	rs13376597	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:22,34:.:56:0.607	0/1:17,134:31:151:0.887
+chr1	1116061	.	G	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:55,6:.:61:0.098	0/1:157,13:21:170:0.076
+chr1	1133061	.	C	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:9,7:.:16:0.438	0/1:5,46:31:51:0.902
+chr1	1133077	rs2274789	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:7,8:.:15:0.533	0/1:4,48:31:52:0.923
+chr1	1147101	.	T	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:48,3:.:54:0.059	0/1:121,6:19:136:0.047
+chr1	1147422	rs17568	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:36,29:.:66:0.446	0/1:19,167:27:189:0.898
+chr1	1148490	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:35,5:.:40:0.125	0/1:132,7:17:139:0.050
+chr1	1148498	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:30,4:.:34:0.118	0/1:122,6:15:128:0.047
+chr1	1148506	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:24,7:.:31:0.226	0/1:98,12:15:111:0.109
+chr1	1148513	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:33,4:.:37:0.108	0/1:110,12:15:122:0.098
+chr1	1148694	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:37,1:.:38:0.026	0/1:119,5:15:124:0.040
+chr1	1148712	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:40,0:.:40:0.00	0/1:111,9:15:120:0.075
+chr1	1156131	rs2887286	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:34,24:.:59:0.414	0/1:18,146:34:166:0.890
+chr1	1158631	rs6603781	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,42:.:42:1.00	0/1:0,137:29:137:1.00
+chr1	1216195	rs55834051	C	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:20,19:.:39:0.487	0/1:6,79:32:85:0.929
+chr1	1220136	rs2144440	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:35,26:.:61:0.426	0/1:13,191:34:205:0.936
+chr1	1220954	rs12751100	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:17,19:.:36:0.528	0/1:8,79:30:87:0.908
+chr1	1221138	rs11260578	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:31,26:.:57:0.456	0/1:11,144:32:155:0.929
+chr1	1222267	rs11260579	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:26,26:.:52:0.500	0/1:14,92:33:107:0.868
+chr1	1222963	rs74735644	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:56,45:.:101:0.446	0/1:227,14:33:242:0.058
+chr1	1223385	rs2228579	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:21,17:.:38:0.447	0/1:5,84:35:89:0.944
+chr1	1225959	rs1570867	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:54,34:.:89:0.386	0/1:24,152:33:177:0.864
+chr1	1226346	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:17,3:.:23:0.150	0/1:35,6:12:42:0.146
+chr1	1226377	.	C	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:20,1:.:21:0.048	0/1:30,1:19:32:0.032
+chr1	1227244	rs2239609	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:14,14:.:28:0.500	0/1:6,52:31:58:0.897
+chr1	1231724	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:40,6:.:46:0.130	0/1:71,15:20:86:0.174
+chr1	1231730	.	G	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:41,4:.:45:0.089	0/1:77,13:18:90:0.144
+chr1	1233804	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:37,4:.:44:0.098	0/1:92,12:9:108:0.115
+chr1	1233807	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:37,5:.:42:0.119	0/1:97,9:14:106:0.085
+chr1	1233811	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:33,8:.:41:0.195	0/1:74,20:16:94:0.213
+chr1	1233818	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:33,4:.:38:0.108	0/1:84,7:16:92:0.077
+chr1	1233819	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:30,8:.:38:0.211	0/1:73,14:15:87:0.161
+chr1	1233821	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:25,11:.:36:0.306	0/1:58,19:15:77:0.247
+chr1	1235328	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:39,1:.:40:0.025	0/1:124,10:15:134:0.075
+chr1	1235330	rs369744633	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:38,2:.:40:0.050	0/1:117,17:18:134:0.127
+chr1	1235334	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:31,7:.:38:0.184	0/1:114,16:15:130:0.123
+chr1	1242707	rs2274262	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,70:.:71:1.00	0/1:0,202:33:202:1.00
+chr1	1246004	rs2296474	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,35:.:35:1.00	0/1:0,119:34:119:1.00
+chr1	1246090	.	T	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:36,5:.:43:0.122	0/1:132,7:18:140:0.050
+chr1	1246095	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:32,11:.:43:0.256	0/1:112,22:10:134:0.164
+chr1	1246101	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:34,8:.:42:0.190	0/1:116,15:15:131:0.115
+chr1	1246109	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:31,7:.:40:0.184	0/1:117,12:10:134:0.093
+chr1	1246113	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:29,9:.:39:0.237	0/1:117,17:18:134:0.127
+chr1	1246251	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:27,2:.:27:0.069	0/1:86,6:15:92:0.065
+chr1	1246270	rs200689011	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:42,0:.:45:0.00	0/1:113,5:24:123:0.042
+chr1	1246273	rs201592879	T	C	.	PASS	DB;SOMATIC;VT=SNP	GT:AD:BQ:DP:FA:SS	0:47,1:.:47:0.021:0	0/1:120,16:22:137:0.118:2
+chr1	1246502	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:101,1:.:102:9.804e-03	0/1:203,10:15:213:0.047
+chr1	1249187	rs12142199	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:87,84:.:171:0.491	0/1:399,32:31:431:0.074
+chr1	1250357	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:55,9:.:64:0.141	0/1:166,16:15:182:0.088
+chr1	1250363	rs202164977	T	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:47,9:.:57:0.161	0/1:154,12:15:166:0.072
+chr1	1250859	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:56,16:.:72:0.222	0/1:154,36:15:190:0.189
+chr1	1250864	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:62,11:.:73:0.151	0/1:169,30:16:200:0.151
+chr1	1250867	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:65,8:.:73:0.110	0/1:183,18:15:202:0.090
+chr1	1250877	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:68,4:.:72:0.056	0/1:197,16:15:214:0.075
+chr1	1250882	.	T	A	.	REJECT	.	GT:AD:BQ:DP:FA	0:55,15:.:73:0.214	0/1:188,20:10:214:0.096
+chr1	1254436	rs1886773	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,102:.:102:1.00	0/1:0,218:31:218:1.00
+chr1	1254443	rs1886772	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,105:.:105:1.00	0/1:0,221:32:221:1.00
+chr1	1254841	rs10907179	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,45:.:45:1.00	0/1:0,131:34:132:1.00
+chr1	1257279	.	C	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:40,5:.:48:0.111	0/1:107,5:20:116:0.045
+chr1	1257282	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:50,2:.:52:0.038	0/1:123,6:22:129:0.047
+chr1	1262591	rs2296472	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,52:.:52:1.00	0/1:0,153:30:153:1.00
+chr1	1262966	rs307349	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,71:.:71:1.00	0/1:1,220:29:221:0.995
+chr1	1268554	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:48,9:.:57:0.158	0/1:137,14:11:153:0.093
+chr1	1268565	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:34,14:.:48:0.292	0/1:129,16:16:145:0.110
+chr1	1268571	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:41,10:.:51:0.196	0/1:127,18:19:145:0.124
+chr1	1268778	.	A	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:106,8:.:114:0.070	0/1:264,24:11:288:0.083
+chr1	1268781	rs201750146	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:103,10:.:113:0.088	0/1:272,19:15:291:0.065
+chr1	1268847	rs307378	T	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,120:.:120:1.00	0/1:1,330:34:331:0.997
+chr1	1268977	.	G	T	.	REJECT	.	GT:AD:BQ:DP:FA	0:74,0:.:74:0.00	0/1:190,3:31:193:0.016
+chr1	1269554	rs307377	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,90:.:90:1.00	0/1:0,247:31:247:1.00
+chr1	1273116	rs307371	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,76:.:77:1.00	0/1:0,203:31:203:1.00
+chr1	1273568	.	C	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:36,5:.:41:0.122	0/1:121,6:15:127:0.047
+chr1	1273610	.	C	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:19,4:.:23:0.174	0/1:53,9:21:62:0.145
+chr1	1273614	.	T	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:20,3:.:25:0.130	0/1:50,8:21:61:0.138
+chr1	1275089	.	T	A	.	REJECT	.	GT:AD:BQ:DP:FA	0:65,10:.:75:0.133	0/1:183,23:9:213:0.112
+chr1	1275093	rs112292106	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:76,2:.:78:0.026	0/1:207,18:15:225:0.080
+chr1	1275098	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:80,4:.:84:0.048	0/1:220,12:15:232:0.052
+chr1	1275107	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:83,9:.:92:0.098	0/1:230,17:16:247:0.069
+chr1	1275598	.	T	A	.	REJECT	.	GT:AD:BQ:DP:FA	0:89,11:.:105:0.110	0/1:223,14:14:239:0.059
+chr1	1277533	rs307362	T	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,37:.:37:1.00	0/1:0,103:28:103:1.00
+chr1	1288583	rs3845295	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:2,51:.:53:0.962	0/1:3,121:27:124:0.976
+chr1	1289522	.	T	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:56,3:.:59:0.051	0/1:224,21:16:246:0.086
+chr1	1289542	.	T	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:67,3:.:73:0.043	0/1:237,8:18:253:0.033
+chr1	1289555	rs200245401	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:79,5:.:84:0.060	0/1:240,20:15:260:0.077
+chr1	1289686	.	G	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:73,8:.:81:0.099	0/1:223,7:14:230:0.030
+chr1	1293764	rs34841888	G	C	.	REJECT	DB	GT:AD:BQ:DP:FA	0:17,12:.:29:0.414	0/1:65,6:33:71:0.085
+chr1	1293795	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:28,4:.:32:0.125	0/1:69,5:15:74:0.068
+chr1	1293802	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:16,16:.:34:0.500	0/1:56,17:16:74:0.233
+chr1	1293809	.	A	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:21,6:.:28:0.222	0/1:68,11:17:79:0.139
+chr1	1293813	.	G	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:23,6:.:30:0.207	0/1:85,6:17:91:0.066
+chr1	1310074	rs2765035	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,52:.:52:1.00	0/1:0,167:33:168:1.00
+chr1	1333598	rs35242196	C	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:57,35:.:92:0.380	0/1:21,225:31:246:0.915
+chr1	1361633	rs12022947	G	A	.	REJECT	DB	GT:AD:BQ:DP:FA	0:8,6:.:14:0.429	0/1:2,35:32:37:0.946
+chr1	1361641	rs12030806	C	T	.	REJECT	DB	GT:AD:BQ:DP:FA	0:7,8:.:15:0.533	0/1:2,33:32:35:0.943
+chr1	1372419	.	T	C	.	REJECT	.	GT:AD:BQ:DP:FA	0:89,0:.:89:0.00	0/1:281,3:33:284:0.011
+chr1	1374834	rs1892289	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:10,8:.:18:0.444	0/1:4,79:29:83:0.952
+chr1	1375095	.	C	G	.	REJECT	.	GT:AD:BQ:DP:FA	0:1,2:.:3:0.667	0/1:2,11:30:13:0.846
+chr1	1386016	rs34301361	A	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:3,91:.:91:0.968	0/1:3,232:30:235:0.987
+chr1	1387667	rs1781144	C	G	.	REJECT	DB	GT:AD:BQ:DP:FA	0:0,129:.:129:1.00	0/1:0,315:34:315:1.00
