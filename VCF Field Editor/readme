@@ -11,6 +11,7 @@ HaplotypeCaller
 FreeBayes
 PlatyPus
 Strelka
+MuTect
 
 Commandline 
 cat VCF_field_editor.R | R --vanilla --slave --args <UnifiedGenotyper,HaplotypeCaller,FreeBayes,PlatyPus,Strelka> 
