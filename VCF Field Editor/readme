@@ -15,7 +15,10 @@ MuTect
 
 Commandline 
 cat VCF_field_editor.R | R --vanilla --slave --args <FreeBayes,HaplotypeCaller,MuTect,PlatyPus,Strelka,UnifiedGenotyper> 
-NA19240_clin.snv.v1.unifiedgenotyper.raw.vcf
+<freebayes.raw.v1.vcf,haplotypecaller.raw.v1.vcf,mutect.raw.v1.vcf,platypus.raw.v1.vcf,strelka.snvs.raw.v1.vcf,
+unifiedgenotyper.raw.v1.vcf>
+
+Output file: <caller>.raw.VAF.vcf
 
 Following field/s in info section is/are added
 1) VAF
