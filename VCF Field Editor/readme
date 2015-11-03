@@ -14,7 +14,7 @@ Strelka
 MuTect
 
 Commandline 
-cat VCF_field_editor.R | R --vanilla --slave --args <UnifiedGenotyper,HaplotypeCaller,FreeBayes,PlatyPus,Strelka> 
+cat VCF_field_editor.R | R --vanilla --slave --args <FreeBayes,HaplotypeCaller,MuTect,PlatyPus,Strelka,UnifiedGenotyper> 
 NA19240_clin.snv.v1.unifiedgenotyper.raw.vcf
 
 Following field/s in info section is/are added
