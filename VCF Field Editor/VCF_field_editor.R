@@ -9,8 +9,8 @@ vector.is.empty <- function(x) return(length(x) ==0 )
 
 ## Add a new field to the header.
 #Make New Field
-add_a_field <- function(x, vcf = vcf, vAF_result = vAF_result){
-  name = paste("VAF",which(colnames(vAF_result) == x),sep="")
+add_a_field <- function(x, vcf = vcf, VAF_result = VAF_result){
+  name = paste("VAF",which(colnames(VAF_result) == x),sep="")
   desc = paste("Variant Allele Frequency, for each ALT allele, in the same order as listed for sample ",x,sep="")
   
   newInfo <- DataFrame(Number=1, Type="Float",
@@ -19,7 +19,7 @@ add_a_field <- function(x, vcf = vcf, vAF_result = vAF_result){
   #Add New Field to VCF
   info(header(vcf)) <- rbind(info(header(vcf)), newInfo)
   #Add VAF field to the Info file
-  info(vcf)[,name] <- vAF_result[,x]
+  info(vcf)[,name] <- unlist(VAF_result[,x])
   return(vcf)
 }
 
@@ -37,6 +37,14 @@ HaplotypeCaller <- function(vcf){
   )
   return(t(VAF_df))
 }
+
+
+#MuTect
+MuTect<- function(vcf){  
+  vaf_df <- geno(vcf)$FA
+  return(vaf_df)
+}
+
 
 #FreeBayes
 FreeBayes <- function(vcf){
@@ -85,7 +93,7 @@ Strelka <- function(vcf){
   vaf_df <- sapply(samples, function(each_sample){ 
                      Strelka_VCF_df_1 <- Strelka_VCF_df %>% 
                                                 dplyr::select( Ref,ALT,contains(each_sample),-contains("2")) 
-                    vAF_result <- apply(Strelka_VCF_df_1, 1, function(x){
+                    VAF_result <- apply(Strelka_VCF_df_1, 1, function(x){
                       y <- as.data.frame(t(sapply(x[-c(1:2)], as.numeric)))
                       z <- as.data.frame(t(x[c(1:2)]),stringsAsFactors=FALSE)
                       v <- cbind(z,y) ;
@@ -95,7 +103,7 @@ Strelka <- function(vcf){
                                dplyr::select(matches( paste( paste ( unlist(lapply( unlist(strsplit(as.character(v$ALT), ",", fixed = TRUE)) ,
                                                                            function(x){ return(paste(x)) })),"U.",each_sample,sep=""),collapse="|") )),collapse=",")
                     })
-                    return(vAF_result)
+                    return(VAF_result)
                 }) 
   return(vaf_df)
 }
@@ -111,17 +119,18 @@ sample_vcf <- paste(getwd(),filename,sep="/")
 vcf <- readVcf(sample_vcf, "hg19")
 
 #Call Caller Command
-vAF_result = switch(CallerType,
+VAF_result = switch(CallerType,
                     UnifiedGenotyper  = HaplotypeCaller(vcf),
                     HaplotypeCaller   = HaplotypeCaller(vcf),
                     FreeBayes         = FreeBayes(vcf),
                     PlatyPus          = PlatyPus(vcf),
+                    MuTect            = MuTect(vcf),
                     Strelka           = Strelka(vcf)
 )
 
 #Making the final vcf file
-for( i in 1:length(colnames(vAF_result)) ) {
-vcf <- sapply(colnames(vAF_result)[i],add_a_field,vcf = vcf , vAF_result = vAF_result)[[1]]
+for( i in 1:length(colnames(VAF_result)) ) {
+vcf <- sapply(colnames(VAF_result)[i],add_a_field,vcf = vcf , VAF_result = VAF_result)[[1]]
 }
 
 ##Write the VCF file
