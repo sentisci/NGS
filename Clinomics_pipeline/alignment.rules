@@ -15,11 +15,13 @@ rule fastqc:
 	
 	module load fastqc/{version}
 	
-        fastqc -t 6 -o {wildcards.base}/qc/fastqc/ -d /projects/scratch {input.fastq[0]} 2>> {log}
-        fastqc -t 6 -o {wildcards.base}/qc/fastqc/ -d /projects/scratch {input.fastq[1]} 2>> {log}
+	mkdir /projects/scratch/${{PBS_JOBID}}
 	
-	bn_R1_lib=`basename {input.fastq[0]}`; bn_R1_lib_fastqc_html="${{bn_R1_lib/.fastq/_fastqc.html}}"; bn_R1_lib_fastqc_zip="${{bn_R1_lib/.fastq/_fastqc.zip}}"
-        bn_R2_lib=`basename {input.fastq[1]}`; bn_R2_lib_fastqc_html="${{bn_R2_lib/.fastq/_fastqc.html}}"; bn_R2_lib_fastqc_zip="${{bn_R2_lib/.fastq/_fastqc.zip}}"
+        fastqc -t 6 -o {wildcards.base}/qc/fastqc/ -d /projects/scratch/${{PBS_JOBID}} {input.fastq[0]} 2>> {log}
+        fastqc -t 6 -o {wildcards.base}/qc/fastqc/ -d /projects/scratch/${{PBS_JOBID}} {input.fastq[1]} 2>> {log}
+	
+	bn_R1_lib=`basename {input.fastq[0]}`; bn_R1_lib_fastqc_html="${{bn_R1_lib/.fastq.gz/_fastqc.html}}"; bn_R1_lib_fastqc_zip="${{bn_R1_lib/.fastq.gz/_fastqc.zip}}"
+        bn_R2_lib=`basename {input.fastq[1]}`; bn_R2_lib_fastqc_html="${{bn_R2_lib/.fastq.gz/_fastqc.html}}"; bn_R2_lib_fastqc_zip="${{bn_R2_lib/.fastq.gz/_fastqc.zip}}"
 
         bn_R1_unit_html=`basename {wildcards.unit}_R1_fastqc.html` ; bn_R1_unit_zip=`basename {wildcards.unit}_R1_fastqc.zip`
         bn_R2_unit_html=`basename {wildcards.unit}_R2_fastqc.html` ; bn_R2_unit_zip=`basename {wildcards.unit}_R2_fastqc.zip`
@@ -64,7 +66,7 @@ rule bwamem_map:
 	mcf_log={wildcards.unit}.mcf_log	
 
 	##fastq-mcf -C 1000000 -q 2 -p 10 -u -x 20 -o $R1 -o $R2 {params.adapters} <(gunzip -c {input.fastq[0]}) <(gunzip -c {input.fastq[1]}) > $mcf_log 2>&1
-	bwa mem -M  -t 16 -R "@RG\tID:{wildcards.unit}\tSM:{params.sample}\tLB:{params.library}\tPL:Illumina" {params.bwa_index} $R1 $R2 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - TEMP/{wildcards.unit}
+	bwa mem -M -t 16 -R "@RG\tID:{wildcards.unit}\tSM:{params.sample}\tLB:{params.library}\tPL:Illumina" {params.bwa_index} $R1 $R2 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - TEMP/{wildcards.unit}
 	
 	#indexing BAM file
 	samtools index TEMP/{wildcards.unit}.bam
@@ -91,8 +93,9 @@ rule markdups:
 	
 	module load picard/{version}
 	module load samtools/{params.samtools_version}
+	mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 	
-	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/picard/{version}/picard.jar MarkDuplicates AS=true M={output.metrics} O={output.bam} I={input.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT > {log} 2>&1
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar MarkDuplicates AS=true M={output.metrics} O={output.bam} I={input.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT > {log} 2>&1
 	
 	samtools index {output.bam}
 		"""
@@ -117,7 +120,9 @@ rule mergeBams:
 		shell("""
 			module load picard/{version}
 			module load samtools/{params.samtools_version}
-			java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/picard/{version}/picard.jar  MergeSamFiles AS=true USE_THREADING=true VALIDATION_STRINGENCY=SILENT {inputBams} O={output.bam} 2>> {log}
+		        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+
+			java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar  MergeSamFiles AS=true USE_THREADING=true VALIDATION_STRINGENCY=SILENT {inputBams} O={output.bam} 2>> {log}
 			samtools index {output.bam}
 		""")
 
@@ -139,9 +144,10 @@ rule gatk_realigner_target_creator:
 	shell:  """
 
         module load GATK/{version}
-        module load java
+        module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
-        java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T RealignerTargetCreator -R {input.reference} -known {input.phase1} -known {input.mills} -I {input.bam} -o {output.ri} -nt 8 >{log} 2>&1
+        java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T RealignerTargetCreator -R {input.reference} -known {input.phase1} -known {input.mills} -I {input.bam} -o {output.ri} -nt 8 >{log} 2>&1
 		"""		
 
 rule gatk_IndelRealigner:
@@ -163,9 +169,10 @@ rule gatk_IndelRealigner:
 	shell:  """
 
         module load GATK/{version}
-        module load java
+        module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 	
-	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T IndelRealigner -R {input.reference}  -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals {input.ri} -o {output.lr_bam} >>{log} 2>&1	
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T IndelRealigner -R {input.reference}  -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals {input.ri} -o {output.lr_bam} >>{log} 2>&1	
 
 		"""
 
@@ -187,9 +194,10 @@ rule gatk_BaseRecalibrator:
 	shell:  """
 
         module load GATK/{version}
-        module load java
+        module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
-	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T BaseRecalibrator -R {input.reference} -knownSites {input.phase1} -knownSites {input.mills} -I {input.lr_bam} -o {output.rmat} >>{log} 2>&1	
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T BaseRecalibrator -R {input.reference} -knownSites {input.phase1} -knownSites {input.mills} -I {input.lr_bam} -o {output.rmat} >>{log} 2>&1	
 		"""
 
 rule gatk_PrintReads:
@@ -210,9 +218,10 @@ rule gatk_PrintReads:
 	shell:  """
 
         module load GATK/{version}
-        module load java
+        module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
-	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T PrintReads -R {input.reference} -I {input.lr_bam} -o {output.bam} -BQSR {input.rmat} >>{log} 2>&1				
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T PrintReads -R {input.reference} -I {input.lr_bam} -o {output.bam} -BQSR {input.rmat} >>{log} 2>&1				
 		"""
 
 rule flagstat:
@@ -220,7 +229,7 @@ rule flagstat:
 		bam="{base}/bam/{sample}.final.bam",
 		bam_bai="{base}/bam/{sample}.final.bai"
 	output:
-		"{base}/qc/flagstat/{sample}.final.bam.flagstat"
+		"{base}/qc/{sample}.final.bam.flagstat"
 	version:
 		config['samtools']
 	params:
@@ -250,8 +259,10 @@ rule bamqc:
         shell:  """
 
         module load qualimap/{version}
+	module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
-        qualimap bamqc -c -bam {input.bam} -outdir {wildcards.base}/qc/bamqc -gff {params.target_intervals_gff} -nt 16 --java-mem-size=16G >{log} 2>&1
+        qualimap bamqc -c -bam {input.bam} -outdir {wildcards.base}/qc/bamqc -gff {params.target_intervals_gff} -nt 16 --java-mem-size=${{mem}}G >{log} 2>&1
         if [ -f "{wildcards.base}/qc/bamqc/qualimapReport.html" ]; then
 		mv {wildcards.base}/qc/bamqc/qualimapReport.html {output}
 	fi
@@ -296,7 +307,7 @@ rule readDepth:
 	module load bedtools/{version}
 	module load R
 		
-	{SERPENTINE_HOME}/scripts/readDepth.sh {input.bam} {params.target_intervals} {wildcards.base}/bam/ > {log} 2>&1	
+	{SERPENTINE_HOME}/scripts/readDepth.sh {input.bam} {params.target_intervals} {wildcards.base}/qc/ > {log} 2>&1	
 		"""
 	
 rule targetIntervals:
@@ -340,10 +351,13 @@ rule hsMetrics:
 	shell: """
 
 	module load picard/{version}
+	module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
-	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/picard/{version}/picard.jar CalculateHsMetrics BAIT_INTERVALS={input.bam_probe_intervals} TARGET_INTERVALS={input.bam_target_intervals} INPUT={input.bam} OUTPUT={output} METRIC_ACCUMULATION_LEVEL=ALL_READS REFERENCE_SEQUENCE={params.reference} QUIET=true  VALIDATION_STRINGENCY=SILENT > {log} 2>&1
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar CalculateHsMetrics BAIT_INTERVALS={input.bam_probe_intervals} TARGET_INTERVALS={input.bam_target_intervals} INPUT={input.bam} OUTPUT={output} METRIC_ACCUMULATION_LEVEL=ALL_READS REFERENCE_SEQUENCE={params.reference} QUIET=true  VALIDATION_STRINGENCY=SILENT > {log} 2>&1
 		
 	"""
+
 rule hotspotCov:
 	input:
         	bam="{base}/bam/{sample}.final.bam"
@@ -386,9 +400,12 @@ rule HaplotypeCaller:
 		"log_error/{sample}.haplotypecaller.raw.vcf.log"
 	shell: """
 	module load GATK/{version}
-			
-	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/target_intervals.bed
-	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/GATK/{version}/GenomeAnalysisTK.jar  -T HaplotypeCaller -R {params.reference} -I {input.bam} -L /projects/scratch/target_intervals.bed -o {output.vcf} --dbsnp {params.dbsnp} -mbq 20 -log {log}
+	module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+	
+	mkdir /projects/scratch/${{PBS_JOBID}}
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar  -T HaplotypeCaller -R {params.reference} -I {input.bam} -L /projects/scratch/${{PBS_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {params.dbsnp} -mbq 20 -log {log}
 	
 	       """
 
@@ -413,11 +430,12 @@ rule freebayes:
         shell: """
         module load freebayes/{version}
 	module load vcftools/{params.vcftools_version}
-
-        gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/target_intervals.bed
+	
+	mkdir /projects/scratch/${{PBS_JOBID}}
+        gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
         freebayes -f {params.reference} --haplotype-length 50 -b {input.bam} -v {output} > {log} 2>&1
 
-	vcftools --vcf {output} --bed /lscratch/${{SLURM_JOBID}}/target_intervals.bed --out {output} --recode --keep-INFO-all
+	vcftools --vcf {output} --bed /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --out {output} --recode --keep-INFO-all
 	mv {output}.recode.vcf {output.vcf}
                """
 
@@ -441,8 +459,8 @@ rule platypus:
         shell: """
         module load Platypus/{version}
 	
-	gawk '{{print $1 ":" $2 "-" $3}}' {params.target_intervals} > /projects/scratch/target_intervals.txt
-	platypus callVariants --nCPU=16 --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions=/projects/scratch/target_intervals.txt --output={output.vcf} --refFile={params.reference} --logFileName={log}
+	gawk '{{print $1 ":" $2 "-" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.txt
+	platypus callVariants --nCPU=16 --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions=/projects/scratch/${{PBS_JOBID}}/target_intervals.txt --output={output.vcf} --refFile={params.reference} --logFileName={log}
                """
 
 rule mutect:
@@ -467,9 +485,12 @@ rule mutect:
 	shell: """
         
 	module load muTect/{version}
-	
-	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/target_intervals.bed
-	java -Xmx16g -Djava.io.tmpdir=/projects/scratch/ -jar /apps/muTect/1.1.4/muTect-1.1.4.jar -T MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /projects/scratch/target_intervals.bed --vcf  {output.vcf} > {log} 2>&1  
+	module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+
+	mkdir /projects/scratch/${{PBS_JOBID}}	
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/muTect/{version}/mutect-{version}.jar -T MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --vcf  {output.vcf} > {log} 2>&1  
 	"""
 
 
@@ -495,14 +516,14 @@ rule strelka:
 	module load vcftools/{params.vcftools_version}
 	module load samtools	
 		
-	configureStrelkaWorkflow.pl --normal={input[0]} --tumor={input[2]} --ref={params.reference} --config={params.strelka_config} --output-dir=/projects/scratch/strelka/ > {log} 2>&1
+	configureStrelkaWorkflow.pl --normal={input[0]} --tumor={input[2]} --ref={params.reference} --config={params.strelka_config} --output-dir=/projects/scratch/${{PBS_JOBID}}/strelka/ > {log} 2>&1
 	
-	make -j 16 -f /projects/scratch/strelka/Makefile 2>> {log}
+	make -j 16 -f /projects/scratch/${{PBS_JOBID}}/strelka/Makefile 2>> {log}
 
-	vcftools --vcf /projects/scratch/strelka/results/all.somatic.snvs.vcf --bed {params.target_intervals} --out {output.snv_vcf} --recode --keep-INFO-all
+	vcftools --vcf /projects/scratch/${{PBS_JOBID}}/strelka/results/all.somatic.snvs.vcf --bed {params.target_intervals} --out {output.snv_vcf} --recode --keep-INFO-all
 	mv {output.snv_vcf}.recode.vcf {output.snv_vcf}
 
-	vcftools --vcf /projects/scratch/strelka/results/all.somatic.indels.vcf --bed {params.target_intervals} --out {output.indel_vcf} --recode --keep-INFO-all
+	vcftools --vcf /projects/scratch/${{PBS_JOBID}}/strelka/results/all.somatic.indels.vcf --bed {params.target_intervals} --out {output.indel_vcf} --recode --keep-INFO-all
 	mv {output.indel_vcf}.recode.vcf {output.indel_vcf}
 
                """
@@ -528,9 +549,27 @@ rule snpEff:
 	shell: 	"""
 	
 	module load snpEff/{version}
+	module load java/jre1.7.0_71
 	SnpSift_path="/apps/snpEff/{version}/SnpSift.jar"	
         SnpEff_path="/apps/snpEff/{version}/snpEff.jar"
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
-	java -Xmx16g -Djava.io.tmpdir=/project/scratch/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx4g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx4g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx4g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx12g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output} 2> {log}
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/project/scratch/${{PBS_JOBID}}/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx${{mem}}g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output} 2> {log}
 	
+		"""
+
+
+rule test:
+	input:
+		file="batch_test.txt"
+	output:
+		file="batch_out.txt"
+	log:
+		"test.log"
+	params:
+		batch	=config["snpEff_clust"]
+	shell: """
+	mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'` 
+	echo ${{mem}} > {output.file}
+		
 		"""

@@ -141,6 +141,9 @@ ALL_snpEff_vcf = filtered_vcf_hc + filtered_vcf_ps + filtered_vcf_fb+ filtered_v
 #print(BAMS_caller_mt)
 #print(BAMS)
 #print(BAMS_tdf)
+test_input = "batch_out.txt"
 rule final:
 	input:
 		All_QC,ALL_snpEff_vcf
+		#BAMS
+		#test_input
