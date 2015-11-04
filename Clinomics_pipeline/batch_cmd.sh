@@ -9,7 +9,9 @@ export RESULT_DIR="/projects/Clinomics/Tools/"
 
 #Initialize Basic Variables
 NOW=$(date +"%H%M%S_%m%d%Y")
-WORKING_DIR=${RESULT_DIR}/Clinomics_Run/
+#WORKING_DIR=${RESULT_DIR}/Clinomics_Run/
+WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test/
+#WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test_samtools/
 SNAKEFILE=${SERPENTINE_HOME}/Snakefile
 
 cd $WORKING_DIR
@@ -22,7 +24,7 @@ snakemake\
 	--rerun-incomplete \
 	--stats serpentine_${NOW}.stats \
         -j 16 \
-        --cluster "qsub -V -e ${WORKING_DIR} -o ${WORKING_DIR} {params.batch}" \
+        --cluster "qsub -V -e ${WORKING_DIR}/log_error/ -o ${WORKING_DIR}/log_error/ {params.batch}" \
         >& Clinomics_${NOW}.log
 
 ##Runs

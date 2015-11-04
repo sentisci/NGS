@@ -5,14 +5,16 @@
 			},
 
         "subjects": 	{
-        	"NCI0276": 	[ "NCI0276blood_E","NCI0276blood_P","NCI0276tumor_E","NCI0276tumor_P"]
+        	"NCI0276": 	["NCI0276blood_E","NCI0276blood_100ng_P","NCI0276blood_200ng_P","NCI0276tumor_E","NCI0276tumor_100ng_P","NCI0276tumor_200ng_P"]
         	   	},
 
 	"samples": 	{
 				"NCI0276blood_E": [ "NCI0276blood_E" ],
-				"NCI0276blood_P": [ "NCI0276blood_100ng_P","NCI0276blood_200ng_P"],
+				"NCI0276blood_100ng_P": [ "NCI0276blood_100ng_P"],
+				"NCI0276blood_200ng_P": [ "NCI0276blood_200ng_P"],
 				"NCI0276tumor_E": [ "NCI0276tumor_E" ],
-				"NCI0276tumor_P": [ "NCI0276tumor_100ng_P","NCI0276tumor_200ng_P"]
+				"NCI0276tumor_100ng_P": [ "NCI0276tumor_100ng_P"],
+				"NCI0276tumor_200ng_P": [ "NCI0276tumor_200ng_P"]
 			},
 
 	"libraries": 	{
@@ -26,33 +28,34 @@
 
 	"units":	{
 		"100":		[
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_E_HGCGYBGXX_R1.fastq",
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_E_HGCGYBGXX_R2.fastq"
+					"/projects/Clinomics/DATA/Sample_NCI0276blood_E_HGCGYBGXX/Sample_NCI0276blood_E_HGCGYBGXX_R1.fastq.gz",
+					"/projects/Clinomics/DATA/Sample_NCI0276blood_E_HGCGYBGXX/Sample_NCI0276blood_E_HGCGYBGXX_R2.fastq.gz"
 				],
 		"101":		[
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R1.fastq",
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R2.fastq"
+					"/projects/Clinomics/DATA/Sample_NCI0276blood_100ng_P_HGCGYBGXX/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R1.fastq.gz",
+					"/projects/Clinomics/DATA/Sample_NCI0276blood_100ng_P_HGCGYBGXX/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R2.fastq.gz"
 				],
 		"102":		[
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R1.fastq",
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R2.fastq"
+					"/projects/Clinomics/DATA/Sample_NCI0276blood_200ng_P_HGCGYBGXX/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R1.fastq.gz",
+					"/projects/Clinomics/DATA/Sample_NCI0276blood_200ng_P_HGCGYBGXX/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R2.fastq.gz"
 				],
 		"200":		[
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276tumor_E_HGCGYBGXX_R1.fastq",
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276tumor_E_HGCGYBGXX_R2.fastq"
+					"/projects/Clinomics/DATA/Sample_NCI0276tumor_E_HGCGYBGXX/Sample_NCI0276tumor_E_HGCGYBGXX_R1.fastq.gz",
+					"/projects/Clinomics/DATA/Sample_NCI0276tumor_E_HGCGYBGXX/Sample_NCI0276tumor_E_HGCGYBGXX_R2.fastq.gz"
 				],
 		"201":		[
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R1.fastq",
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276tumor_100ng_P_HGCGYBGXX_R2.fastq"
+					"/projects/Clinomics/DATA/Sample_NCI0276tumor_100ng_P_HGCGYBGXX/Sample_NCI0276tumor_100ng_P_HGCGYBGXX_R1.fastq.gz",
+					"/projects/Clinomics/DATA/Sample_NCI0276tumor_100ng_P_HGCGYBGXX/Sample_NCI0276tumor_100ng_P_HGCGYBGXX_R2.fastq.gz"
 				],
 		"202":		[
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276tumor_200ng_P_HGCGYBGXX_R1.fastq",
-					"/projects/Clinomics/Tools/serpentine_Tgen_extras/Sample_NCI0276tumor_200ng_P_HGCGYBGXX_R2.fastq"
+					"/projects/Clinomics/DATA/Sample_NCI0276tumor_200ng_P_HGCGYBGXX/Sample_NCI0276tumor_200ng_P_HGCGYBGXX_R1.fastq.gz",
+					"/projects/Clinomics/DATA/Sample_NCI0276tumor_200ng_P_HGCGYBGXX/Sample_NCI0276tumor_200ng_P_HGCGYBGXX_R2.fastq.gz"
 				]
 			},
 	"sample_references": {
 				"NCI0276tumor_E": ["NCI0276blood_E"],
-				"NCI0276tumor_P": ["NCI0276blood_P"]
+				"NCI0276tumor_100ng_P":["NCI0276blood_100ng_P"],
+				"NCI0276tumor_200ng_P":["NCI0276blood_200ng_P"]
 			     },
 
 	"sample_TN":	{
@@ -76,8 +79,10 @@
 				},
 	"sample_captures":	{
 		"NCI0276blood_E":	[ "clin.ex.v1" ],
-		"NCI0276blood_P":	[ "clin.snv.v1" ],
+		"NCI0276blood_100ng_P":	[ "clin.snv.v1" ],
+		"NCI0276blood_200ng_P":	[ "clin.snv.v1" ],
                 "NCI0276tumor_E":       [ "clin.ex.v1" ],
-                "NCI0276tumor_P": 	[ "clin.snv.v1" ]
+                "NCI0276tumor_100ng_P": 	[ "clin.snv.v1" ],
+                "NCI0276tumor_200ng_P": 	[ "clin.snv.v1" ]
 				}
 }
