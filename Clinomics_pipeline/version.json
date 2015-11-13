@@ -14,5 +14,6 @@
 	"fastqc"		: "0.11.2",
 	"igvtools"		: "2.3.31",
 	"bedtools"		: "2.22.0",
-	"snpEff"		: "4.1c"
+	"snpEff"		: "4.1c",
+	"annovar"		: "20150322"
 }

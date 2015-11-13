@@ -9,9 +9,8 @@ export RESULT_DIR="/projects/Clinomics/Tools/"
 
 #Initialize Basic Variables
 NOW=$(date +"%H%M%S_%m%d%Y")
-#WORKING_DIR=${RESULT_DIR}/Clinomics_Run/
-WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test/
-#WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test_samtools/
+##WORKING_DIR=${RESULT_DIR}/Clinomics_Run/
+WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test_2/
 SNAKEFILE=${SERPENTINE_HOME}/Snakefile
 
 cd $WORKING_DIR
