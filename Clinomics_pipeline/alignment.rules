@@ -569,8 +569,6 @@ rule snpEff:
 
 rule formatInput:
         input:
-                #vcfs=["NCI0276tumor_200ng_P.strelka.indels.annotated.vcf","NCI0276tumor_200ng_P.strelka.indels.annotated.vcf"]
-                #vcfs=ALL_snpEff_vcf
                 vcfs=lambda wildcards:   ALL_SUBJECT_VCFS[wildcards.subject]
         output:
                 "SUBJECT/{subject}/Annotation/AnnotationInput.anno",
