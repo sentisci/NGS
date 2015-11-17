@@ -537,10 +537,10 @@ rule strelka:
 
 rule snpEff:
 	input:
-		vcf = "{base}.raw.vcf",
+		vcf ="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.raw.vcf",
 	output:
-		vcf="{base}.annotated.vcf",
-		txt="{base}.annotated.txt"
+		vcf="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.vcf",
+		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.txt"
 	version:
 		config['snpEff']
 	params:
@@ -551,20 +551,25 @@ rule snpEff:
 		dbsnp		=config["resources"]['dbsnp'],
 		clinvar		=config["resources"]['clinvar'],
 		ESP_snps	=config["resources"]['ESP_snps'],
+		annovar_ver     =config['annovar'],
 		batch		=config["snpEff_clust"] 
 	log:
-		"log_error/{base}.annotated.vcf.log"
+		"log_error/{caller}.snpEff.vcf.log"
 	shell: 	"""
 	
 	module load snpEff/{version}
 	module load java/jre1.7.0_71
+	module load annovar/{params.annovar_ver}
+
+ 	mkdir /projects/scratch/${{PBS_JOBID}}	
+ 
 	SnpSift_path="/apps/snpEff/{version}/SnpSift.jar"	
         SnpEff_path="/apps/snpEff/{version}/snpEff.jar"
         mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/project/scratch/${{PBS_JOBID}}/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx${{mem}}g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output.vcf} 2> {log}
 	
-	perl /projects/Clinomics/Tools/serpentine_Tgen/scripts/vcf2txt.pl {output.vcf} >{output.txt}
+	perl $SERPENTINE_HOME/scripts/vcf2txt.pl {output.vcf} /projects/scratch/${{PBS_JOBID}} >{output.txt}
 		"""
 
 rule formatInput:
@@ -584,34 +589,89 @@ rule formatInput:
         run:
                 inputVCFs = ' '.join(input.vcfs)
                 shell("""
-                        cut -f 1-5 {inputVCFs} |sort |uniq > {base}/AnnotationInput
-                        perl /projects/Clinomics/Tools/serpentine_Tgen/scripts/MakeAnnotationInputs.pl {base}/AnnotationInput 2>{log}
+                        cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/Annotation/AnnotationInput
+                        perl $SERPENTINE_HOME/scripts/MakeAnnotationInputs.pl SUBJECT/{wildcards.subject}/Annotation/AnnotationInput 2>{log}
                 """)
 
-rule annotation:
+rule Annovar_annotation:
         input:
-                "{base}/AnnotationInput.anno",
+                "SUBJECT/{subject}/Annotation/AnnotationInput.anno",
         output:
-                "{base}/AnnotationInput.docm",
+                "SUBJECT/{subject}/Annotation/AnnotationInput.docm",
         version:
                 config['annovar'],
         params:
                 rulename   = "Annotation",
                 batch      = config["annovar_clust"],
         log:
-                "log_error/{base}.Annovar"
+                "log_error/{subject}.Annovar"
         shell: """
 
         module load annovar/{version}
 
-        perl /projects/Clinomics/Tools/serpentine_Tgen/scripts/TableAnno.sh {base} AnnotationInput /projects/Clinomics/Tools/serpentine_Tgen/scripts/addAnnotation.pl 2>>{log}
+        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{subject}/Annotation/ AnnotationInput /projects/Clinomics/Tools/serpentine_Tgen/scripts/addAnnotation.pl 2>> {log}
                 """
 
-rule test:
+
+rule Combine_ASP_annotation:
 	input:
-		file="batch_test.txt"
+		anno="SUBJECT/{subject}/Annotation/AnnotationInput.docm",
+		convertor  = SERPENTINE_HOME + "/scripts/" + "CombineAnnotations.pl",
+		geneanno   = SERPENTINE_HOME + "/scripts/" + "GeneAnnotation.pl"
 	output:
+		anno="SUBJECT/{subject}/Annotation/AnnotationInput.annotations.final.txt"
+	params:
+		rulename	="Combine_ASP_annotation",
+		dataDir		=config["annovar_data"],
+		batch		=config["job_Combine"],
+	log:
+		"log_error/{subject}.CombineAnnotation"
+	shell: """
+	
+		echo "SUBJECT/{subject}/Annotation/AnnotationInput
+		SUBJECT/{subject}/Annotation/AnnotationInput.anno.gene
+		SUBJECT/{subject}/Annotation/AnnotationInput.anno.exac.3
+		SUBJECT/{subject}/Annotation/AnnotationInput.anno.clinseq
+		SUBJECT/{subject}/Annotation/AnnotationInput.anno.cadd
+		SUBJECT/{subject}/Annotation/AnnotationInput.anno.clinvar
+		SUBJECT/{subject}/Annotation/AnnotationInput.hgmd
+		SUBJECT/{subject}/Annotation/AnnotationInput.match
+		SUBJECT/{subject}/Annotation/AnnotationInput.docm
+		SUBJECT/{subject}/Annotation/AnnotationInput.candl
+		SUBJECT/{subject}/Annotation/AnnotationInput.tcc
+		SUBJECT/{subject}/Annotation/AnnotationInput.mcg
+		SUBJECT/{subject}/Annotation/AnnotationInput.civic
+		SUBJECT/{subject}/Annotation/AnnotationInput.anno.pcg" > SUBJECT/{subject}/Annotation/list
+	
+		sed 's/^[\t ]*//g' -i SUBJECT/{subject}/Annotation/list
+			
+		perl {input.convertor} SUBJECT/{subject}/Annotation/list > {output}.tmp
+		perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
+		rm -rf {output}.tmp
+
+		"""
+
+rule Attach_ASP_Annotation:
+	input:
+		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.txt",
+		ref="SUBJECT/{subject}/Annotation/AnnotationInput.annotations.final.txt",
+		convertor  = SERPENTINE_HOME + "scripts/" + config["addBack"]
+	output:
+		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.annotated.txt"
+	params:
+		rulename   = "Attach_ASP_Annotation",
+		batch      = config["job_addbackann"],
+	log:
+		"log_error/{subject}.AttachAnnotation"
+	shell: """
+	perl {input.convertor} {input.ref} {input.txt} >{output.txt} 2>{log}
+		"""
+
+rule test1:
+	input:
 		file="batch_out.txt"
+	output:
+		file="batch_input.txt"
 	log:
 		"test.log"
 	params:

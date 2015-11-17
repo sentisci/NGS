@@ -121,48 +121,45 @@ BAMS_caller_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/mutect
 
 All_caller_raw_vcf = BAMS_caller_hc + BAMS_caller_ps + BAMS_caller_fb + BAMS_caller_sa_snv + BAMS_caller_sa_indel + BAMS_caller_mt
 
-#filtered VCFs
-#filtered_vcf_hc  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/haplotypecaller/{sample}.haplotypecaller.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
-#filtered_vcf_ps  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/platypus/{sample}.platypus.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
-#filtered_vcf_fb  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/freebayes/{sample}.freebayes.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
-#filtered_vcf_sa_snv  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.snvs.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
-#filtered_vcf_sa_indel  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.indels.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
-#filtered_vcf_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/mutect/{sample}.mutect.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
-
-#ALL_snpEff_vcf = filtered_vcf_hc + filtered_vcf_ps + filtered_vcf_fb+ filtered_vcf_sa_snv + filtered_vcf_sa_indel + filtered_vcf_mt
-
+#snpEff Annotation
 ALL_snpEff_vcf1  = [] ; ALL_snpEff_vcf2  = [] ; ALL_SUBJECT_VCFS = {}
 for sample in config['samples'].keys():
 	subject=SAMPLE_TO_SUBJECT[sample] ; reference_name=config['reference_name'] ; aligner=config['aligner']
-	ALL_snpEff_vcf1.extend([("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/haplotypecaller/"+sample+".haplotypecaller.annotated.vcf"),
-			       ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/platypus/"+sample+".platypus.annotated.vcf"),
-			       ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/freebayes/"+sample+".freebayes.annotated.vcf") ])
+	ALL_snpEff_vcf1.extend([("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/haplotypecaller/"+sample+".haplotypecaller.snpEff.txt"),
+			       ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/platypus/"+sample+".platypus.snpEff.txt"),
+			       ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/freebayes/"+sample+".freebayes.snpEff.txt") ])
 
 	if subject not in ALL_SUBJECT_VCFS:
 		 ALL_SUBJECT_VCFS[subject]=ALL_snpEff_vcf1
 
 for sample in config['sample_references'].keys():
 	subject=SAMPLE_TO_SUBJECT[sample]; reference_name=config['reference_name'] ; aligner=config['aligner']
-	ALL_snpEff_vcf2.extend([ ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.snvs.annotated.vcf"),
-				 ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.indels.annotated.vcf"),
-				 ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+".mutect.annotated.vcf")])
+	ALL_snpEff_vcf2.extend([ ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.snvs.snpEff.txt"),
+				 ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.indels.snpEff.txt"),
+				 ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+".mutect.snpEff.txt")])
 	
         if subject in ALL_SUBJECT_VCFS:
                  ALL_SUBJECT_VCFS[subject].extend(ALL_snpEff_vcf2)
-	
+
 ALL_snpEff_vcf = ALL_snpEff_vcf1 + ALL_snpEff_vcf2
 
-#Annotation
-FormatInput_out = ["SUBJECT/{subject}/Annotation/AnnotationInput.anno".format(subject=SAMPLE_TO_SUBJECT[s],sample=s) for s in config['samples'].keys()] + ["SUBJECT/{subject}/Annotation/AnnotationInput.pph".format(subject=SAMPLE_TO_SUBJECT[s],sample=s)  for s in config['samples'].keys() ]  + ["SUBJECT/{subject}/Annotation/AnnotationInput.sift".format(subject=SAMPLE_TO_SUBJECT[s],sample=s) for s in config['samples'].keys()]
-FormatInput_out = list(set(FormatInput_out))
+#Polyphen2 SIFT In-house Annotation
+FormatInput_out = ["SUBJECT/{subject}/Annotation/AnnotationInput.anno".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()]
 
-print(FormatInput_out)
+Annot_Annovar = ["SUBJECT/{subject}/Annotation/AnnotationInput.docm".format(subject=s) for s in config['subjects'].keys()] 
 
-test_input = "batch_out.txt"
+CombineAnnotation = [w.replace('docm','annotations.final.txt') for w in Annot_Annovar] 
+
+Attach_ASP_Annotation = [w.replace('snpEff', 'annotated') for w in ALL_snpEff_vcf]
+
+#test_input = "batch_out.txt"
 rule final:
 	input:
 		#All_QC,
-		ALL_snpEff_vcf,
-		FormatInput_out
+		#ALL_snpEff_vcf,
+		#FormatInput_out,
+		#Annot_Annovar,
+		#CombineAnnotation,
+		Attach_ASP_Annotation
 		#BAMS
 		#test_input
