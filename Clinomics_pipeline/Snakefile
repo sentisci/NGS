@@ -122,28 +122,47 @@ BAMS_caller_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/mutect
 All_caller_raw_vcf = BAMS_caller_hc + BAMS_caller_ps + BAMS_caller_fb + BAMS_caller_sa_snv + BAMS_caller_sa_indel + BAMS_caller_mt
 
 #filtered VCFs
-filtered_vcf_hc  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/haplotypecaller/{sample}.haplotypecaller.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
-filtered_vcf_ps  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/platypus/{sample}.platypus.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
-filtered_vcf_fb  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/freebayes/{sample}.freebayes.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
-filtered_vcf_sa_snv  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.snvs.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
-filtered_vcf_sa_indel  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.indels.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
-filtered_vcf_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/mutect/{sample}.mutect.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
+#filtered_vcf_hc  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/haplotypecaller/{sample}.haplotypecaller.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
+#filtered_vcf_ps  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/platypus/{sample}.platypus.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
+#filtered_vcf_fb  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/freebayes/{sample}.freebayes.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
+#filtered_vcf_sa_snv  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.snvs.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
+#filtered_vcf_sa_indel  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.indels.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
+#filtered_vcf_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/mutect/{sample}.mutect.annotated.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
 
-ALL_snpEff_vcf = filtered_vcf_hc + filtered_vcf_ps + filtered_vcf_fb+ filtered_vcf_sa_snv + filtered_vcf_sa_indel + filtered_vcf_mt
+#ALL_snpEff_vcf = filtered_vcf_hc + filtered_vcf_ps + filtered_vcf_fb+ filtered_vcf_sa_snv + filtered_vcf_sa_indel + filtered_vcf_mt
 
-#print(ALL_FASTQC)
-#print(BAMS_flagstat)
-#print(BAMS_bamqc)
-#print(BAMS_caller_hc)
-#print(BAMS_caller_ps)
-#print(BAMS_caller_fb)
-#print(BAMS_caller_sa)
-#print(BAMS_caller_mt)
-#print(BAMS)
-#print(BAMS_tdf)
+ALL_snpEff_vcf1  = [] ; ALL_snpEff_vcf2  = [] ; ALL_SUBJECT_VCFS = {}
+for sample in config['samples'].keys():
+	subject=SAMPLE_TO_SUBJECT[sample] ; reference_name=config['reference_name'] ; aligner=config['aligner']
+	ALL_snpEff_vcf1.extend([("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/haplotypecaller/"+sample+".haplotypecaller.annotated.vcf"),
+			       ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/platypus/"+sample+".platypus.annotated.vcf"),
+			       ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/freebayes/"+sample+".freebayes.annotated.vcf") ])
+
+	if subject not in ALL_SUBJECT_VCFS:
+		 ALL_SUBJECT_VCFS[subject]=ALL_snpEff_vcf1
+
+for sample in config['sample_references'].keys():
+	subject=SAMPLE_TO_SUBJECT[sample]; reference_name=config['reference_name'] ; aligner=config['aligner']
+	ALL_snpEff_vcf2.extend([ ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.snvs.annotated.vcf"),
+				 ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.indels.annotated.vcf"),
+				 ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+".mutect.annotated.vcf")])
+	
+        if subject in ALL_SUBJECT_VCFS:
+                 ALL_SUBJECT_VCFS[subject].extend(ALL_snpEff_vcf2)
+	
+ALL_snpEff_vcf = ALL_snpEff_vcf1 + ALL_snpEff_vcf2
+
+#Annotation
+FormatInput_out = ["SUBJECT/{subject}/Annotation/AnnotationInput.anno".format(subject=SAMPLE_TO_SUBJECT[s],sample=s) for s in config['samples'].keys()] + ["SUBJECT/{subject}/Annotation/AnnotationInput.pph".format(subject=SAMPLE_TO_SUBJECT[s],sample=s)  for s in config['samples'].keys() ]  + ["SUBJECT/{subject}/Annotation/AnnotationInput.sift".format(subject=SAMPLE_TO_SUBJECT[s],sample=s) for s in config['samples'].keys()]
+FormatInput_out = list(set(FormatInput_out))
+
+print(FormatInput_out)
+
 test_input = "batch_out.txt"
 rule final:
 	input:
-		All_QC,ALL_snpEff_vcf
+		#All_QC,
+		ALL_snpEff_vcf,
+		FormatInput_out
 		#BAMS
 		#test_input

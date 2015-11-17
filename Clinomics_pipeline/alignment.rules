@@ -404,8 +404,9 @@ rule HaplotypeCaller:
         mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 	
 	mkdir /projects/scratch/${{PBS_JOBID}}
+
 	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
-	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar  -T HaplotypeCaller -R {params.reference} -I {input.bam} -L /projects/scratch/${{PBS_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {params.dbsnp} -mbq 20 -log {log}
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar  -T HaplotypeCaller -R {params.reference} -I {input.bam} -L /projects/scratch/${{PBS_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {params.dbsnp} -mbq 20 -mmq 30 -log {log}
 	
 	       """
 
@@ -432,7 +433,8 @@ rule freebayes:
 	module load vcftools/{params.vcftools_version}
 	
 	mkdir /projects/scratch/${{PBS_JOBID}}
-        gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
+       
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
         freebayes -f {params.reference} --haplotype-length 50 -b {input.bam} -v {output} > {log} 2>&1
 
 	vcftools --vcf {output} --bed /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --out {output} --recode --keep-INFO-all
@@ -458,6 +460,8 @@ rule platypus:
                 "log_error/{sample}.platypus.raw.vcf.log"
         shell: """
         module load Platypus/{version}
+
+	mkdir /projects/scratch/${{PBS_JOBID}}
 	
 	gawk '{{print $1 ":" $2 "-" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.txt
 	platypus callVariants --nCPU=16 --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions=/projects/scratch/${{PBS_JOBID}}/target_intervals.txt --output={output.vcf} --refFile={params.reference} --logFileName={log}
@@ -489,6 +493,7 @@ rule mutect:
         mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
 	mkdir /projects/scratch/${{PBS_JOBID}}	
+	
 	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/muTect/{version}/mutect-{version}.jar -T MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --vcf  {output.vcf} > {log} 2>&1  
 	"""
@@ -515,7 +520,9 @@ rule strelka:
 	module load strelka/{version}
 	module load vcftools/{params.vcftools_version}
 	module load samtools	
-		
+	
+	mkdir /projects/scratch/${{PBS_JOBID}}	
+	
 	configureStrelkaWorkflow.pl --normal={input[0]} --tumor={input[2]} --ref={params.reference} --config={params.strelka_config} --output-dir=/projects/scratch/${{PBS_JOBID}}/strelka/ > {log} 2>&1
 	
 	make -j 16 -f /projects/scratch/${{PBS_JOBID}}/strelka/Makefile 2>> {log}
@@ -532,7 +539,8 @@ rule snpEff:
 	input:
 		vcf = "{base}.raw.vcf",
 	output:
-		"{base}.annotated.vcf"
+		vcf="{base}.annotated.vcf",
+		txt="{base}.annotated.txt"
 	version:
 		config['snpEff']
 	params:
@@ -545,7 +553,7 @@ rule snpEff:
 		ESP_snps	=config["resources"]['ESP_snps'],
 		batch		=config["snpEff_clust"] 
 	log:
-		"{base}.annotated.vcf.log"
+		"log_error/{base}.annotated.vcf.log"
 	shell: 	"""
 	
 	module load snpEff/{version}
@@ -554,10 +562,50 @@ rule snpEff:
         SnpEff_path="/apps/snpEff/{version}/snpEff.jar"
         mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
-	java -Xmx${{mem}}g -Djava.io.tmpdir=/project/scratch/${{PBS_JOBID}}/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx${{mem}}g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output} 2> {log}
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/project/scratch/${{PBS_JOBID}}/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx${{mem}}g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output.vcf} 2> {log}
 	
+	perl /projects/Clinomics/Tools/serpentine_Tgen/scripts/vcf2txt.pl {output.vcf} >{output.txt}
 		"""
 
+rule formatInput:
+        input:
+                #vcfs=["NCI0276tumor_200ng_P.strelka.indels.annotated.vcf","NCI0276tumor_200ng_P.strelka.indels.annotated.vcf"]
+                #vcfs=ALL_snpEff_vcf
+                vcfs=lambda wildcards:   ALL_SUBJECT_VCFS[wildcards.subject]
+        output:
+                "SUBJECT/{subject}/Annotation/AnnotationInput.anno",
+                "SUBJECT/{subject}/Annotation/AnnotationInput.pph",
+                "SUBJECT/{subject}/Annotation/AnnotationInput.sift"
+        params:
+                rulename   = "FormatInput",
+                batch      = config["formatinput_clust"],
+        log:
+                "log_error/{subject}.FormatInput"
+        run:
+                inputVCFs = ' '.join(input.vcfs)
+                shell("""
+                        cut -f 1-5 {inputVCFs} |sort |uniq > {base}/AnnotationInput
+                        perl /projects/Clinomics/Tools/serpentine_Tgen/scripts/MakeAnnotationInputs.pl {base}/AnnotationInput 2>{log}
+                """)
+
+rule annotation:
+        input:
+                "{base}/AnnotationInput.anno",
+        output:
+                "{base}/AnnotationInput.docm",
+        version:
+                config['annovar'],
+        params:
+                rulename   = "Annotation",
+                batch      = config["annovar_clust"],
+        log:
+                "log_error/{base}.Annovar"
+        shell: """
+
+        module load annovar/{version}
+
+        perl /projects/Clinomics/Tools/serpentine_Tgen/scripts/TableAnno.sh {base} AnnotationInput /projects/Clinomics/Tools/serpentine_Tgen/scripts/addAnnotation.pl 2>>{log}
+                """
 
 rule test:
 	input:

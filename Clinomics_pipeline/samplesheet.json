@@ -5,32 +5,24 @@
 			},
 
         "subjects": 	{
-        	"NCI0276": 	["NCI0276blood_E","NCI0276blood_100ng_P","NCI0276blood_200ng_P","NCI0276tumor_E","NCI0276tumor_100ng_P","NCI0276tumor_200ng_P"]
+        	"NCI0276": 	["NCI0276blood_100ng_P","NCI0276blood_200ng_P","NCI0276tumor_100ng_P","NCI0276tumor_200ng_P"]
         	   	},
 
 	"samples": 	{
-				"NCI0276blood_E": [ "NCI0276blood_E" ],
 				"NCI0276blood_100ng_P": [ "NCI0276blood_100ng_P"],
 				"NCI0276blood_200ng_P": [ "NCI0276blood_200ng_P"],
-				"NCI0276tumor_E": [ "NCI0276tumor_E" ],
 				"NCI0276tumor_100ng_P": [ "NCI0276tumor_100ng_P"],
 				"NCI0276tumor_200ng_P": [ "NCI0276tumor_200ng_P"]
 			},
 
 	"libraries": 	{
-				"NCI0276blood_E":	["100"],
 				"NCI0276blood_100ng_P":	["101"],
 				"NCI0276blood_200ng_P":	["102"],
-				"NCI0276tumor_E": 	["200"],
 				"NCI0276tumor_100ng_P": ["201"],
 				"NCI0276tumor_200ng_P": ["202"]
 			},
 
 	"units":	{
-		"100":		[
-					"/projects/Clinomics/DATA/Sample_NCI0276blood_E_HGCGYBGXX/Sample_NCI0276blood_E_HGCGYBGXX_R1.fastq.gz",
-					"/projects/Clinomics/DATA/Sample_NCI0276blood_E_HGCGYBGXX/Sample_NCI0276blood_E_HGCGYBGXX_R2.fastq.gz"
-				],
 		"101":		[
 					"/projects/Clinomics/DATA/Sample_NCI0276blood_100ng_P_HGCGYBGXX/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R1.fastq.gz",
 					"/projects/Clinomics/DATA/Sample_NCI0276blood_100ng_P_HGCGYBGXX/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R2.fastq.gz"
@@ -38,10 +30,6 @@
 		"102":		[
 					"/projects/Clinomics/DATA/Sample_NCI0276blood_200ng_P_HGCGYBGXX/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R1.fastq.gz",
 					"/projects/Clinomics/DATA/Sample_NCI0276blood_200ng_P_HGCGYBGXX/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R2.fastq.gz"
-				],
-		"200":		[
-					"/projects/Clinomics/DATA/Sample_NCI0276tumor_E_HGCGYBGXX/Sample_NCI0276tumor_E_HGCGYBGXX_R1.fastq.gz",
-					"/projects/Clinomics/DATA/Sample_NCI0276tumor_E_HGCGYBGXX/Sample_NCI0276tumor_E_HGCGYBGXX_R2.fastq.gz"
 				],
 		"201":		[
 					"/projects/Clinomics/DATA/Sample_NCI0276tumor_100ng_P_HGCGYBGXX/Sample_NCI0276tumor_100ng_P_HGCGYBGXX_R1.fastq.gz",
@@ -53,16 +41,13 @@
 				]
 			},
 	"sample_references": {
-				"NCI0276tumor_E": ["NCI0276blood_E"],
 				"NCI0276tumor_100ng_P":["NCI0276blood_100ng_P"],
 				"NCI0276tumor_200ng_P":["NCI0276blood_200ng_P"]
 			     },
 
 	"sample_TN":	{
-		"NCI0276blood_E":	[ "Normal" ],
 		"NCI0276blood_100ng_P":	[ "Normal" ],
 		"NCI0276blood_200ng_P":	[ "Normal" ],
-		"NCI0276tumor_E":	[ "Tumor" ],
 		"NCI0276tumor_100ng_P":	[ "Tumor" ],
 		"NCI0276tumor_200ng_P": [ "Tumor" ]
 			},
@@ -78,10 +63,8 @@
 				]
 				},
 	"sample_captures":	{
-		"NCI0276blood_E":	[ "clin.ex.v1" ],
 		"NCI0276blood_100ng_P":	[ "clin.snv.v1" ],
 		"NCI0276blood_200ng_P":	[ "clin.snv.v1" ],
-                "NCI0276tumor_E":       [ "clin.ex.v1" ],
                 "NCI0276tumor_100ng_P": 	[ "clin.snv.v1" ],
                 "NCI0276tumor_200ng_P": 	[ "clin.snv.v1" ]
 				}
