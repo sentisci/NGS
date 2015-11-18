@@ -90,7 +90,7 @@ BAMS_tdf = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/bam/{sample}.
 BAM_readDepth= ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/{sample}.final.bam.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys() ]
 BAM_hsmetrics= ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/{sample}.final.bam.hsmetrics".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys() ]
 BAM_hotspotCov= ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/{sample}.final.bam.hotspot.depth".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys() ]
-BAMS_flagstat	= ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/flagstat/{sample}.final.bam.flagstat".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys()]
+BAMS_flagstat	= ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/{sample}.final.bam.flagstat".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys()]
 BAMS_bamqc	= ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/bamqc/{sample}.final.bam.qualimapReport.html".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']) for s in config['samples'].keys()]
 ALL_FASTQC  	= ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/fastqc/{unit}_R1_fastqc.html".format(sample=UNIT_TO_SAMPLE[s], subject=UNIT_TO_SUBJECT[s], unit=s, reference_name=config['reference_name'], aligner=config['aligner']) for s in config['units'].keys()]
 
@@ -155,7 +155,7 @@ Attach_ASP_Annotation = [w.replace('snpEff', 'annotated') for w in ALL_snpEff_vc
 #test_input = "batch_out.txt"
 rule final:
 	input:
-		#All_QC,
+		All_QC,
 		#ALL_snpEff_vcf,
 		#FormatInput_out,
 		#Annot_Annovar,
