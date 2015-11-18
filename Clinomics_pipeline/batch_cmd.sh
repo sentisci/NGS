@@ -9,8 +9,8 @@ export RESULT_DIR="/projects/Clinomics/Tools/"
 
 #Initialize Basic Variables
 NOW=$(date +"%H%M%S_%m%d%Y")
-##WORKING_DIR=${RESULT_DIR}/Clinomics_Run/
-WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test_2/
+WORKING_DIR=${RESULT_DIR}/Clinomics_Run/
+##WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test_2/
 SNAKEFILE=${SERPENTINE_HOME}/Snakefile
 
 cd $WORKING_DIR
@@ -38,8 +38,8 @@ snakemake\
 #snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE
 
 
-#snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE -n --forceall --rulegraph | dot -Tpng >  ../serpentine_Tgen_extras/dag.pdf
-#snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE -n --forceall --rulegraph | dot -Tpdf >  ../serpentine_Tgen_extras/dag.png
+#snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE -n --forceall --rulegraph | dot -Tpng >  ../serpentine_Tgen_extras/dag.png
+#snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE -n --forceall --rulegraph | dot -Tpdf >  ../serpentine_Tgen_extras/dag.pdf
 
 
 #snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE --forceall --dag | dot -Tpdf > ../serpentine_Tgen_extras/dag.pdf

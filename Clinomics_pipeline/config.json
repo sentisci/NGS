@@ -47,5 +47,6 @@
                 "clin.snv.v1": "/projects/Clinomics/Tools/serpentine_Tgen_extras/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed"
         },
 	"annovar_data":		"/ref/clinomics/annovar/",
+	"AnnotationInput_file": "/projects/Clinomics/Tools/serpentine_Tgen/scripts/AnnotationInput_file",
 	"addBack":		"addAnnotations2vcf.pl"
 }

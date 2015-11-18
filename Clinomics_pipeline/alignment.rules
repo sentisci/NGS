@@ -609,7 +609,7 @@ rule Annovar_annotation:
 
         module load annovar/{version}
 
-        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{subject}/Annotation/ AnnotationInput /projects/Clinomics/Tools/serpentine_Tgen/scripts/addAnnotation.pl 2>> {log}
+        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{subject}/Annotation/ AnnotationInput $SERPENTINE_HOME/scripts/addAnnotation.pl 2>> {log}
                 """
 
 
@@ -623,26 +623,13 @@ rule Combine_ASP_annotation:
 	params:
 		rulename	="Combine_ASP_annotation",
 		dataDir		=config["annovar_data"],
+		AnnotationInput_file=config["AnnotationInput_file"],
 		batch		=config["job_Combine"],
 	log:
 		"log_error/{subject}.CombineAnnotation"
 	shell: """
-	
-		echo "SUBJECT/{subject}/Annotation/AnnotationInput
-		SUBJECT/{subject}/Annotation/AnnotationInput.anno.gene
-		SUBJECT/{subject}/Annotation/AnnotationInput.anno.exac.3
-		SUBJECT/{subject}/Annotation/AnnotationInput.anno.clinseq
-		SUBJECT/{subject}/Annotation/AnnotationInput.anno.cadd
-		SUBJECT/{subject}/Annotation/AnnotationInput.anno.clinvar
-		SUBJECT/{subject}/Annotation/AnnotationInput.hgmd
-		SUBJECT/{subject}/Annotation/AnnotationInput.match
-		SUBJECT/{subject}/Annotation/AnnotationInput.docm
-		SUBJECT/{subject}/Annotation/AnnotationInput.candl
-		SUBJECT/{subject}/Annotation/AnnotationInput.tcc
-		SUBJECT/{subject}/Annotation/AnnotationInput.mcg
-		SUBJECT/{subject}/Annotation/AnnotationInput.civic
-		SUBJECT/{subject}/Annotation/AnnotationInput.anno.pcg" > SUBJECT/{subject}/Annotation/list
-	
+		
+		for i in `cat {params.AnnotationInput_file}`;do  echo "SUBJECT/{subject}/Annotation/$i" >> SUBJECT/{subject}/Annotation/list ; done	
 		sed 's/^[\t ]*//g' -i SUBJECT/{subject}/Annotation/list
 			
 		perl {input.convertor} SUBJECT/{subject}/Annotation/list > {output}.tmp
