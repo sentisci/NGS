@@ -574,6 +574,8 @@ rule snpEff:
 
 rule formatInput:
         input:
+                #vcfs=["NCI0276tumor_200ng_P.strelka.indels.annotated.vcf","NCI0276tumor_200ng_P.strelka.indels.annotated.vcf"]
+                #vcfs=ALL_snpEff_vcf
                 vcfs=lambda wildcards:   ALL_SUBJECT_VCFS[wildcards.subject]
         output:
                 "SUBJECT/{subject}/Annotation/AnnotationInput.anno",
@@ -607,13 +609,60 @@ rule Annovar_annotation:
 
         module load annovar/{version}
 
-        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{subject}/Annotation/ AnnotationInput $SERPENTINE_HOME/scripts/addAnnotation.pl 2>> {log}
+        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{wildcards.subject}/Annotation/ AnnotationInput $SERPENTINE_HOME/scripts/addAnnotation.pl 2>> {log}
                 """
 
+rule PolyPhen2:
+	input:
+		"SUBJECT/{subject}/Annotation/AnnotationInput.pph",
+		convertor  = SERPENTINE_HOME + "/scripts/" + config["PPH2Parse"],
+		block      = SERPENTINE_HOME + "/scripts/" + config["block"]
+	output:
+		"SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
+	version:
+		config['polyphen2'],
+	params:
+		rulename	="PolyPhen2",
+		batch		=config["polyphen2_clust"],
+	log:
+		"log_error/{subject}.PolyPhen2"
+	shell: """
+		module load polyphen2/{version}
+		"""
+
+rule Sift:
+	input:
+		sift		="SUBJECT/{subject}/Annotation/AnnotationInput.sift",
+		convertor	= SERPENTINE_HOME + "/scripts/" + config["SiftParse"]
+	output:
+		sift_out	="SUBJECT/{subject}/Annotation/AnnotationInput.sift.out",
+	version:
+		config['SIFT'],
+	params:
+		rulename        ="SIFT",
+		build		=config["SIFTbuild"],
+		database	=config["SIFT_db"],
+		batch           =config["sift_clust"],
+	log:
+		"log_error/{subject}.SIFT"
+	shell: """
+		module load python/2.7.9
+		module load SIFT/{version}
+		
+		mkdir /projects/scratch/${{PBS_JOBID}}		
+		
+		DIR=`pwd`
+		cd ${{DIR}}/`dirname {input.sift}`
+		FILE=`basename {input.sift}`
+		SIFT_exome_nssnvs.pl -i ${{FILE}} -d {params.database} -o /projects/scratch/${{PBS_JOBID}} -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
+		perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv > ${{DIR}}/{output.sift_out}
+		"""
 
 rule Combine_ASP_annotation:
 	input:
 		anno="SUBJECT/{subject}/Annotation/AnnotationInput.docm",
+		#pph2="SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
+		sift="SUBJECT/{subject}/Annotation/AnnotationInput.sift.out",
 		convertor  = SERPENTINE_HOME + "/scripts/" + "CombineAnnotations.pl",
 		geneanno   = SERPENTINE_HOME + "/scripts/" + "GeneAnnotation.pl"
 	output:
@@ -627,10 +676,10 @@ rule Combine_ASP_annotation:
 		"log_error/{subject}.CombineAnnotation"
 	shell: """
 		
-		for i in `cat {params.AnnotationInput_file}`;do  echo "SUBJECT/{subject}/Annotation/$i" >> SUBJECT/{subject}/Annotation/list ; done	
-		sed 's/^[\t ]*//g' -i SUBJECT/{subject}/Annotation/list
+		for i in `cat {params.AnnotationInput_file}`;do  echo "SUBJECT/{wildcards.subject}/Annotation/$i" >> SUBJECT/{wildcards.subject}/Annotation/list ; done	
+		sed 's/^[\t ]*//g' -i SUBJECT/{wildcards.subject}/Annotation/list
 			
-		perl {input.convertor} SUBJECT/{subject}/Annotation/list > {output}.tmp
+		perl {input.convertor} SUBJECT/{wildcards.subject}/Annotation/list > {output}.tmp
 		perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
 		rm -rf {output}.tmp
 

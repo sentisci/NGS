@@ -26,5 +26,7 @@
 	"formatinput_clust":    "-l nodes=1:ppn=5,mem=10,walltime=96:00:00",
 	"annovar_clust":	"-l nodes=1:ppn=16,mem=40,walltime=96:00:00",
 	"job_Combine":		"-l nodes=1:ppn=5,mem=10,walltime=96:00:00",
-	"job_addbackann":	"-l nodes=1:ppn=5,mem=10,walltime=96:00:00"	
+	"job_addbackann":	"-l nodes=1:ppn=5,mem=10,walltime=96:00:00",
+	"sift_clust":		"-l nodes=1:ppn=16,mem=40,walltime=96:00:00",
+	"polyphen2_clust":	"-l nodes=1:ppn=16,mem=40,walltime=96:00:00"		
 }

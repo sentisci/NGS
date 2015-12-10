@@ -8,6 +8,8 @@
         "snpEff_config": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/snpEff.config",
 	"strelka_config":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/Strelka.config.ini",
         "snpEff_genome": 	"GRCh37.75",
+	"SIFTbuild":            "Human_db_37",
+	"SIFT_db":		"/ref/human/SIFT/Human_db_37",
 	"reference_fasta":
 		{
 			"human_g1k_v37":	"/projects/Clinomics/ref/serpentine_resources/human_g1k_v37/human_g1k_v37.fasta",
@@ -48,5 +50,8 @@
         },
 	"annovar_data":		"/ref/clinomics/annovar/",
 	"AnnotationInput_file": "/projects/Clinomics/Tools/serpentine_Tgen/scripts/AnnotationInput_file",
-	"addBack":		"addAnnotations2vcf.pl"
+	"addBack":		"addAnnotations2vcf.pl",
+	"SiftParse":		"ParseSIFT.pl",
+	"PPH2Parse":		"ParsePPH2.pl",
+	"block":		"block_for_jobid.pl"
 }

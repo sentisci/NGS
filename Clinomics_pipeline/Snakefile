@@ -115,42 +115,73 @@ if len(config['sample_references']) > 0:
 BAMS_caller_hc	= ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/haplotypecaller/{sample}.haplotypecaller.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
 BAMS_caller_ps  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/platypus/{sample}.platypus.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
 BAMS_caller_fb  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/freebayes/{sample}.freebayes.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['samples'].keys()]
-BAMS_caller_sa_snv  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.snvs.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
-BAMS_caller_sa_indel  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.indels.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
-BAMS_caller_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/mutect/{sample}.mutect.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
+
+if len(config['sample_references']) > 0:
+	BAMS_caller_sa_snv  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.snvs.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
+	BAMS_caller_sa_indel  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/strelka/{sample}.strelka.indels.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
+	BAMS_caller_mt  = ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/mutect/{sample}.mutect.raw.vcf".format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'],aligner=config['aligner']) for s in config['sample_references'].keys()]
+else:
+	BAMS_caller_mt=[]
+	BAMS_caller_sa_indel=[]
+	BAMS_caller_sa_snv=[]
 
 All_caller_raw_vcf = BAMS_caller_hc + BAMS_caller_ps + BAMS_caller_fb + BAMS_caller_sa_snv + BAMS_caller_sa_indel + BAMS_caller_mt
 
 #snpEff Annotation
 ALL_snpEff_vcf1  = [] ; ALL_snpEff_vcf2  = [] ; ALL_SUBJECT_VCFS = {}
+reference_name=config['reference_name'] ; aligner=config['aligner']
+
 for sample in config['samples'].keys():
-	subject=SAMPLE_TO_SUBJECT[sample] ; reference_name=config['reference_name'] ; aligner=config['aligner']
-	ALL_snpEff_vcf1.extend([("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/haplotypecaller/"+sample+".haplotypecaller.snpEff.txt"),
-			       ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/platypus/"+sample+".platypus.snpEff.txt"),
-			       ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/freebayes/"+sample+".freebayes.snpEff.txt") ])
-
-	if subject not in ALL_SUBJECT_VCFS:
-		 ALL_SUBJECT_VCFS[subject]=ALL_snpEff_vcf1
-
-for sample in config['sample_references'].keys():
-	subject=SAMPLE_TO_SUBJECT[sample]; reference_name=config['reference_name'] ; aligner=config['aligner']
-	ALL_snpEff_vcf2.extend([ ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.snvs.snpEff.txt"),
-				 ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.indels.snpEff.txt"),
-				 ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+".mutect.snpEff.txt")])
+	subject=SAMPLE_TO_SUBJECT[sample]
 	
-        if subject in ALL_SUBJECT_VCFS:
-                 ALL_SUBJECT_VCFS[subject].extend(ALL_snpEff_vcf2)
+	if subject not in ALL_SUBJECT_VCFS:
+		ALL_SUBJECT_VCFS[subject]=[]
+                ALL_SUBJECT_VCFS[subject].extend([("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/haplotypecaller/"+sample+".haplotypecaller.snpEff.txt"),
+                                                ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/platypus/"+sample+".platypus.snpEff.txt"),
+                                                ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/freebayes/"+sample+".freebayes.snpEff.txt") ])
+		ALL_snpEff_vcf1.extend(ALL_SUBJECT_VCFS[subject])	
+ 	
+	else:
+		ALL_SUBJECT_VCFS[subject].extend([("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/haplotypecaller/"+sample+".haplotypecaller.snpEff.txt"),
+			       			("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/platypus/"+sample+".platypus.snpEff.txt"),
+			       			("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/freebayes/"+sample+".freebayes.snpEff.txt") ])
+		ALL_snpEff_vcf1.extend(ALL_SUBJECT_VCFS[subject])	
+	
+
+if len(config['sample_references']) > 0:
+	for sample in config['sample_references'].keys():
+		subject=SAMPLE_TO_SUBJECT[sample]
+		
+	        if subject in ALL_SUBJECT_VCFS:
+        		ALL_SUBJECT_VCFS[subject].extend([ ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.snvs.snpEff.txt"),
+					 		("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+".strelka.indels.snpEff.txt"),
+					 		("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+".mutect.snpEff.txt")])
+			ALL_snpEff_vcf2.extend(ALL_SUBJECT_VCFS[subject])	
+		else:
+			print("Seems like there is no Germline caller for "+subject)	
+
+
 
 ALL_snpEff_vcf = ALL_snpEff_vcf1 + ALL_snpEff_vcf2
+##print(ALL_SUBJECT_VCFS)
+#print(ALL_snpEff_vcf)
 
 #Polyphen2 SIFT In-house Annotation
+Annot_Annovar	= [] ; Annot_SIFT = [] ; Annot_PPH2 = []
 FormatInput_out = ["SUBJECT/{subject}/Annotation/AnnotationInput.anno".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()]
 
-Annot_Annovar = ["SUBJECT/{subject}/Annotation/AnnotationInput.docm".format(subject=s) for s in config['subjects'].keys()] 
+#print(FormatInput_out)
 
-CombineAnnotation = [w.replace('docm','annotations.final.txt') for w in Annot_Annovar] 
+Annot_Annovar =["SUBJECT/{subject}/Annotation/AnnotationInput.docm".format(subject=s) for s in config['subjects'].keys()] 
+Annot_SIFT = ["SUBJECT/{subject}/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()] 
+#Annot_PPH2 = ["SUBJECT/{subject}/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] 
+Annot_ALL = Annot_Annovar + Annot_SIFT + Annot_PPH2
+#print(Annot_SIFT)
+
+CombineAnnotation = [w.replace('docm','annotations.final.txt') for w in Annot_ALL] 
 
 Attach_ASP_Annotation = [w.replace('snpEff', 'annotated') for w in ALL_snpEff_vcf]
+#print(Attach_ASP_Annotation)
 
 #test_input = "batch_out.txt"
 rule final:
@@ -160,6 +191,8 @@ rule final:
 		#FormatInput_out,
 		#Annot_Annovar,
 		#CombineAnnotation,
+		Annot_SIFT,
 		Attach_ASP_Annotation
+		#Annot_ALL
 		#BAMS
 		#test_input
