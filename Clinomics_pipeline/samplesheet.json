@@ -1,71 +1,238 @@
-{	
-	
-	"studies":	{
-    		"ClinVal": ["NCI0276"]
-			},
-
-        "subjects": 	{
-        	"NCI0276": 	["NCI0276blood_100ng_P","NCI0276blood_200ng_P","NCI0276tumor_100ng_P","NCI0276tumor_200ng_P"]
-        	   	},
-
-	"samples": 	{
-				"NCI0276blood_100ng_P": [ "NCI0276blood_100ng_P"],
-				"NCI0276blood_200ng_P": [ "NCI0276blood_200ng_P"],
-				"NCI0276tumor_100ng_P": [ "NCI0276tumor_100ng_P"],
-				"NCI0276tumor_200ng_P": [ "NCI0276tumor_200ng_P"]
-			},
-
-	"libraries": 	{
-				"NCI0276blood_100ng_P":	["101"],
-				"NCI0276blood_200ng_P":	["102"],
-				"NCI0276tumor_100ng_P": ["201"],
-				"NCI0276tumor_200ng_P": ["202"]
-			},
-
-	"units":	{
-		"101":		[
-					"/projects/Clinomics/DATA/Sample_NCI0276blood_100ng_P_HGCGYBGXX/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R1.fastq.gz",
-					"/projects/Clinomics/DATA/Sample_NCI0276blood_100ng_P_HGCGYBGXX/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R2.fastq.gz"
-				],
-		"102":		[
-					"/projects/Clinomics/DATA/Sample_NCI0276blood_200ng_P_HGCGYBGXX/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R1.fastq.gz",
-					"/projects/Clinomics/DATA/Sample_NCI0276blood_200ng_P_HGCGYBGXX/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R2.fastq.gz"
-				],
-		"201":		[
-					"/projects/Clinomics/DATA/Sample_NCI0276tumor_100ng_P_HGCGYBGXX/Sample_NCI0276tumor_100ng_P_HGCGYBGXX_R1.fastq.gz",
-					"/projects/Clinomics/DATA/Sample_NCI0276tumor_100ng_P_HGCGYBGXX/Sample_NCI0276tumor_100ng_P_HGCGYBGXX_R2.fastq.gz"
-				],
-		"202":		[
-					"/projects/Clinomics/DATA/Sample_NCI0276tumor_200ng_P_HGCGYBGXX/Sample_NCI0276tumor_200ng_P_HGCGYBGXX_R1.fastq.gz",
-					"/projects/Clinomics/DATA/Sample_NCI0276tumor_200ng_P_HGCGYBGXX/Sample_NCI0276tumor_200ng_P_HGCGYBGXX_R2.fastq.gz"
-				]
-			},
-	"sample_references": {
-				"NCI0276tumor_100ng_P":["NCI0276blood_100ng_P"],
-				"NCI0276tumor_200ng_P":["NCI0276blood_200ng_P"]
-			     },
-
-	"sample_TN":	{
-		"NCI0276blood_100ng_P":	[ "Normal" ],
-		"NCI0276blood_200ng_P":	[ "Normal" ],
-		"NCI0276tumor_100ng_P":	[ "Tumor" ],
-		"NCI0276tumor_200ng_P": [ "Tumor" ]
-			},
-	
-	"subject_TN":	{
-		"NCI0276":	[ "Normal","Tumor" ]
-			},
-
-	"subject_captures":	{
-		"NCI0276":	[
-					"clin.ex.v1",
- 					"clin.snv.v1"
-				]
-				},
-	"sample_captures":	{
-		"NCI0276blood_100ng_P":	[ "clin.snv.v1" ],
-		"NCI0276blood_200ng_P":	[ "clin.snv.v1" ],
-                "NCI0276tumor_100ng_P": 	[ "clin.snv.v1" ],
-                "NCI0276tumor_200ng_P": 	[ "clin.snv.v1" ]
-				}
+{
+  "studies": {
+    "ClinVal": ["NA19735","NA20502","NA20845","NA21732","NA19240","GIAB","NA12880","NA18501","NA18526","NA18940","NA19017","NA19700"]
+  },
+  "subjects": {
+    "NA19735": ["NCIC007_200_E", "NCIC007_200_P", "NCIC007_100_P"],
+    "NA20502": ["NCIC008_200_E", "NCIC008_200_P", "NCIC008_100_P"],
+    "NA20845": ["NCIC009_200_E", "NCIC009_200_P", "NCIC009_100_P"],
+    "NA21732": ["NCIC0010_200_E", "NCIC0010_200_P", "NCIC0010_100_P"],
+    "NA19240": ["NCIC0011_200_E", "NCIC0011_200_P", "NCIC0011_100_P"],
+    "GIAB": ["GIAB_200_E", "GIAB_200_P", "GIAB_100_P"],
+    "NA12880": ["NCIC001_100_E", "NCIC001_100A_P", "NCIC001_100B_P"],
+    "NA18501": ["NCIC002_100_E", "NCIC002_100A_P", "NCIC002_100B_P"],
+    "NA18526": ["NCIC003_100_E", "NCIC003_100A_P", "NCIC003_100B_P"],
+    "NA18940": ["NCIC004_100_E", "NCIC004_100A_P", "NCIC004_100B_P"],
+    "NA19017": ["NCIC005_100_E", "NCIC005_100A_P", "NCIC005_100B_P"],
+    "NA19700": ["NCIC006_100_E", "NCIC006_100A_P", "NCIC006_100B_P"]
+  },
+  "samples": {
+    "NCIC007_200_E": ["NCIC007_200_E"],
+    "NCIC008_200_E": ["NCIC008_200_E"],
+    "NCIC009_200_E": ["NCIC009_200_E"],
+    "NCIC007_200_P": ["NCIC007_200_P"],
+    "NCIC007_100_P": ["NCIC007_100_P"],
+    "NCIC008_200_P": ["NCIC008_200_P"],
+    "NCIC008_100_P": ["NCIC008_100_P"],
+    "NCIC009_200_P": ["NCIC009_200_P"],
+    "NCIC009_100_P": ["NCIC009_100_P"],
+    "NCIC0010_200_E": ["NCIC0010_200_E"],
+    "NCIC0011_200_E": ["NCIC0011_200_E"],
+    "GIAB_200_E": ["GIAB_200_E"],
+    "NCIC0010_200_P": ["NCIC0010_200_P"],
+    "NCIC0010_100_P": ["NCIC0010_100_P"],
+    "NCIC0011_200_P": ["NCIC0011_200_P"],
+    "NCIC0011_100_P": ["NCIC0011_100_P"],
+    "GIAB_200_P": ["GIAB_200_P"],
+    "GIAB_100_P": ["GIAB_100_P"],
+    "NCIC001_100_E": ["NCIC001_100_E"],
+    "NCIC002_100_E": ["NCIC002_100_E"],
+    "NCIC003_100_E": ["NCIC003_100_E"],
+    "NCIC001_100A_P": ["NCIC001_100A_P"],
+    "NCIC001_100B_P": ["NCIC001_100B_P"],
+    "NCIC002_100A_P": ["NCIC002_100A_P"],
+    "NCIC002_100B_P": ["NCIC002_100B_P"],
+    "NCIC003_100A_P": ["NCIC003_100A_P"],
+    "NCIC003_100B_P": ["NCIC003_100B_P"],
+    "NCIC004_100_E": ["NCIC004_100_E"],
+    "NCIC005_100_E": ["NCIC005_100_E"],
+    "NCIC006_100_E": ["NCIC006_100_E"],
+    "NCIC004_100A_P": ["NCIC004_100A_P"],
+    "NCIC004_100B_P": ["NCIC004_100B_P"],
+    "NCIC005_100A_P": ["NCIC005_100A_P"],
+    "NCIC005_100B_P": ["NCIC005_100B_P"],
+    "NCIC006_100A_P": ["NCIC006_100A_P"],
+    "NCIC006_100B_P": ["NCIC006_100B_P"]
+  },
+  "libraries": {
+    "NCIC007_200_E": ["8261501"],
+    "NCIC008_200_E": ["8261502"],
+    "NCIC009_200_E": ["8261503"],
+    "NCIC007_200_P": ["8261504"],
+    "NCIC007_100_P": ["8261505"],
+    "NCIC008_200_P": ["8261506"],
+    "NCIC008_100_P": ["8261507"],
+    "NCIC009_200_P": ["8261508"],
+    "NCIC009_100_P": ["8261509"],
+    "NCIC0010_200_E": ["8261510"],
+    "NCIC0011_200_E": ["8261511"],
+    "GIAB_200_E": ["8261512"],
+    "NCIC0010_200_P": ["8261513"],
+    "NCIC0010_100_P": ["8261514"],
+    "NCIC0011_200_P": ["8261515"],
+    "NCIC0011_100_P": ["8261516"],
+    "GIAB_200_P": ["8261517"],
+    "GIAB_100_P": ["8261518"],
+    "NCIC001_100_E": ["9021501"],
+    "NCIC002_100_E": ["9021502"],
+    "NCIC003_100_E": ["9021503"],
+    "NCIC001_100A_P": ["9021504"],
+    "NCIC001_100B_P": ["9021505"],
+    "NCIC002_100A_P": ["9021506"],
+    "NCIC002_100B_P": ["9021507"],
+    "NCIC003_100A_P": ["9021508"],
+    "NCIC003_100B_P": ["9021509"],
+    "NCIC004_100_E": ["9021510"],
+    "NCIC005_100_E": ["9021511"],
+    "NCIC006_100_E": ["9021512"],
+    "NCIC004_100A_P": ["9021513"],
+    "NCIC004_100B_P": ["9021514"],
+    "NCIC005_100A_P": ["9021515"],
+    "NCIC005_100B_P": ["9021516"],
+    "NCIC006_100A_P": ["9021517"],
+    "NCIC006_100B_P": ["9021518"]
+  },
+  "units": {
+    "8261501": ["/projects/Clinomics/DATA/Sample_NCIC007_200_E_HGCNNBGXX/Sample_NCIC007_200_E_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC007_200_E_HGCNNBGXX/Sample_NCIC007_200_E_HGCNNBGXX_R2.fastq.gz"],
+    "8261502": ["/projects/Clinomics/DATA/Sample_NCIC008_200_E_HGCNNBGXX/Sample_NCIC008_200_E_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC008_200_E_HGCNNBGXX/Sample_NCIC008_200_E_HGCNNBGXX_R2.fastq.gz"],
+    "8261503": ["/projects/Clinomics/DATA/Sample_NCIC009_200_E_HGCNNBGXX/Sample_NCIC009_200_E_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC009_200_E_HGCNNBGXX/Sample_NCIC009_200_E_HGCNNBGXX_R2.fastq.gz"],
+    "8261504": ["/projects/Clinomics/DATA/Sample_NCIC007_200_P_HGCNNBGXX/Sample_NCIC007_200_P_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC007_200_P_HGCNNBGXX/Sample_NCIC007_200_P_HGCNNBGXX_R2.fastq.gz"],
+    "8261505": ["/projects/Clinomics/DATA/Sample_NCIC007_100_P_HGCNNBGXX/Sample_NCIC007_100_P_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC007_100_P_HGCNNBGXX/Sample_NCIC007_100_P_HGCNNBGXX_R2.fastq.gz"],
+    "8261506": ["/projects/Clinomics/DATA/Sample_NCIC008_200_P_HGCNNBGXX/Sample_NCIC008_200_P_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC008_200_P_HGCNNBGXX/Sample_NCIC008_200_P_HGCNNBGXX_R2.fastq.gz"],
+    "8261507": ["/projects/Clinomics/DATA/Sample_NCIC008_100_P_HGCNNBGXX/Sample_NCIC008_100_P_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC008_100_P_HGCNNBGXX/Sample_NCIC008_100_P_HGCNNBGXX_R2.fastq.gz"],
+    "8261508": ["/projects/Clinomics/DATA/Sample_NCIC009_200_P_HGCNNBGXX/Sample_NCIC009_200_P_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC009_200_P_HGCNNBGXX/Sample_NCIC009_200_P_HGCNNBGXX_R2.fastq.gz"],
+    "8261509": ["/projects/Clinomics/DATA/Sample_NCIC009_100_P_HGCNNBGXX/Sample_NCIC009_100_P_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC009_100_P_HGCNNBGXX/Sample_NCIC009_100_P_HGCNNBGXX_R2.fastq.gz"],
+    "8261510": ["/projects/Clinomics/DATA/Sample_NCIC0010_200_E_HH3F2BGXX/Sample_NCIC0010_200_E_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC0010_200_E_HH3F2BGXX/Sample_NCIC0010_200_E_HH3F2BGXX_R2.fastq.gz"],
+    "8261511": ["/projects/Clinomics/DATA/Sample_NCIC0011_200_E_HH3F2BGXX/Sample_NCIC0011_200_E_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC0011_200_E_HH3F2BGXX/Sample_NCIC0011_200_E_HH3F2BGXX_R2.fastq.gz"],
+    "8261512": ["/projects/Clinomics/DATA/Sample_GIAB_200_E_HH3F2BGXX/Sample_GIAB_200_E_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_GIAB_200_E_HH3F2BGXX/Sample_GIAB_200_E_HH3F2BGXX_R2.fastq.gz"],
+    "8261513": ["/projects/Clinomics/DATA/Sample_NCIC0010_200_P_HH3F2BGXX/Sample_NCIC0010_200_P_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC0010_200_P_HH3F2BGXX/Sample_NCIC0010_200_P_HH3F2BGXX_R2.fastq.gz"],
+    "8261514": ["/projects/Clinomics/DATA/Sample_NCIC0010_100_P_HH3F2BGXX/Sample_NCIC0010_100_P_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC0010_100_P_HH3F2BGXX/Sample_NCIC0010_100_P_HH3F2BGXX_R2.fastq.gz"],
+    "8261515": ["/projects/Clinomics/DATA/Sample_NCIC0011_200_P_HH3F2BGXX/Sample_NCIC0011_200_P_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC0011_200_P_HH3F2BGXX/Sample_NCIC0011_200_P_HH3F2BGXX_R2.fastq.gz"],
+    "8261516": ["/projects/Clinomics/DATA/Sample_NCIC0011_100_P_HH3F2BGXX/Sample_NCIC0011_100_P_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC0011_100_P_HH3F2BGXX/Sample_NCIC0011_100_P_HH3F2BGXX_R2.fastq.gz"],
+    "8261517": ["/projects/Clinomics/DATA/Sample_GIAB_200_P_HH3F2BGXX/Sample_GIAB_200_P_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_GIAB_200_P_HH3F2BGXX/Sample_GIAB_200_P_HH3F2BGXX_R2.fastq.gz"],
+    "8261518": ["/projects/Clinomics/DATA/Sample_GIAB_100_P_HH3F2BGXX/Sample_GIAB_100_P_HH3F2BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_GIAB_100_P_HH3F2BGXX/Sample_GIAB_100_P_HH3F2BGXX_R2.fastq.gz"],
+    "9021501": ["/projects/Clinomics/DATA/Sample_NCIC001_100_E_HHFFHBGXX/Sample_NCIC001_100_E_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC001_100_E_HHFFHBGXX/Sample_NCIC001_100_E_HHFFHBGXX_R2.fastq.gz"],
+    "9021502": ["/projects/Clinomics/DATA/Sample_NCIC002_100_E_HHFFHBGXX/Sample_NCIC002_100_E_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC002_100_E_HHFFHBGXX/Sample_NCIC002_100_E_HHFFHBGXX_R2.fastq.gz"],
+    "9021503": ["/projects/Clinomics/DATA/Sample_NCIC003_100_E_HHFFHBGXX/Sample_NCIC003_100_E_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC003_100_E_HHFFHBGXX/Sample_NCIC003_100_E_HHFFHBGXX_R2.fastq.gz"],
+    "9021504": ["/projects/Clinomics/DATA/Sample_NCIC001_100A_P_HHFFHBGXX/Sample_NCIC001_100A_P_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC001_100A_P_HHFFHBGXX/Sample_NCIC001_100A_P_HHFFHBGXX_R2.fastq.gz"],
+    "9021505": ["/projects/Clinomics/DATA/Sample_NCIC001_100B_P_HHFFHBGXX/Sample_NCIC001_100B_P_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC001_100B_P_HHFFHBGXX/Sample_NCIC001_100B_P_HHFFHBGXX_R2.fastq.gz"],
+    "9021506": ["/projects/Clinomics/DATA/Sample_NCIC002_100A_P_HHFFHBGXX/Sample_NCIC002_100A_P_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC002_100A_P_HHFFHBGXX/Sample_NCIC002_100A_P_HHFFHBGXX_R2.fastq.gz"],
+    "9021507": ["/projects/Clinomics/DATA/Sample_NCIC002_100B_P_HHFFHBGXX/Sample_NCIC002_100B_P_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC002_100B_P_HHFFHBGXX/Sample_NCIC002_100B_P_HHFFHBGXX_R2.fastq.gz"],
+    "9021508": ["/projects/Clinomics/DATA/Sample_NCIC003_100A_P_HHFFHBGXX/Sample_NCIC003_100A_P_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC003_100A_P_HHFFHBGXX/Sample_NCIC003_100A_P_HHFFHBGXX_R2.fastq.gz"],
+    "9021509": ["/projects/Clinomics/DATA/Sample_NCIC003_100B_P_HHFFHBGXX/Sample_NCIC003_100B_P_HHFFHBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC003_100B_P_HHFFHBGXX/Sample_NCIC003_100B_P_HHFFHBGXX_R2.fastq.gz"],
+    "9021510": ["/projects/Clinomics/DATA/Sample_NCIC004_100_E_HH537BGXX/Sample_NCIC004_100_E_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC004_100_E_HH537BGXX/Sample_NCIC004_100_E_HH537BGXX_R2.fastq.gz"],
+    "9021511": ["/projects/Clinomics/DATA/Sample_NCIC005_100_E_HH537BGXX/Sample_NCIC005_100_E_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC005_100_E_HH537BGXX/Sample_NCIC005_100_E_HH537BGXX_R2.fastq.gz"],
+    "9021512": ["/projects/Clinomics/DATA/Sample_NCIC006_100_E_HH537BGXX/Sample_NCIC006_100_E_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC006_100_E_HH537BGXX/Sample_NCIC006_100_E_HH537BGXX_R2.fastq.gz"],
+    "9021513": ["/projects/Clinomics/DATA/Sample_NCIC004_100A_P_HH537BGXX/Sample_NCIC004_100A_P_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC004_100A_P_HH537BGXX/Sample_NCIC004_100A_P_HH537BGXX_R2.fastq.gz"],
+    "9021514": ["/projects/Clinomics/DATA/Sample_NCIC004_100B_P_HH537BGXX/Sample_NCIC004_100B_P_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC004_100B_P_HH537BGXX/Sample_NCIC004_100B_P_HH537BGXX_R2.fastq.gz"],
+    "9021515": ["/projects/Clinomics/DATA/Sample_NCIC005_100A_P_HH537BGXX/Sample_NCIC005_100A_P_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC005_100A_P_HH537BGXX/Sample_NCIC005_100A_P_HH537BGXX_R2.fastq.gz"],
+    "9021516": ["/projects/Clinomics/DATA/Sample_NCIC005_100B_P_HH537BGXX/Sample_NCIC005_100B_P_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC005_100B_P_HH537BGXX/Sample_NCIC005_100B_P_HH537BGXX_R2.fastq.gz"],
+    "9021517": ["/projects/Clinomics/DATA/Sample_NCIC006_100A_P_HH537BGXX/Sample_NCIC006_100A_P_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC006_100A_P_HH537BGXX/Sample_NCIC006_100A_P_HH537BGXX_R2.fastq.gz"],
+    "9021518": ["/projects/Clinomics/DATA/Sample_NCIC006_100B_P_HH537BGXX/Sample_NCIC006_100B_P_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC006_100B_P_HH537BGXX/Sample_NCIC006_100B_P_HH537BGXX_R2.fastq.gz"]
+  },
+  "sample_TN": {
+    "NCIC007_200_E": ["Normal"],
+    "NCIC008_200_E": ["Normal"],
+    "NCIC009_200_E": ["Normal"],
+    "NCIC007_200_P": ["Normal"],
+    "NCIC007_100_P": ["Normal"],
+    "NCIC008_200_P": ["Normal"],
+    "NCIC008_100_P": ["Normal"],
+    "NCIC009_200_P": ["Normal"],
+    "NCIC009_100_P": ["Normal"],
+    "NCIC0010_200_E": ["Normal"],
+    "NCIC0011_200_E": ["Normal"],
+    "GIAB_200_E": ["Normal"],
+    "NCIC0010_200_P": ["Normal"],
+    "NCIC0010_100_P": ["Normal"],
+    "NCIC0011_200_P": ["Normal"],
+    "NCIC0011_100_P": ["Normal"],
+    "GIAB_200_P": ["Normal"],
+    "GIAB_100_P": ["Normal"],
+    "NCIC001_100_E": ["Normal"],
+    "NCIC002_100_E": ["Normal"],
+    "NCIC003_100_E": ["Normal"],
+    "NCIC001_100A_P": ["Normal"],
+    "NCIC001_100B_P": ["Normal"],
+    "NCIC002_100A_P": ["Normal"],
+    "NCIC002_100B_P": ["Normal"],
+    "NCIC003_100A_P": ["Normal"],
+    "NCIC003_100B_P": ["Normal"],
+    "NCIC004_100_E": ["Normal"],
+    "NCIC005_100_E": ["Normal"],
+    "NCIC006_100_E": ["Normal"],
+    "NCIC004_100A_P": ["Normal"],
+    "NCIC004_100B_P": ["Normal"],
+    "NCIC005_100A_P": ["Normal"],
+    "NCIC005_100B_P": ["Normal"],
+    "NCIC006_100A_P": ["Normal"],
+    "NCIC006_100B_P": ["Normal"]
+  },
+  "subject_TN": {
+    "NA19735": ["Normal"],
+    "NA20502": ["Normal"],
+    "NA20845": ["Normal"],
+    "NA21732": ["Normal"],
+    "NA19240": ["Normal"],
+    "GIAB": ["Normal"],
+    "NA12880": ["Normal"],
+    "NA18501": ["Normal"],
+    "NA18526": ["Normal"],
+    "NA18940": ["Normal"],
+    "NA19017": ["Normal"],
+    "NA19700": ["Normal"]
+  },
+  "subject_captures": {
+    "NA19735": ["clin.ex.v1", "clin.snv.v1"],
+    "NA20502": ["clin.ex.v1", "clin.snv.v1"],
+    "NA20845": ["clin.ex.v1", "clin.snv.v1"],
+    "NA21732": ["clin.ex.v1", "clin.snv.v1"],
+    "NA19240": ["clin.ex.v1", "clin.snv.v1"],
+    "GIAB": ["clin.ex.v1", "clin.snv.v1"],
+    "NA12880": ["clin.ex.v1", "clin.snv.v1"],
+    "NA18501": ["clin.ex.v1", "clin.snv.v1"],
+    "NA18526": ["clin.ex.v1", "clin.snv.v1"],
+    "NA18940": ["clin.ex.v1", "clin.snv.v1"],
+    "NA19017": ["clin.ex.v1", "clin.snv.v1"],
+    "NA19700": ["clin.ex.v1", "clin.snv.v1"]
+  },
+  "sample_captures": {
+    "NCIC007_200_E": ["clin.ex.v1"],
+    "NCIC008_200_E": ["clin.ex.v1"],
+    "NCIC009_200_E": ["clin.ex.v1"],
+    "NCIC007_200_P": ["clin.snv.v1"],
+    "NCIC007_100_P": ["clin.snv.v1"],
+    "NCIC008_200_P": ["clin.snv.v1"],
+    "NCIC008_100_P": ["clin.snv.v1"],
+    "NCIC009_200_P": ["clin.snv.v1"],
+    "NCIC009_100_P": ["clin.snv.v1"],
+    "NCIC0010_200_E": ["clin.ex.v1"],
+    "NCIC0011_200_E": ["clin.ex.v1"],
+    "GIAB_200_E": ["clin.ex.v1"],
+    "NCIC0010_200_P": ["clin.snv.v1"],
+    "NCIC0010_100_P": ["clin.snv.v1"],
+    "NCIC0011_200_P": ["clin.snv.v1"],
+    "NCIC0011_100_P": ["clin.snv.v1"],
+    "GIAB_200_P": ["clin.snv.v1"],
+    "GIAB_100_P": ["clin.snv.v1"],
+    "NCIC001_100_E": ["clin.ex.v1"],
+    "NCIC002_100_E": ["clin.ex.v1"],
+    "NCIC003_100_E": ["clin.ex.v1"],
+    "NCIC001_100A_P": ["clin.snv.v1"],
+    "NCIC001_100B_P": ["clin.snv.v1"],
+    "NCIC002_100A_P": ["clin.snv.v1"],
+    "NCIC002_100B_P": ["clin.snv.v1"],
+    "NCIC003_100A_P": ["clin.snv.v1"],
+    "NCIC003_100B_P": ["clin.snv.v1"],
+    "NCIC004_100_E": ["clin.ex.v1"],
+    "NCIC005_100_E": ["clin.ex.v1"],
+    "NCIC006_100_E": ["clin.ex.v1"],
+    "NCIC004_100A_P": ["clin.snv.v1"],
+    "NCIC004_100B_P": ["clin.snv.v1"],
+    "NCIC005_100A_P": ["clin.snv.v1"],
+    "NCIC005_100B_P": ["clin.snv.v1"],
+    "NCIC006_100A_P": ["clin.snv.v1"],
+    "NCIC006_100B_P": ["clin.snv.v1"]
+  },
+  "sample_references": []	
 }

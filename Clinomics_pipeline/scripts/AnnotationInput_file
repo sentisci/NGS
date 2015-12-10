@@ -3,6 +3,7 @@ AnnotationInput.anno.gene
 AnnotationInput.anno.exac.3
 AnnotationInput.anno.clinseq
 AnnotationInput.anno.cadd
+AnnotationInput.sift.out
 AnnotationInput.anno.clinvar
 AnnotationInput.hgmd
 AnnotationInput.match
