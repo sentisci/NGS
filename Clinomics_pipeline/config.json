@@ -3,10 +3,13 @@
 	"platform": 		"Illumina",
         "reference_name": 	"ucsc.hg19",
 	"aligner"	: 	"bwamem",
-        "hotspot_intervals": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/hg19_Hotspot.07.07.15.bed",
-        "genotyping_sites": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/1000gSites4genotyping.bed",
-        "snpEff_config": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/snpEff.config",
+        "hotspot_intervals": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/hg19_Hotspot.07.07.15.bed",
+        "genotyping_sites": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/1000gSites4genotyping.bed",
+        "snpEff_config": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/snpEff.config",
+	"strelka_config":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/Strelka.config.ini",
         "snpEff_genome": 	"GRCh37.75",
+	"SIFTbuild":            "Human_db_37",
+	"SIFT_db":		"/ref/human/SIFT/Human_db_37",
 	"reference_fasta":
 		{
 			"human_g1k_v37":	"/projects/Clinomics/ref/serpentine_resources/human_g1k_v37/human_g1k_v37.fasta",
@@ -16,7 +19,7 @@
 		{
 			"bwa":	"/projects/Clinomics/ref/serpentine_resources/mapping/bwaindex_"
 		},
-	"adapters":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/ref/adapters.fa",
+	"adapters":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/adapters.fa",
 	"resources_b37": {
                 "dbsnp": "/projects/Clinomics/ref/serpentine_resources/human_g1k_v37/dbsnp_138.b37.vcf",
                 "cosmic": "/projects/Clinomics/ref/serpentine_resources/human_g1k_v37/cosmic_v67.b37.vcf",
@@ -42,8 +45,13 @@
                 "clinvar": "/projects/Clinomics/ref/serpentine_resources/clinvar_dbsnp138_GRCh37_20140211.vcf"
         },
         "target_intervals": {
-                "clin.ex.v1":  "/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
-                "clin.snv.v1": "/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed"
+                "clin.ex.v1":  "/projects/Clinomics/Tools/serpentine_Tgen_extras/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
+                "clin.snv.v1": "/projects/Clinomics/Tools/serpentine_Tgen_extras/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed"
         },
-	"strelka_config":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/refs/Strelka.config.ini"
+	"annovar_data":		"/ref/clinomics/annovar/",
+	"AnnotationInput_file": "/projects/Clinomics/Tools/serpentine_Tgen/scripts/AnnotationInput_file",
+	"addBack":		"addAnnotations2vcf.pl",
+	"SiftParse":		"ParseSIFT.pl",
+	"PPH2Parse":		"ParsePPH2.pl",
+	"block":		"block_for_jobid.pl"
 }

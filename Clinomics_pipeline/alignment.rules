@@ -404,8 +404,9 @@ rule HaplotypeCaller:
         mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 	
 	mkdir /projects/scratch/${{PBS_JOBID}}
+
 	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
-	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar  -T HaplotypeCaller -R {params.reference} -I {input.bam} -L /projects/scratch/${{PBS_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {params.dbsnp} -mbq 20 -log {log}
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar  -T HaplotypeCaller -R {params.reference} -I {input.bam} -L /projects/scratch/${{PBS_JOBID}}/target_intervals.bed -o {output.vcf} --dbsnp {params.dbsnp} -mbq 20 -mmq 30 -log {log}
 	
 	       """
 
@@ -432,7 +433,8 @@ rule freebayes:
 	module load vcftools/{params.vcftools_version}
 	
 	mkdir /projects/scratch/${{PBS_JOBID}}
-        gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
+       
+	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
         freebayes -f {params.reference} --haplotype-length 50 -b {input.bam} -v {output} > {log} 2>&1
 
 	vcftools --vcf {output} --bed /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --out {output} --recode --keep-INFO-all
@@ -458,6 +460,8 @@ rule platypus:
                 "log_error/{sample}.platypus.raw.vcf.log"
         shell: """
         module load Platypus/{version}
+
+	mkdir /projects/scratch/${{PBS_JOBID}}
 	
 	gawk '{{print $1 ":" $2 "-" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.txt
 	platypus callVariants --nCPU=16 --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions=/projects/scratch/${{PBS_JOBID}}/target_intervals.txt --output={output.vcf} --refFile={params.reference} --logFileName={log}
@@ -489,6 +493,7 @@ rule mutect:
         mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
 	mkdir /projects/scratch/${{PBS_JOBID}}	
+	
 	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/muTect/{version}/mutect-{version}.jar -T MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --vcf  {output.vcf} > {log} 2>&1  
 	"""
@@ -515,7 +520,9 @@ rule strelka:
 	module load strelka/{version}
 	module load vcftools/{params.vcftools_version}
 	module load samtools	
-		
+	
+	mkdir /projects/scratch/${{PBS_JOBID}}	
+	
 	configureStrelkaWorkflow.pl --normal={input[0]} --tumor={input[2]} --ref={params.reference} --config={params.strelka_config} --output-dir=/projects/scratch/${{PBS_JOBID}}/strelka/ > {log} 2>&1
 	
 	make -j 16 -f /projects/scratch/${{PBS_JOBID}}/strelka/Makefile 2>> {log}
@@ -530,9 +537,10 @@ rule strelka:
 
 rule snpEff:
 	input:
-		vcf = "{base}.raw.vcf",
+		vcf ="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.raw.vcf",
 	output:
-		"{base}.annotated.vcf"
+		vcf="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.vcf",
+		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.txt"
 	version:
 		config['snpEff']
 	params:
@@ -543,27 +551,161 @@ rule snpEff:
 		dbsnp		=config["resources"]['dbsnp'],
 		clinvar		=config["resources"]['clinvar'],
 		ESP_snps	=config["resources"]['ESP_snps'],
+		annovar_ver     =config['annovar'],
 		batch		=config["snpEff_clust"] 
 	log:
-		"{base}.annotated.vcf.log"
+		"log_error/{caller}.snpEff.vcf.log"
 	shell: 	"""
 	
 	module load snpEff/{version}
 	module load java/jre1.7.0_71
+	module load annovar/{params.annovar_ver}
+
+ 	mkdir /projects/scratch/${{PBS_JOBID}}	
+ 
 	SnpSift_path="/apps/snpEff/{version}/SnpSift.jar"	
         SnpEff_path="/apps/snpEff/{version}/snpEff.jar"
         mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
 
-	java -Xmx${{mem}}g -Djava.io.tmpdir=/project/scratch/${{PBS_JOBID}}/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx${{mem}}g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output} 2> {log}
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/project/scratch/${{PBS_JOBID}}/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx${{mem}}g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output.vcf} 2> {log}
 	
+	perl $SERPENTINE_HOME/scripts/vcf2txt.pl {output.vcf} /projects/scratch/${{PBS_JOBID}} >{output.txt}
 		"""
 
+rule formatInput:
+        input:
+                #vcfs=["NCI0276tumor_200ng_P.strelka.indels.annotated.vcf","NCI0276tumor_200ng_P.strelka.indels.annotated.vcf"]
+                #vcfs=ALL_snpEff_vcf
+                vcfs=lambda wildcards:   ALL_SUBJECT_VCFS[wildcards.subject]
+        output:
+                "SUBJECT/{subject}/Annotation/AnnotationInput.anno",
+                "SUBJECT/{subject}/Annotation/AnnotationInput.pph",
+                "SUBJECT/{subject}/Annotation/AnnotationInput.sift"
+        params:
+                rulename   = "FormatInput",
+                batch      = config["formatinput_clust"],
+        log:
+                "log_error/{subject}.FormatInput"
+        run:
+                inputVCFs = ' '.join(input.vcfs)
+                shell("""
+                        cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/Annotation/AnnotationInput
+                        perl $SERPENTINE_HOME/scripts/MakeAnnotationInputs.pl SUBJECT/{wildcards.subject}/Annotation/AnnotationInput 2>{log}
+                """)
 
-rule test:
+rule Annovar_annotation:
+        input:
+                "SUBJECT/{subject}/Annotation/AnnotationInput.anno",
+        output:
+                "SUBJECT/{subject}/Annotation/AnnotationInput.docm",
+        version:
+                config['annovar'],
+        params:
+                rulename   = "Annotation",
+                batch      = config["annovar_clust"],
+        log:
+                "log_error/{subject}.Annovar"
+        shell: """
+
+        module load annovar/{version}
+
+        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{wildcards.subject}/Annotation/ AnnotationInput $SERPENTINE_HOME/scripts/addAnnotation.pl 2>> {log}
+                """
+
+rule PolyPhen2:
 	input:
-		file="batch_test.txt"
+		"SUBJECT/{subject}/Annotation/AnnotationInput.pph",
+		convertor  = SERPENTINE_HOME + "/scripts/" + config["PPH2Parse"],
+		block      = SERPENTINE_HOME + "/scripts/" + config["block"]
 	output:
+		"SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
+	version:
+		config['polyphen2'],
+	params:
+		rulename	="PolyPhen2",
+		batch		=config["polyphen2_clust"],
+	log:
+		"log_error/{subject}.PolyPhen2"
+	shell: """
+		module load polyphen2/{version}
+		"""
+
+rule Sift:
+	input:
+		sift		="SUBJECT/{subject}/Annotation/AnnotationInput.sift",
+		convertor	= SERPENTINE_HOME + "/scripts/" + config["SiftParse"]
+	output:
+		sift_out	="SUBJECT/{subject}/Annotation/AnnotationInput.sift.out",
+	version:
+		config['SIFT'],
+	params:
+		rulename        ="SIFT",
+		build		=config["SIFTbuild"],
+		database	=config["SIFT_db"],
+		batch           =config["sift_clust"],
+	log:
+		"log_error/{subject}.SIFT"
+	shell: """
+		module load python/2.7.9
+		module load SIFT/{version}
+		
+		mkdir /projects/scratch/${{PBS_JOBID}}		
+		
+		DIR=`pwd`
+		cd ${{DIR}}/`dirname {input.sift}`
+		FILE=`basename {input.sift}`
+		SIFT_exome_nssnvs.pl -i ${{FILE}} -d {params.database} -o /projects/scratch/${{PBS_JOBID}} -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
+		perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv > ${{DIR}}/{output.sift_out}
+		"""
+
+rule Combine_ASP_annotation:
+	input:
+		anno="SUBJECT/{subject}/Annotation/AnnotationInput.docm",
+		#pph2="SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
+		sift="SUBJECT/{subject}/Annotation/AnnotationInput.sift.out",
+		convertor  = SERPENTINE_HOME + "/scripts/" + "CombineAnnotations.pl",
+		geneanno   = SERPENTINE_HOME + "/scripts/" + "GeneAnnotation.pl"
+	output:
+		anno="SUBJECT/{subject}/Annotation/AnnotationInput.annotations.final.txt"
+	params:
+		rulename	="Combine_ASP_annotation",
+		dataDir		=config["annovar_data"],
+		AnnotationInput_file=config["AnnotationInput_file"],
+		batch		=config["job_Combine"],
+	log:
+		"log_error/{subject}.CombineAnnotation"
+	shell: """
+		
+		for i in `cat {params.AnnotationInput_file}`;do  echo "SUBJECT/{wildcards.subject}/Annotation/$i" >> SUBJECT/{wildcards.subject}/Annotation/list ; done	
+		sed 's/^[\t ]*//g' -i SUBJECT/{wildcards.subject}/Annotation/list
+			
+		perl {input.convertor} SUBJECT/{wildcards.subject}/Annotation/list > {output}.tmp
+		perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
+		rm -rf {output}.tmp
+
+		"""
+
+rule Attach_ASP_Annotation:
+	input:
+		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.txt",
+		ref="SUBJECT/{subject}/Annotation/AnnotationInput.annotations.final.txt",
+		convertor  = SERPENTINE_HOME + "scripts/" + config["addBack"]
+	output:
+		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.annotated.txt"
+	params:
+		rulename   = "Attach_ASP_Annotation",
+		batch      = config["job_addbackann"],
+	log:
+		"log_error/{subject}.AttachAnnotation"
+	shell: """
+	perl {input.convertor} {input.ref} {input.txt} >{output.txt} 2>{log}
+		"""
+
+rule test1:
+	input:
 		file="batch_out.txt"
+	output:
+		file="batch_input.txt"
 	log:
 		"test.log"
 	params:

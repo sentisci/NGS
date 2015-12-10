@@ -1,7 +1,4 @@
 #!/bin/bash
-module load bedtools/2.24.0
-## caculate read depth for a given bed file or bam file
-
 
 if [ $# -lt 2 ]
 then
@@ -21,7 +18,6 @@ if [[ $1 = *.bam ]]; then
 elif [[ $1 = *.bed ]]; then
 	a='-a'
 fi
-	
 
 outBase=`basename $1`
 echo $'chr\tstart\tend\tgene\tbaits\tbases_covered\ttotal_bases\tfraction_covered' >  ${outDir}/${outBase}.basecoverage
