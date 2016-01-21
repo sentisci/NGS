@@ -17,5 +17,7 @@
 	"snpEff"		: "4.1c",
 	"annovar"		: "20150322",
 	"polyphen2"		: "2.2.2r405b",
-	"SIFT"			: "5.2.2"
+	"SIFT"			: "5.2.2",
+	"novocraft"		: "3.02.10",
+	"bam2mpg"		: "1.0.1"
 }
