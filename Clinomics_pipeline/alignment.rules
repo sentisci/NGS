@@ -40,8 +40,8 @@ rule bwamem_map:
 		index = lambda wildcards: config['align_algo_index']['bwa']+config['bwa']+"/"+config['reference_name']+".pac",
 		fastq = lambda wildcards: config['units'][wildcards.unit]
 	output:
-		bam="TEMP/{unit}.bam",
-		bai="TEMP/{unit}.bam.bai"
+		bam="TEMP/{unit}.bwamem.bam",
+		bai="TEMP/{unit}.bwamem.bam.bai"
 	version: 
 		config['bwa']
 	params:
@@ -53,33 +53,75 @@ rule bwamem_map:
 		adapters		= config['adapters'],
 		samtools_version	= config['samtools'],
 		ea_utils_version	= config['ea_utils'],
+		fastqc_version		= config['fastqc'],
         	batch			= config['alignment_clust']['bwa']
 	log:	"log_error/{unit}.bwamap.log"
     	shell:	"""
 	
 	module load bwa/{version}
+	module load fastqc/{params.fastqc_version}
 	module load samtools/{params.samtools_version}
 	module load ea-utils/{params.ea_utils_version}
+
+	mkdir /projects/scratch/${{PBS_JOBID}}
 	
-	R1={input.fastq[0]}
-	R2={input.fastq[1]}
+	R1=/projects/scratch/${{PBS_JOBID}}/`basename {input.fastq[0]}`
+	R2=/projects/scratch/${{PBS_JOBID}}/`basename {input.fastq[1]}`
+
 	mcf_log={wildcards.unit}.mcf_log	
 
-	##fastq-mcf -C 1000000 -q 2 -p 10 -u -x 20 -o $R1 -o $R2 {params.adapters} <(gunzip -c {input.fastq[0]}) <(gunzip -c {input.fastq[1]}) > $mcf_log 2>&1
-	bwa mem -M -t 16 -R "@RG\tID:{wildcards.unit}\tSM:{params.sample}\tLB:{params.library}\tPL:Illumina" {params.bwa_index} $R1 $R2 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - TEMP/{wildcards.unit}
+	fastq-mcf -C 1000000 -q 2 -p 10 -u -x 20 -o $R1 -o $R2 {params.adapters} <(gunzip -c {input.fastq[0]}) <(gunzip -c {input.fastq[1]}) > /projects/scratch/${{PBS_JOBID}}/${{mcf_log}} 2>&1
+	bwa mem -M -t 16 -R "@RG\tID:{wildcards.unit}\tSM:{params.sample}\tLB:{params.library}\tPL:Illumina" {params.bwa_index} $R1 $R2 2> {log}| samtools view -Sbh - |samtools sort -m 30000000000 - TEMP/{wildcards.unit}.bwamem
 	
 	#indexing BAM file
-	samtools index TEMP/{wildcards.unit}.bam
+	samtools index TEMP/{wildcards.unit}.bwamem.bam
 		"""
+
+rule novoalign:
+	input:
+		index = lambda wildcards: config['align_algo_index']['novoalign'],
+		fastq = lambda wildcards: config['units'][wildcards.unit]
+	output:
+		bam="TEMP/{unit}.novoalign.bam",
+		bai="TEMP/{unit}.novoalign.bam.bai"
+	version: 
+		config["novocraft"]
+	params:
+		rulename  		= "novoalign",
+		sample                  = lambda wildcards:     UNIT_TO_SAMPLE[wildcards.unit],
+		library                 = lambda wildcards:     UNIT_TO_LIBRARY[wildcards.unit],
+		platform  		= config["platform"],
+		samtools_version        = config['samtools'],
+		batch     		= config["novoalign_clust"]
+	log:    
+		"log_error/{unit}.novoalign.log"
+	shell: """
+	
+	module load novocraft/{version}
+	module load samtools/{params.samtools_version}
+
+	mkdir /projects/scratch/${{PBS_JOBID}}
+
+	R1=`basename {input.fastq[0]}`
+	R2=`basename {input.fastq[1]}`
+
+	echo $PATH
+	
+	novoalign -d {input.index} -f {input.fastq[0]} {input.fastq[1]} -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -c 30 -e 100 -F STDFQ --hlimit 7 -i 200 100 -l 30 -o SAM \"@RG\\tID:{params.sample}\\tSM:{params.sample}\\tLB:{params.sample}\\tPL:{params.platform}\" -p 5,2 -t 250 2>{log} > /projects/scratch/${{PBS_JOBID}}/{wildcards.unit}.novoalign.sam
+	
+	samtools view -Sbh /projects/scratch/${{PBS_JOBID}}/{wildcards.unit}.novoalign.sam | samtools sort -m 30000000000 - TEMP/{wildcards.unit}.novoalign
+
+	samtools index {output.bam}
+	"""
 
 rule markdups:
 	input:	
-		bam="TEMP/{unit}.bam",
-		bai="TEMP/{unit}.bam.bai"
+		bam="TEMP/{unit}.{aligner}.bam",
+		bai="TEMP/{unit}.{aligner}.bam.bai"
 	output:
-		bam="TEMP/{unit}.md.bam",
-		bai="TEMP/{unit}.md.bam.bai",
-		metrics="TEMP/{unit}.bam.dupmetrics"
+		bam="TEMP/{unit}.{aligner}.md.bam",
+		bai="TEMP/{unit}.{aligner}.md.bam.bai",
+		metrics="TEMP/{unit}.{aligner}.bam.dupmetrics"
 	version:
 		config['picard']
 	params:
@@ -93,19 +135,81 @@ rule markdups:
 	
 	module load picard/{version}
 	module load samtools/{params.samtools_version}
-	mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+	mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
+
+	mkdir /projects/scratch/${{PBS_JOBID}}
+	pwd=`pwd`
+	echo $pwd	
 	
-	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar MarkDuplicates AS=true M={output.metrics} O={output.bam} I={input.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT > {log} 2>&1
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar MarkDuplicates AS=true M={output.metrics} O={output.bam} I={input.bam} REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT 2> {log}
 	
 	samtools index {output.bam}
 		"""
 
+rule Bam2MPG:
+	input:
+		bam=lambda wildcards:  expand("TEMP/{sample}.{aligner}.merge.bam", sample=wildcards.sample, aligner= config['aligner'][wildcards.aligner]),
+		bai=lambda wildcards:  expand("TEMP/{sample}.{aligner}.merge.bam.bai", sample=wildcards.sample, aligner= config['aligner'][wildcards.aligner])
+	output:
+		vcf="SUBJECT/{subject}/{sample}/{ref}.{aligner}/bam2mpg/{sample}.{aligner}.bam2mpg.raw.vcf"
+	version: 
+		config["bam2mpg"]
+	params:
+		rulename		= "bam2mpg",
+		reference		= config['reference_fasta'][config['reference_name']],
+		target_intervals	=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		samtools_version  	= config["samtools"],
+		vcftools_version  	= config["vcftools"],
+		batch			= config["bam2mpg_clust"]
+	log: 
+		"log_error/{sample}.bam2mpg.log"
+	shell: """
+
+	module load bam2mpg/{version}
+	module load vcftools/{params.vcftools_version}
+	module load vcftools/{params.samtools_version}
+
+	mkdir /projects/scratch/${{PBS_JOBID}}
+	temp_dir="/projects/scratch/${{PBS_JOBID}}"
+
+	##Run Bam2mpg for each chromosome
+	for CHR in `seq 1 22` X Y;
+	do
+		bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf {params.reference} {input.bam} &
+	done
+	wait
+
+	##Sort, bzip and index the above files
+	for CHR in `seq 1 22` X Y;
+	do
+		cat ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort > ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf
+		bgzip ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf
+		tabix -p -f vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
+		
+		cat ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf | vcf-sort > ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf
+		bgzip ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf
+		tabix -p -f vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
+	done
+
+	echo "Combine chr level vcf files"
+	vcf-concat ${{temp_dir}}/chr*{wildcards.sample}.*.vcf.gz > ${{temp_dir}}/{wildcards.sample}.snps.vcf
+	
+	echo "Restrict to Bed file"
+	vcftools --vcf ${{temp_dir}}/{wildcards.sample}.snps.vcf --bed {params.target_intervals} --out {wildcards.sample} --recode --keep-INFO-all
+
+	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf | vcf-sort > SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam2mpg/{wildcards.sample}.{wildcards.aligner}.bam2mpg.raw.vcf
+
+	rm -rf {wildcards.sample}.recode.vcf
+	
+	cp {input.bam} SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam/{wildcards.sample}.{wildcards.aligner}.final.bam
+	"""
+
 rule mergeBams:
 	input:
-		bam=lambda wildcards:	expand("TEMP/{unit}.md.bam", unit = SAMPLE_TO_UNIT[wildcards.sample]),
+		bam=lambda wildcards:  expand("TEMP/{unit}.{aligner}.md.bam", unit = SAMPLE_TO_UNIT[wildcards.sample],aligner= config['aligner'][wildcards.aligner]),
 	output:
-        	bam="TEMP/{sample}.merge.bam",
-		bai="TEMP/{sample}.merge.bam.bai"
+        	bam="TEMP/{sample}.{aligner}.merge.bam",
+		bai="TEMP/{sample}.{aligner}.merge.bam.bai"
 	version:
 		config['picard']
 	params:
@@ -120,7 +224,7 @@ rule mergeBams:
 		shell("""
 			module load picard/{version}
 			module load samtools/{params.samtools_version}
-		        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+		        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 
 			java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar  MergeSamFiles AS=true USE_THREADING=true VALIDATION_STRINGENCY=SILENT {inputBams} O={output.bam} 2>> {log}
 			samtools index {output.bam}
@@ -128,12 +232,12 @@ rule mergeBams:
 
 rule gatk_realigner_target_creator:
 	input:
-		bam="TEMP/{sample}.merge.bam",
+		bam="TEMP/{sample}.{aligner}.merge.bam",
                 phase1=config['resources']['knownIndels']['phase1'],
                 mills=config['resources']['knownIndels']['mills'],
                 reference=config['reference_fasta'][config['reference_name']]
 	output:
-		ri="TEMP/{sample}.realignment.intervals"
+		ri="TEMP/{sample}.{aligner}.realignment.intervals"
 	version:
                 config['gatk']
 	params:
@@ -145,20 +249,20 @@ rule gatk_realigner_target_creator:
 
         module load GATK/{version}
         module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 
         java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T RealignerTargetCreator -R {input.reference} -known {input.phase1} -known {input.mills} -I {input.bam} -o {output.ri} -nt 8 >{log} 2>&1
 		"""		
 
 rule gatk_IndelRealigner:
 	input:
-		bam="TEMP/{sample}.merge.bam",	
-		ri="TEMP/{sample}.realignment.intervals",
+		bam="TEMP/{sample}.{aligner}.merge.bam",	
+		ri="TEMP/{sample}.{aligner}.realignment.intervals",
                 phase1=config['resources']['knownIndels']['phase1'],
                 mills=config['resources']['knownIndels']['mills'],
                 reference=config['reference_fasta'][config['reference_name']]
 	output:
-		lr_bam="TEMP/{sample}.lr.bam"
+		lr_bam="TEMP/{sample}.{aligner}.lr.bam"
 	version:
                 config['gatk']
 	params:
@@ -170,7 +274,7 @@ rule gatk_IndelRealigner:
 
         module load GATK/{version}
         module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 	
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T IndelRealigner -R {input.reference}  -known {input.phase1} -known {input.mills} -I {input.bam} --targetIntervals {input.ri} -o {output.lr_bam} >>{log} 2>&1	
 
@@ -178,12 +282,12 @@ rule gatk_IndelRealigner:
 
 rule gatk_BaseRecalibrator:
 	input:
-		lr_bam="TEMP/{sample}.lr.bam",
+		lr_bam="TEMP/{sample}.{aligner}.lr.bam",
                 phase1=config['resources']['knownIndels']['phase1'],
                 mills=config['resources']['knownIndels']['mills'],
                 reference=config['reference_fasta'][config['reference_name']]
 	output:
-		rmat="TEMP/{sample}.recalibration.matrix.txt"
+		rmat="TEMP/{sample}.{aligner}.recalibration.matrix.txt"
 	version:
                 config['gatk']
 	params:
@@ -195,19 +299,19 @@ rule gatk_BaseRecalibrator:
 
         module load GATK/{version}
         module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T BaseRecalibrator -R {input.reference} -knownSites {input.phase1} -knownSites {input.mills} -I {input.lr_bam} -o {output.rmat} >>{log} 2>&1	
 		"""
 
 rule gatk_PrintReads:
 	input:
-                lr_bam="TEMP/{sample}.lr.bam",
-		rmat="TEMP/{sample}.recalibration.matrix.txt",
+                lr_bam="TEMP/{sample}.{aligner}.lr.bam",
+		rmat="TEMP/{sample}.{aligner}.recalibration.matrix.txt",
                 reference=config['reference_fasta'][config['reference_name']]
 	output:
-                bam="{base}/bam/{sample}.final.bam",
-                index="{base}/bam/{sample}.final.bai"
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                index="{base}/bam/{sample}.{aligner}.final.bai"
 	version:
                 config['gatk']
 	params:
@@ -219,24 +323,24 @@ rule gatk_PrintReads:
 
         module load GATK/{version}
         module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T PrintReads -R {input.reference} -I {input.lr_bam} -o {output.bam} -BQSR {input.rmat} >>{log} 2>&1				
 		"""
 
 rule flagstat:
 	input:
-		bam="{base}/bam/{sample}.final.bam",
-		bam_bai="{base}/bam/{sample}.final.bai"
+		bam="{base}/bam/{sample}.{aligner}.final.bam",
+		bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
 	output:
-		"{base}/qc/{sample}.final.bam.flagstat"
+		"{base}/qc/{sample}.{aligner}.final.bam.flagstat"
 	version:
 		config['samtools']
 	params:
 		rulename	= "flagstat",
 		batch		= config['flagstat_clust']
 	log:	
-		"log_error/{sample}.final.bam.flagstat.log"
+		"log_error/{sample}.{aligner}.final.bam.flagstat.log"
 	shell:	"""
 	
 	module load samtools/{version}
@@ -245,10 +349,10 @@ rule flagstat:
 		"""
 rule bamqc:
         input:
-                bam="{base}/bam/{sample}.final.bam",
-                bam_bai="{base}/bam/{sample}.final.bai"
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
         output:
-                "{base}/qc/bamqc/{sample}.final.bam.qualimapReport.html"
+                "{base}/qc/bamqc/{sample}.{aligner}.final.bam.qualimapReport.html"
         version:
                 config['qualimap']
         params:
@@ -260,7 +364,7 @@ rule bamqc:
 
         module load qualimap/{version}
 	module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 
         qualimap bamqc -c -bam {input.bam} -outdir {wildcards.base}/qc/bamqc -gff {params.target_intervals_gff} -nt 16 --java-mem-size=${{mem}}G >{log} 2>&1
         if [ -f "{wildcards.base}/qc/bamqc/qualimapReport.html" ]; then
@@ -270,10 +374,10 @@ rule bamqc:
 
 rule bamtdf:
 	input:
-                bam="{base}/bam/{sample}.final.bam",
-                bam_bai="{base}/bam/{sample}.final.bai"
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
 	output:
-        	"{base}/bam/{sample}.final.tdf"
+        	"{base}/bam/{sample}.{aligner}.final.tdf"
 	version:	
 		config['igvtools']
 	params:
@@ -291,10 +395,10 @@ rule bamtdf:
 
 rule readDepth:
 	input:
-                bam="{base}/bam/{sample}.final.bam",
-                bam_bai="{base}/bam/{sample}.final.bai"
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
 	output:
-                "{base}/qc/{sample}.final.bam.depth"
+                "{base}/qc/{sample}.{aligner}.final.bam.depth"
 	version:
 		config['bedtools']
 	params:
@@ -312,11 +416,11 @@ rule readDepth:
 	
 rule targetIntervals:
         input:
-                bam="{base}/bam/{sample}.final.bam",
-                bam_bai="{base}/bam/{sample}.final.bai"
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
         output:
-	        bam_probe_intervals = temp("{base}/qc/{sample}.final.bam.probe.intervals"),
-	        bam_target_intervals = temp("{base}/qc/{sample}.final.bam.target.intervals")
+	        bam_probe_intervals = temp("{base}/qc/{sample}.{aligner}.final.bam.probe.intervals"),
+	        bam_target_intervals = temp("{base}/qc/{sample}.{aligner}.final.bam.target.intervals")
 	version:
                 config['samtools']
 	params:
@@ -336,11 +440,11 @@ rule targetIntervals:
 
 rule hsMetrics:
 	input:
-        	bam="{base}/bam/{sample}.final.bam",
-        	bam_probe_intervals = "{base}/qc/{sample}.final.bam.probe.intervals",
-        	bam_target_intervals = "{base}/qc/{sample}.final.bam.target.intervals",
+        	bam="{base}/bam/{sample}.{aligner}.final.bam",
+        	bam_probe_intervals = "{base}/qc/{sample}.{aligner}.final.bam.probe.intervals",
+        	bam_target_intervals = "{base}/qc/{sample}.{aligner}.final.bam.target.intervals",
 	output:
-		"{base}/qc/{sample}.final.bam.hsmetrics"
+		"{base}/qc/{sample}.{aligner}.final.bam.hsmetrics"
 	version: 
 		config['picard']
 	params:
@@ -352,7 +456,7 @@ rule hsMetrics:
 
 	module load picard/{version}
 	module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar CalculateHsMetrics BAIT_INTERVALS={input.bam_probe_intervals} TARGET_INTERVALS={input.bam_target_intervals} INPUT={input.bam} OUTPUT={output} METRIC_ACCUMULATION_LEVEL=ALL_READS REFERENCE_SEQUENCE={params.reference} QUIET=true  VALIDATION_STRINGENCY=SILENT > {log} 2>&1
 		
@@ -360,9 +464,9 @@ rule hsMetrics:
 
 rule hotspotCov:
 	input:
-        	bam="{base}/bam/{sample}.final.bam"
+        	bam="{base}/bam/{sample}.{aligner}.final.bam"
 	output:
-        	"{base}/qc/{sample}.final.bam.hotspot.depth"
+        	"{base}/qc/{sample}.{aligner}.final.bam.hotspot.depth"
 	version:
 		config['samtools']
 	params:
@@ -383,10 +487,10 @@ rule hotspotCov:
 
 rule HaplotypeCaller:
 	input:
-		bam="{base}/bam/{sample}.final.bam",
-		bai="{base}/bam/{sample}.final.bai"
+		bam="{base}/bam/{sample}.{aligner}.final.bam",
+		bai="{base}/bam/{sample}.{aligner}.final.bai"
 	output:	
-		vcf="{base}/haplotypecaller/{sample}.haplotypecaller.raw.vcf"
+		vcf="{base}/haplotypecaller/{sample}.{aligner}.haplotypecaller.raw.vcf"
 	version:
 		config['gatk']
 	params:
@@ -401,7 +505,7 @@ rule HaplotypeCaller:
 	shell: """
 	module load GATK/{version}
 	module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 	
 	mkdir /projects/scratch/${{PBS_JOBID}}
 
@@ -412,10 +516,10 @@ rule HaplotypeCaller:
 
 rule freebayes:
         input:
-                bam="{base}/bam/{sample}.final.bam",
-                bai="{base}/bam/{sample}.final.bai"
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bai="{base}/bam/{sample}.{aligner}.final.bai"
         output:
-                vcf="{base}/freebayes/{sample}.freebayes.raw.vcf"
+                vcf="{base}/freebayes/{sample}.{aligner}.freebayes.raw.vcf"
         version:
                 config['freebayes']
         params:
@@ -443,10 +547,10 @@ rule freebayes:
 
 rule platypus:
         input:
-                bam="{base}/bam/{sample}.final.bam",
-                bai="{base}/bam/{sample}.final.bai"
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bai="{base}/bam/{sample}.{aligner}.final.bai"
         output:
-                vcf="{base}/platypus/{sample}.platypus.raw.vcf"
+                vcf="{base}/platypus/{sample}.{aligner}.platypus.raw.vcf"
         version:
                 config['platypus']
         params:
@@ -471,9 +575,9 @@ rule mutect:
         input:
                 lambda wildcards: somaticPairs[wildcards.somaticPair]
         output:
-	        call_stats="{anything}/mutect/{somaticPair}.mutect.call_stats.txt",
-	        coverage="{anything}/mutect/{somaticPair}.mutect.coverage.wig.txt",
-	        vcf="{anything}/mutect/{somaticPair}.mutect.raw.vcf"
+	        call_stats="{anything}/mutect/{somaticPair}.{aligner}.mutect.call_stats.txt",
+	        coverage="{anything}/mutect/{somaticPair}.{aligner}.mutect.coverage.wig.txt",
+	        vcf="{anything}/mutect/{somaticPair}.{aligner}.mutect.raw.vcf"
         version:
                 config['MuTect']
         params:
@@ -490,7 +594,7 @@ rule mutect:
         
 	module load muTect/{version}
 	module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 
 	mkdir /projects/scratch/${{PBS_JOBID}}	
 	
@@ -503,8 +607,8 @@ rule strelka:
         input:
                 lambda wildcards: somaticPairs[wildcards.somaticPair]
         output:
-	        snv_vcf="{anything}/strelka/{somaticPair}.strelka.snvs.raw.vcf",
-	        indel_vcf="{anything}/strelka/{somaticPair}.strelka.indels.raw.vcf"
+	        snv_vcf="{anything}/strelka/{somaticPair}.{aligner}.strelka.snvs.raw.vcf",
+	        indel_vcf="{anything}/strelka/{somaticPair}.{aligner}.strelka.indels.raw.vcf"
 	version:
                 config['Strelka']
 	params:
@@ -537,10 +641,10 @@ rule strelka:
 
 rule snpEff:
 	input:
-		vcf ="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.raw.vcf",
+		vcf ="SUBJECT/{subject}/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
 	output:
-		vcf="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.vcf",
-		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.txt"
+		vcf="SUBJECT/{subject}/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.vcf",
+		txt="SUBJECT/{subject}/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt"
 	version:
 		config['snpEff']
 	params:
@@ -565,7 +669,7 @@ rule snpEff:
  
 	SnpSift_path="/apps/snpEff/{version}/SnpSift.jar"	
         SnpEff_path="/apps/snpEff/{version}/snpEff.jar"
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'`
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
 
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/project/scratch/${{PBS_JOBID}}/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx${{mem}}g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output.vcf} 2> {log}
 	
@@ -616,7 +720,7 @@ rule PolyPhen2:
 	input:
 		"SUBJECT/{subject}/Annotation/AnnotationInput.pph",
 		convertor  = SERPENTINE_HOME + "/scripts/" + config["PPH2Parse"],
-		block      = SERPENTINE_HOME + "/scripts/" + config["block"]
+		##block      = SERPENTINE_HOME + "/scripts/" + config["block"]
 	output:
 		"SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
 	version:
@@ -661,7 +765,7 @@ rule Sift:
 rule Combine_ASP_annotation:
 	input:
 		anno="SUBJECT/{subject}/Annotation/AnnotationInput.docm",
-		#pph2="SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
+		pph2="SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
 		sift="SUBJECT/{subject}/Annotation/AnnotationInput.sift.out",
 		convertor  = SERPENTINE_HOME + "/scripts/" + "CombineAnnotations.pl",
 		geneanno   = SERPENTINE_HOME + "/scripts/" + "GeneAnnotation.pl"
@@ -687,11 +791,11 @@ rule Combine_ASP_annotation:
 
 rule Attach_ASP_Annotation:
 	input:
-		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.snpEff.txt",
+		txt="SUBJECT/{subject}/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt",
 		ref="SUBJECT/{subject}/Annotation/AnnotationInput.annotations.final.txt",
 		convertor  = SERPENTINE_HOME + "scripts/" + config["addBack"]
 	output:
-		txt="SUBJECT/{subject}/{sample}/{aligner}/{caller}/{base}.annotated.txt"
+		txt="SUBJECT/{subject}/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.annotated.txt"
 	params:
 		rulename   = "Attach_ASP_Annotation",
 		batch      = config["job_addbackann"],
@@ -711,7 +815,7 @@ rule test1:
 	params:
 		batch	=config["snpEff_clust"]
 	shell: """
-	mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"="); print a[2]}}'` 
+	mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'` 
 	echo ${{mem}} > {output.file}
 		
 		"""

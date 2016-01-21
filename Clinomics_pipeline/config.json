@@ -2,7 +2,11 @@
 
 	"platform": 		"Illumina",
         "reference_name": 	"ucsc.hg19",
-	"aligner"	: 	"bwamem",
+	"aligner"	: 	
+		{		
+			"bwamem":		"bwamem",
+			"novoalign":		"novoalign"
+		},
         "hotspot_intervals": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/hg19_Hotspot.07.07.15.bed",
         "genotyping_sites": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/1000gSites4genotyping.bed",
         "snpEff_config": 	"/projects/Clinomics/Tools/serpentine_Tgen_extras/snpEff.config",
@@ -17,7 +21,8 @@
 		},
 	"align_algo_index":
 		{
-			"bwa":	"/projects/Clinomics/ref/serpentine_resources/mapping/bwaindex_"
+			"bwa":	"/projects/Clinomics/ref/serpentine_resources/mapping/bwaindex_",
+			"novoalign": "/projects/Clinomics/Tools/serpentine_Tgen_extras/chr_all_hg19.nbx"
 		},
 	"adapters":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/adapters.fa",
 	"resources_b37": {
@@ -46,8 +51,10 @@
         },
         "target_intervals": {
                 "clin.ex.v1":  "/projects/Clinomics/Tools/serpentine_Tgen_extras/Agilent_SureSelect_Clinical_Research_Exome.target.hg19.merged.bed",
-                "clin.snv.v1": "/projects/Clinomics/Tools/serpentine_Tgen_extras/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed"
-        },
+                "clin.snv.v1": "/projects/Clinomics/Tools/serpentine_Tgen_extras/Agilent_SureSelect_Killian_Version4.target.hg19.merged.bed",
+    		"clin.cnv.v2": "/projects/Clinomics/Tools/serpentine_Tgen_extras/clin_cnv_v2_S0784012.target.hg19.merged.bed",
+    		"clin.snv.v2": "/projects/Clinomics/Tools/serpentine_Tgen_extras/clin_snv_v2_0783981.target.hg19.merged.bed"
+	},
 	"annovar_data":		"/ref/clinomics/annovar/",
 	"AnnotationInput_file": "/projects/Clinomics/Tools/serpentine_Tgen/scripts/AnnotationInput_file",
 	"addBack":		"addAnnotations2vcf.pl",
