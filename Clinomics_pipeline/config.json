@@ -55,6 +55,29 @@
     		"clin.cnv.v2": "/projects/Clinomics/Tools/serpentine_Tgen_extras/clin_cnv_v2_S0784012.target.hg19.merged.bed",
     		"clin.snv.v2": "/projects/Clinomics/Tools/serpentine_Tgen_extras/clin_snv_v2_0783981.target.hg19.merged.bed"
 	},
+	"failed_exon_params": {
+		"clin.ex.v1": 
+				{
+					"Normal":"20",
+					"Tumor":"50"	
+		
+				},
+                "clin.snv.v1":
+                                {
+					"Normal":"20",
+					"Tumor":"50"
+                                },
+                "clin.cnv.v2":
+                                {
+					"Normal":"20",
+					"Tumor":"50"	
+                                },
+                "clin.snv.v2":
+                                {
+					"Normal":"20",
+					"Tumor":"50"
+                                }
+	},
 	"annovar_data":		"/ref/clinomics/annovar/",
 	"AnnotationInput_file": "/projects/Clinomics/Tools/serpentine_Tgen/scripts/AnnotationInput_file",
 	"addBack":		"addAnnotations2vcf.pl",

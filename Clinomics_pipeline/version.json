@@ -18,6 +18,6 @@
 	"annovar"		: "20150322",
 	"polyphen2"		: "2.2.2r405b",
 	"SIFT"			: "5.2.2",
-	"novocraft"		: "3.02.10",
+	"novocraft"		: "3.02.10mpich2",
 	"bam2mpg"		: "1.0.1"
 }

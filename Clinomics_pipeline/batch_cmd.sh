@@ -4,14 +4,19 @@ module load snakemake/20150924
 ##module load R/3.2.0
 
 #Initialize Serpentine directory
-export SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen/"
+export SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_working/"
 export RESULT_DIR="/projects/Clinomics/Tools/"
+export NOW=$(date +"%m_%d_%y")
+export WORKING_DIR="${RESULT_DIR}/Clinomics_Run_Test_Novoalign_3/"
 
 #Initialize Basic Variables
-NOW=$(date +"%H%M%S_%m%d%Y")
-WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test_4/
-##WORKING_DIR=${RESULT_DIR}/Clinomics_Run_Test_2/
+
+
 SNAKEFILE=${SERPENTINE_HOME}/Snakefile
+
+mkdir $WORKING_DIR/TEMP
+chmod -R 770 $WORKING_DIR
+chgrp -R clinomics $WORKING_DIR
 
 cd $WORKING_DIR
 snakemake\
@@ -22,7 +27,7 @@ snakemake\
         -k -p -w 10 -T \
 	--rerun-incomplete \
 	--stats serpentine_${NOW}.stats \
-        -j 16 \
+        -j 30 \
         --cluster "qsub -V -e ${WORKING_DIR}/log_error/ -o ${WORKING_DIR}/log_error/ {params.batch}" \
         >& Clinomics_${NOW}.log
 

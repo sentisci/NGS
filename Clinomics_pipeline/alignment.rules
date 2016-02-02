@@ -1,3 +1,5 @@
+##1. Pre-processing QC statistics
+##1a. FastQC
 rule fastqc:
 	input:
                 fastq = lambda wildcards: config['units'][wildcards.unit]
@@ -32,9 +34,220 @@ rule fastqc:
         ln -s `pwd`/{wildcards.base}/qc/fastqc/${{bn_R2_lib_fastqc_html}}    `pwd`/{wildcards.base}/qc/fastqc/${{bn_R2_unit_html}}
         ln -s `pwd`/{wildcards.base}/qc/fastqc/${{bn_R2_lib_fastqc_zip}}    `pwd`/{wildcards.base}/qc/fastqc/${{bn_R2_unit_zip}}
 
+		"""
+##2. Post-processing QC statistics
+##2a. Samtools Flagstat	
+rule flagstat:
+	input:
+		bam="{base}/bam/{sample}.{aligner}.final.bam",
+		bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
+	output:
+		"{base}/qc/{sample}.{aligner}.final.bam.flagstat"
+	version:
+		config['samtools']
+	params:
+		rulename	= "flagstat",
+		batch		= config['flagstat_clust']
+	log:	
+		"log_error/{sample}.{aligner}.final.bam.flagstat.log"
+	shell:	"""
+	
+	module load samtools/{version}
+	
+	samtools flagstat {input.bam} > {output} 2> {log}
+		"""
+
+##2b. Qualimap - bamqc
+rule bamqc:
+        input:
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
+        output:
+                "{base}/qc/bamqc/{sample}.{aligner}.final.bam.qualimapReport.html"
+        version:
+                config['qualimap']
+        params:
+                rulename        = "BamQc",
+		target_intervals_gff=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]].replace('.bed', '.gff'),
+                batch           = config['bamqc_clust']
+        log:	"log_error/{sample}.final.bam.qualimapReport.log"
+        shell:  """
+
+        module load qualimap/{version}
+	module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
+
+        qualimap bamqc -c -bam {input.bam} -outdir {wildcards.base}/qc/bamqc -gff {params.target_intervals_gff} -nt 16 --java-mem-size=${{mem}}G >{log} 2>&1
+        if [ -f "{wildcards.base}/qc/bamqc/qualimapReport.html" ]; then
+		mv {wildcards.base}/qc/bamqc/qualimapReport.html {output}
+	fi
+	"""
+
+##2c. IGVTools -  Tiled data file(.tdf) 
+rule bamtdf:
+	input:
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
+	output:
+        	"{base}/bam/{sample}.{aligner}.final.tdf"
+	version:	
+		config['igvtools']
+	params:
+        	rulename        = "bamtdf",
+		genome		= config['reference_name'].replace("human_g1k_v37", "1kg_v37").replace("ucsc.hg19", "hg19"),
+		batch           = config['igvtools_clust']
+	log:    "log_error/{sample}.final.bam.tdf.log"
+	shell:  """
+	
+	module load IGVTools/{version}
+	
+	igvtools count {input.bam} {output} {params.genome} > {log} 2>&1
+
+		"""	
+
+#2d.	BedTools - Read Depth
+rule readDepth:
+	input:
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
+	output:
+                "{base}/qc/{sample}.{aligner}.final.bam.depth_per_base"
+	version:
+		config['bedtools']
+	params:
+		rulename	= "readDepth",
+		target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		batch		= config['readDepth_clust']
+	log:	"log_error/{sample}.final.bam.depth.log"
+	shell: """
+	
+	module load bedtools/{version}
+	module load R
+		
+	{SERPENTINE_HOME}/scripts/readDepth.sh {input.bam} {params.target_intervals} {wildcards.base}/qc/ > {log} 2>&1	
+		"""
+
+#2d.	In-house script - failedExons
+rule  failedExons:
+	input:
+		depth_file="{base}/qc/{sample}.{aligner}.final.bam.depth_per_base"
+	output:
+		failed_exon_stats="{base}/qc/{sample}.{aligner}.final.bam.failExons",
+		failed_gene_stats="{base}/qc/{sample}.{aligner}.final.bam.failGenes"
+	params:
+		rulename	="failedExons",
+		threshold	=lambda wildcards: config['failed_exon_params'][config['sample_captures'][wildcards.sample][0]][config['sample_TN'][wildcards.sample][0]],
+		batch		=config['failedExons_clust']
+	log:    "log_error/{sample}.failed.exon.log"
+	shell:	"""
+
+	perl {SERPENTINE_HOME}/scripts/failed_Exon_Final.pl {input.depth_file} {params.threshold} {output.failed_exon_stats} {output.failed_gene_stats}
+		"""
+
+
+#2e.	Samtools - Target Interval Depth	
+rule targetIntervals:
+        input:
+                bam="{base}/bam/{sample}.{aligner}.final.bam",
+                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
+        output:
+	        bam_probe_intervals = temp("{base}/qc/{sample}.{aligner}.final.bam.probe.intervals"),
+	        bam_target_intervals = temp("{base}/qc/{sample}.{aligner}.final.bam.target.intervals")
+	version:
+                config['samtools']
+	params:
+		rulename = "targetIntervals",
+	        target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+	        probe_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]].replace(".target.", ".design."),
+		batch	= config['targetIntervals_clust']
+	log:	"log_error/{sample}.targetIntervals.log"
+	shell:	"""
+		
+	module load samtools/{version}
+	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {params.probe_intervals} )> {output.bam_probe_intervals} 2>> {log}
+
+	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {params.target_intervals} )> {output.bam_target_intervals} 2>> {log}
 
 		"""
+
+#2h.	Python Consolidated QC script
+rule consolidated_QC:
+	input:
+		bam="{base}/bam/{sample}.{aligner}.final.bam"
+	output:
+		consolidated_QC_output="{base}/qc/{sample}.{aligner}.final.bam.consolidated_QC"
+	version:
+		config['samtools']
+	params:
+		rulename		=	"consolidated_QC",
+		target_intervals	=	lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		bedtools_version	=	config['bedtools'],	
+		batch   		=	config['consolidated_QC_clust']
+	log:
+		"log_error/{sample}.consolidated_QC.log"
+	shell:	"""
 	
+	module unload python/3.4.3
+	module load python/2.7.9
+	module load samtools/{version}
+	module load bedtools/{params.bedtools_version}
+	
+	mkdir /projects/scratch/${{PBS_JOBID}}
+	
+	python {SERPENTINE_HOME}/scripts/QC_stats_Final.py {input.bam} {params.target_intervals} /projects/scratch/${{PBS_JOBID}}  > {output.consolidated_QC_output}		
+		"""
+
+#2f.	Picard - CalculateHsMetrics
+rule hsMetrics:
+	input:
+        	bam="{base}/bam/{sample}.{aligner}.final.bam",
+        	bam_probe_intervals = "{base}/qc/{sample}.{aligner}.final.bam.probe.intervals",
+        	bam_target_intervals = "{base}/qc/{sample}.{aligner}.final.bam.target.intervals",
+	output:
+		"{base}/qc/{sample}.{aligner}.final.bam.hsmetrics"
+	version: 
+		config['picard']
+	params:
+        	rulename = "hsMetrics",
+        	reference = config['reference_fasta'][config['reference_name']],
+		batch	= config['hsMetrics_clust']
+	log:	"log_error/{sample}.final.bam.hsmetrics.log"
+	shell: """
+
+	module load picard/{version}
+	module load java/jre1.7.0_71
+        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
+
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar CalculateHsMetrics BAIT_INTERVALS={input.bam_probe_intervals} TARGET_INTERVALS={input.bam_target_intervals} INPUT={input.bam} OUTPUT={output} METRIC_ACCUMULATION_LEVEL=ALL_READS REFERENCE_SEQUENCE={params.reference} QUIET=true  VALIDATION_STRINGENCY=SILENT > {log} 2>&1
+		
+	"""
+
+#2g.	Samtools - Hotspot genes coverage
+rule hotspotCov:
+	input:
+        	bam="{base}/bam/{sample}.{aligner}.final.bam"
+	output:
+        	"{base}/qc/{sample}.{aligner}.final.bam.hotspot.depth"
+	version:
+		config['samtools']
+	params:
+        	rulename		= "hotspotCov",
+        	hotspot_intervals 	= config['hotspot_intervals'],
+		bedtools_version	= config['bedtools'],
+        	batch			= config['hotspotCov_clust']
+	log:	
+		"log_error/{sample}.final.bam.hotspot.log"
+	shell: """
+	
+	module load samtools/{version} 
+	module load bedtools/{params.bedtools_version}
+	
+	samtools view -hF 0x400 -q 30 {input} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {params.hotspot_intervals} > {output}
+	
+		"""
+
+##3. Alignment Algorithms
+##3a. BWA mem 
 rule bwamem_map:
 	input:
 		index = lambda wildcards: config['align_algo_index']['bwa']+config['bwa']+"/"+config['reference_name']+".pac",
@@ -77,6 +290,7 @@ rule bwamem_map:
 	samtools index TEMP/{wildcards.unit}.bwamem.bam
 		"""
 
+##3b.	Novoalign Alignment
 rule novoalign:
 	input:
 		index = lambda wildcards: config['align_algo_index']['novoalign'],
@@ -102,18 +316,15 @@ rule novoalign:
 
 	mkdir /projects/scratch/${{PBS_JOBID}}
 
-	R1=`basename {input.fastq[0]}`
-	R2=`basename {input.fastq[1]}`
-
-	echo $PATH
+	`cat /cm/local/apps/torque/var/spool/aux/${{PBS_JOBID}} | sort | uniq > /projects/scratch/${{PBS_JOBID}}/hosts.txt`	
 	
-	novoalign -d {input.index} -f {input.fastq[0]} {input.fastq[1]} -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -c 30 -e 100 -F STDFQ --hlimit 7 -i 200 100 -l 30 -o SAM \"@RG\\tID:{params.sample}\\tSM:{params.sample}\\tLB:{params.sample}\\tPL:{params.platform}\" -p 5,2 -t 250 2>{log} > /projects/scratch/${{PBS_JOBID}}/{wildcards.unit}.novoalign.sam
-	
-	samtools view -Sbh /projects/scratch/${{PBS_JOBID}}/{wildcards.unit}.novoalign.sam | samtools sort -m 30000000000 - TEMP/{wildcards.unit}.novoalign
+	mpiexec -f /projects/scratch/${{PBS_JOBID}}/hosts.txt -np 3 novoalignMPI -d {input.index} -f {input.fastq[0]} {input.fastq[1]} -a AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAG AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA -c 30 -e 100 -F STDFQ --hlimit 7 -i 200 100 -l 30 -o SAM  \"@RG\\tID:{params.sample}\\tSM:{params.sample}\\tLB:{params.sample}\\tPL:{params.platform}\" -p 5,2 -t 250  2>{log} | samtools view -Sbh - | samtools sort -m 30000000000 - TEMP/{wildcards.unit}.novoalign
 
 	samtools index {output.bam}
 	"""
 
+##4.	Post-Processing of BAM files
+#4a.	PICARD - MarkDuplicate
 rule markdups:
 	input:	
 		bam="TEMP/{unit}.{aligner}.bam",
@@ -146,12 +357,41 @@ rule markdups:
 	samtools index {output.bam}
 		"""
 
+#4b.	PICARD - MergeSamFiles
+rule mergeBams:
+	input:
+		bam=lambda wildcards:  expand("TEMP/{unit}.{aligner}.md.bam", unit = SAMPLE_TO_UNIT[wildcards.sample],aligner= config['aligner'][wildcards.aligner]),
+	output:
+        	bam="TEMP/{sample}.{aligner}.merge.bam",
+		bai="TEMP/{sample}.{aligner}.merge.bam.bai"
+	version:
+		config['picard']
+	params:
+		rulename	= "mergeBams",
+		samtools_version= config['samtools'],
+		batch		= config['picard_clust']['picard_md']
+	log:	
+		"log_error/{sample}.merge.bam.log"
+	run:
+		inputBams = ' '.join(['I={bam}'.format(bam=bam) for bam in input])
+		print(inputBams)
+		shell("""
+			module load picard/{version}
+			module load samtools/{params.samtools_version}
+		        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
+
+			java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar  MergeSamFiles AS=true USE_THREADING=true VALIDATION_STRINGENCY=SILENT {inputBams} O={output.bam} 2>> {log}
+			samtools index {output.bam}
+		""")
+
+##5.	Indel and Variant Calling
+##5a.	bam2mpg - Most probable genotype program for predicting variants and genotypes from alignments of short reads in BAM format.
 rule Bam2MPG:
 	input:
 		bam=lambda wildcards:  expand("TEMP/{sample}.{aligner}.merge.bam", sample=wildcards.sample, aligner= config['aligner'][wildcards.aligner]),
 		bai=lambda wildcards:  expand("TEMP/{sample}.{aligner}.merge.bam.bai", sample=wildcards.sample, aligner= config['aligner'][wildcards.aligner])
 	output:
-		vcf="SUBJECT/{subject}/{sample}/{ref}.{aligner}/bam2mpg/{sample}.{aligner}.bam2mpg.raw.vcf"
+		vcf="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/bam2mpg/{sample}.{aligner}.bam2mpg.raw.vcf"
 	version: 
 		config["bam2mpg"]
 	params:
@@ -200,36 +440,12 @@ rule Bam2MPG:
 	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf | vcf-sort > SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam2mpg/{wildcards.sample}.{wildcards.aligner}.bam2mpg.raw.vcf
 
 	rm -rf {wildcards.sample}.recode.vcf
-	
-	cp {input.bam} SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam/{wildcards.sample}.{wildcards.aligner}.final.bam
+
+	mkdir -p SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam	
+	cp {input.bam} SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam/{wildcards.sample}.{wildcards.aligner}.final.bam
 	"""
 
-rule mergeBams:
-	input:
-		bam=lambda wildcards:  expand("TEMP/{unit}.{aligner}.md.bam", unit = SAMPLE_TO_UNIT[wildcards.sample],aligner= config['aligner'][wildcards.aligner]),
-	output:
-        	bam="TEMP/{sample}.{aligner}.merge.bam",
-		bai="TEMP/{sample}.{aligner}.merge.bam.bai"
-	version:
-		config['picard']
-	params:
-		rulename	= "mergeBams",
-		samtools_version= config['samtools'],
-		batch		= config['picard_clust']['picard_md']
-	log:	
-		"log_error/{sample}.merge.bam.log"
-	run:
-		inputBams = ' '.join(['I={bam}'.format(bam=bam) for bam in input])
-		print(inputBams)
-		shell("""
-			module load picard/{version}
-			module load samtools/{params.samtools_version}
-		        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
-
-			java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar  MergeSamFiles AS=true USE_THREADING=true VALIDATION_STRINGENCY=SILENT {inputBams} O={output.bam} 2>> {log}
-			samtools index {output.bam}
-		""")
-
+##5b.	GATK pipeline - The GATK Best Practices workflow. They enable discovery of SNPs and small indels (no size limit in theory but adjustments may be required to call indels > 50 bp) in DNA
 rule gatk_realigner_target_creator:
 	input:
 		bam="TEMP/{sample}.{aligner}.merge.bam",
@@ -328,163 +544,8 @@ rule gatk_PrintReads:
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/GATK/{version}/GenomeAnalysisTK.jar -T PrintReads -R {input.reference} -I {input.lr_bam} -o {output.bam} -BQSR {input.rmat} >>{log} 2>&1				
 		"""
 
-rule flagstat:
-	input:
-		bam="{base}/bam/{sample}.{aligner}.final.bam",
-		bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
-	output:
-		"{base}/qc/{sample}.{aligner}.final.bam.flagstat"
-	version:
-		config['samtools']
-	params:
-		rulename	= "flagstat",
-		batch		= config['flagstat_clust']
-	log:	
-		"log_error/{sample}.{aligner}.final.bam.flagstat.log"
-	shell:	"""
-	
-	module load samtools/{version}
-	
-	samtools flagstat {input.bam} > {output} 2> {log}
-		"""
-rule bamqc:
-        input:
-                bam="{base}/bam/{sample}.{aligner}.final.bam",
-                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
-        output:
-                "{base}/qc/bamqc/{sample}.{aligner}.final.bam.qualimapReport.html"
-        version:
-                config['qualimap']
-        params:
-                rulename        = "BamQc",
-		target_intervals_gff=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]].replace('.bed', '.gff'),
-                batch           = config['bamqc_clust']
-        log:	"log_error/{sample}.final.bam.qualimapReport.log"
-        shell:  """
-
-        module load qualimap/{version}
-	module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
-
-        qualimap bamqc -c -bam {input.bam} -outdir {wildcards.base}/qc/bamqc -gff {params.target_intervals_gff} -nt 16 --java-mem-size=${{mem}}G >{log} 2>&1
-        if [ -f "{wildcards.base}/qc/bamqc/qualimapReport.html" ]; then
-		mv {wildcards.base}/qc/bamqc/qualimapReport.html {output}
-	fi
-	"""
-
-rule bamtdf:
-	input:
-                bam="{base}/bam/{sample}.{aligner}.final.bam",
-                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
-	output:
-        	"{base}/bam/{sample}.{aligner}.final.tdf"
-	version:	
-		config['igvtools']
-	params:
-        	rulename        = "bamtdf",
-		genome		= config['reference_name'].replace("human_g1k_v37", "1kg_v37").replace("ucsc.hg19", "hg19"),
-		batch           = config['igvtools_clust']
-	log:    "log_error/{sample}.final.bam.tdf.log"
-	shell:  """
-	
-	module load IGVTools/{version}
-	
-	igvtools count {input.bam} {output} {params.genome} > {log} 2>&1
-
-		"""	
-
-rule readDepth:
-	input:
-                bam="{base}/bam/{sample}.{aligner}.final.bam",
-                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
-	output:
-                "{base}/qc/{sample}.{aligner}.final.bam.depth"
-	version:
-		config['bedtools']
-	params:
-		rulename	= "readDepth",
-		target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
-		batch		= config['readDepth_clust']
-	log:	"log_error/{sample}.final.bam.depth.log"
-	shell: """
-	
-	module load bedtools/{version}
-	module load R
-		
-	{SERPENTINE_HOME}/scripts/readDepth.sh {input.bam} {params.target_intervals} {wildcards.base}/qc/ > {log} 2>&1	
-		"""
-	
-rule targetIntervals:
-        input:
-                bam="{base}/bam/{sample}.{aligner}.final.bam",
-                bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
-        output:
-	        bam_probe_intervals = temp("{base}/qc/{sample}.{aligner}.final.bam.probe.intervals"),
-	        bam_target_intervals = temp("{base}/qc/{sample}.{aligner}.final.bam.target.intervals")
-	version:
-                config['samtools']
-	params:
-		rulename = "targetIntervals",
-	        target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
-	        probe_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]].replace(".target.", ".design."),
-		batch	= config['targetIntervals_clust']
-	log:	"log_error/{sample}.final.bam.probe.intervals.log"
-	shell:	"""
-		
-	module load samtools/{version}
-	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {params.probe_intervals} )> {output.bam_probe_intervals} 2>> {log}
-
-	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {params.target_intervals} )> {output.bam_target_intervals} 2>> {log}
-
-		"""
-
-rule hsMetrics:
-	input:
-        	bam="{base}/bam/{sample}.{aligner}.final.bam",
-        	bam_probe_intervals = "{base}/qc/{sample}.{aligner}.final.bam.probe.intervals",
-        	bam_target_intervals = "{base}/qc/{sample}.{aligner}.final.bam.target.intervals",
-	output:
-		"{base}/qc/{sample}.{aligner}.final.bam.hsmetrics"
-	version: 
-		config['picard']
-	params:
-        	rulename = "hsMetrics",
-        	reference = config['reference_fasta'][config['reference_name']],
-		batch	= config['hsMetrics_clust']
-	log:	"log_error/{sample}.final.bam.hsmetrics.log"
-	shell: """
-
-	module load picard/{version}
-	module load java/jre1.7.0_71
-        mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'`
-
-	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/picard/{version}/picard.jar CalculateHsMetrics BAIT_INTERVALS={input.bam_probe_intervals} TARGET_INTERVALS={input.bam_target_intervals} INPUT={input.bam} OUTPUT={output} METRIC_ACCUMULATION_LEVEL=ALL_READS REFERENCE_SEQUENCE={params.reference} QUIET=true  VALIDATION_STRINGENCY=SILENT > {log} 2>&1
-		
-	"""
-
-rule hotspotCov:
-	input:
-        	bam="{base}/bam/{sample}.{aligner}.final.bam"
-	output:
-        	"{base}/qc/{sample}.{aligner}.final.bam.hotspot.depth"
-	version:
-		config['samtools']
-	params:
-        	rulename		= "hotspotCov",
-        	hotspot_intervals 	= config['hotspot_intervals'],
-		bedtools_version	= config['bedtools'],
-        	batch			= config['hotspotCov_clust']
-	log:	
-		"log_error/{sample}.final.bam.hotspot.log"
-	shell: """
-	
-	module load samtools/{version} 
-	module load bedtools/{params.bedtools_version}
-	
-	samtools view -hF 0x400 -q 30 {input} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {params.hotspot_intervals} > {output}
-	
-		"""
-
+##6.	Germline and Somatic Variant Callers
+#6a.	Germline Caller : GATK - HaplotypeCaller
 rule HaplotypeCaller:
 	input:
 		bam="{base}/bam/{sample}.{aligner}.final.bam",
@@ -514,6 +575,7 @@ rule HaplotypeCaller:
 	
 	       """
 
+#6b.	Germline Caller : freebayes -	Bayesian haplotype-based polymorphism discovery and genotyping.
 rule freebayes:
         input:
                 bam="{base}/bam/{sample}.{aligner}.final.bam",
@@ -545,6 +607,7 @@ rule freebayes:
 	mv {output}.recode.vcf {output.vcf}
                """
 
+#6C.	Germline Caller : platypus -  A Haplotype-Based Variant Caller.
 rule platypus:
         input:
                 bam="{base}/bam/{sample}.{aligner}.final.bam",
@@ -571,6 +634,7 @@ rule platypus:
 	platypus callVariants --nCPU=16 --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions=/projects/scratch/${{PBS_JOBID}}/target_intervals.txt --output={output.vcf} --refFile={params.reference} --logFileName={log}
                """
 
+#6D.	Somatic Callers	:	MuTect - Bayesian classifier to detect somatic mutations from sequencing data of matched tumor–normal samples  .
 rule mutect:
         input:
                 lambda wildcards: somaticPairs[wildcards.somaticPair]
@@ -599,10 +663,10 @@ rule mutect:
 	mkdir /projects/scratch/${{PBS_JOBID}}	
 	
 	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
-	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/muTect/{version}/mutect-{version}.jar -T MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --vcf  {output.vcf} > {log} 2>&1  
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/muTect/{version}/mutect-{version}.jar -T MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --vcf  {output.vcf} --max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4 > {log} 2>&1
 	"""
 
-
+#6D.	Somatic Callers	:	Strelka - Bayesian classifier to detect somatic mutations from sequencing data of matched tumor–normal samples	.
 rule strelka:
         input:
                 lambda wildcards: somaticPairs[wildcards.somaticPair]
@@ -639,12 +703,14 @@ rule strelka:
 
                """
 
+##7	SNVs and Indel Annotation pipeline 
+#7a.	SnpEff: Genetic variant annotation and effect prediction toolbox. It annotates and predicts the effects of variants on genes.
 rule snpEff:
 	input:
-		vcf ="SUBJECT/{subject}/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
+		vcf ="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
 	output:
-		vcf="SUBJECT/{subject}/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.vcf",
-		txt="SUBJECT/{subject}/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt"
+		vcf="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.vcf",
+		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt"
 	version:
 		config['snpEff']
 	params:
@@ -676,15 +742,16 @@ rule snpEff:
 	perl $SERPENTINE_HOME/scripts/vcf2txt.pl {output.vcf} /projects/scratch/${{PBS_JOBID}} >{output.txt}
 		"""
 
+#7b.	Format VCFS for In-house Annotation pipeline.
 rule formatInput:
         input:
                 #vcfs=["NCI0276tumor_200ng_P.strelka.indels.annotated.vcf","NCI0276tumor_200ng_P.strelka.indels.annotated.vcf"]
                 #vcfs=ALL_snpEff_vcf
                 vcfs=lambda wildcards:   ALL_SUBJECT_VCFS[wildcards.subject]
         output:
-                "SUBJECT/{subject}/Annotation/AnnotationInput.anno",
-                "SUBJECT/{subject}/Annotation/AnnotationInput.pph",
-                "SUBJECT/{subject}/Annotation/AnnotationInput.sift"
+                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.anno",
+                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph",
+                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift"
         params:
                 rulename   = "FormatInput",
                 batch      = config["formatinput_clust"],
@@ -697,11 +764,12 @@ rule formatInput:
                         perl $SERPENTINE_HOME/scripts/MakeAnnotationInputs.pl SUBJECT/{wildcards.subject}/Annotation/AnnotationInput 2>{log}
                 """)
 
+#7c.	In-house Annotaion Pipeline : Genetic variant annotation using knowledge base databases ( ~60 Sources).
 rule Annovar_annotation:
         input:
-                "SUBJECT/{subject}/Annotation/AnnotationInput.anno",
+                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.anno",
         output:
-                "SUBJECT/{subject}/Annotation/AnnotationInput.docm",
+                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm",
         version:
                 config['annovar'],
         params:
@@ -716,13 +784,14 @@ rule Annovar_annotation:
         perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{wildcards.subject}/Annotation/ AnnotationInput $SERPENTINE_HOME/scripts/addAnnotation.pl 2>> {log}
                 """
 
+#7d.	PolyPhen2 :	Annotation tool for annotating coding nonsynonymous SNPs.	
 rule PolyPhen2:
 	input:
-		"SUBJECT/{subject}/Annotation/AnnotationInput.pph",
+		"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph",
 		convertor  = SERPENTINE_HOME + "/scripts/" + config["PPH2Parse"],
 		##block      = SERPENTINE_HOME + "/scripts/" + config["block"]
 	output:
-		"SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
+		"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
 	version:
 		config['polyphen2'],
 	params:
@@ -734,12 +803,13 @@ rule PolyPhen2:
 		module load polyphen2/{version}
 		"""
 
+#7e.    SIFT :     Annotation tool for annotating coding nonsynonymous SNPs.
 rule Sift:
 	input:
-		sift		="SUBJECT/{subject}/Annotation/AnnotationInput.sift",
+		sift		="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift",
 		convertor	= SERPENTINE_HOME + "/scripts/" + config["SiftParse"]
 	output:
-		sift_out	="SUBJECT/{subject}/Annotation/AnnotationInput.sift.out",
+		sift_out	="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
 	version:
 		config['SIFT'],
 	params:
@@ -750,7 +820,6 @@ rule Sift:
 	log:
 		"log_error/{subject}.SIFT"
 	shell: """
-		module load python/2.7.9
 		module load SIFT/{version}
 		
 		mkdir /projects/scratch/${{PBS_JOBID}}		
@@ -762,15 +831,16 @@ rule Sift:
 		perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv > ${{DIR}}/{output.sift_out}
 		"""
 
+##8.	PostProcessing of Annotation files.
 rule Combine_ASP_annotation:
 	input:
-		anno="SUBJECT/{subject}/Annotation/AnnotationInput.docm",
-		pph2="SUBJECT/{subject}/Annotation/AnnotationInput.pph2.out",
-		sift="SUBJECT/{subject}/Annotation/AnnotationInput.sift.out",
+		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm",
+		pph2="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
+		sift="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
 		convertor  = SERPENTINE_HOME + "/scripts/" + "CombineAnnotations.pl",
 		geneanno   = SERPENTINE_HOME + "/scripts/" + "GeneAnnotation.pl"
 	output:
-		anno="SUBJECT/{subject}/Annotation/AnnotationInput.annotations.final.txt"
+		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.annotations.final.txt"
 	params:
 		rulename	="Combine_ASP_annotation",
 		dataDir		=config["annovar_data"],
@@ -791,11 +861,11 @@ rule Combine_ASP_annotation:
 
 rule Attach_ASP_Annotation:
 	input:
-		txt="SUBJECT/{subject}/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt",
-		ref="SUBJECT/{subject}/Annotation/AnnotationInput.annotations.final.txt",
+		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt",
+		ref="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.annotations.final.txt",
 		convertor  = SERPENTINE_HOME + "scripts/" + config["addBack"]
 	output:
-		txt="SUBJECT/{subject}/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.annotated.txt"
+		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.annotated.txt"
 	params:
 		rulename   = "Attach_ASP_Annotation",
 		batch      = config["job_addbackann"],
