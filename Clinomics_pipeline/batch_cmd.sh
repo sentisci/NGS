@@ -43,8 +43,8 @@ snakemake\
 #snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE
 
 
-#snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE -n --forceall --rulegraph | dot -Tpng >  ../serpentine_Tgen_extras/dag.png
-#snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE -n --forceall --rulegraph | dot -Tpdf >  ../serpentine_Tgen_extras/dag.pdf
+#snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE -n --forceall --rulegraph | dot -Tpng >  ../serpentine_Tgen_extras/rulegraph.png
+#snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE -n --forceall --rulegraph | dot -Tpdf >  ../serpentine_Tgen_extras/rulegraph.pdf
 
 
 #snakemake --directory $WORKING_DIR --snakefile $SNAKEFILE --forceall --dag | dot -Tpdf > ../serpentine_Tgen_extras/dag.pdf

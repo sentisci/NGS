@@ -548,10 +548,10 @@ rule gatk_PrintReads:
 #6a.	Germline Caller : GATK - HaplotypeCaller
 rule HaplotypeCaller:
 	input:
-		bam="{base}/bam/{sample}.{aligner}.final.bam",
-		bai="{base}/bam/{sample}.{aligner}.final.bai"
+		bam="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/bam/{sample}.{aligner}.final.bam",
+		bai="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/bam/{sample}.{aligner}.final.bai"
 	output:	
-		vcf="{base}/haplotypecaller/{sample}.{aligner}.haplotypecaller.raw.vcf"
+		vcf="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/haplotypecaller/{sample}.{aligner}.haplotypecaller.raw.vcf"
 	version:
 		config['gatk']
 	params:
@@ -578,10 +578,10 @@ rule HaplotypeCaller:
 #6b.	Germline Caller : freebayes -	Bayesian haplotype-based polymorphism discovery and genotyping.
 rule freebayes:
         input:
-                bam="{base}/bam/{sample}.{aligner}.final.bam",
-                bai="{base}/bam/{sample}.{aligner}.final.bai"
+                bam="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/bam/{sample}.{aligner}.final.bam",
+                bai="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/bam/{sample}.{aligner}.final.bai"
         output:
-                vcf="{base}/freebayes/{sample}.{aligner}.freebayes.raw.vcf"
+                vcf="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/freebayes/{sample}.{aligner}.freebayes.raw.vcf"
         version:
                 config['freebayes']
         params:
@@ -610,10 +610,10 @@ rule freebayes:
 #6C.	Germline Caller : platypus -  A Haplotype-Based Variant Caller.
 rule platypus:
         input:
-                bam="{base}/bam/{sample}.{aligner}.final.bam",
-                bai="{base}/bam/{sample}.{aligner}.final.bai"
+                bam="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/bam/{sample}.{aligner}.final.bam",
+                bai="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/bam/{sample}.{aligner}.final.bai"
         output:
-                vcf="{base}/platypus/{sample}.{aligner}.platypus.raw.vcf"
+                vcf="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/platypus/{sample}.{aligner}.platypus.raw.vcf"
         version:
                 config['platypus']
         params:
