@@ -132,7 +132,12 @@ elsif($CALLER eq "MuTect"){
 		my ($chr, $start, $ID, $ref, $alt, $quality_score, $filter, $info, $format, @sample) = @field;
 		my ($end) = ($start);
 		if ($chr =~ /^#CHR/i) {         #format specification line
-			print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+			if ($idx_normal eq '0'){
+				print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\t$sample[0].GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\t$sample[1].GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+			}
+			else{
+				print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\t$sample[1].GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\t$sample[0].GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+			}
 			next;
         	}
 		if ($filter =~ /PASS/){
@@ -161,7 +166,12 @@ elsif($CALLER eq "MuTect"){
 }
 elsif($CALLER eq "STRELKA_S"){
 	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null | cut -f 1-5,11-10000 > $TEMP/$sname.s 2>$TEMP/.err_$sname.s`;
-	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+#	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
+	foreach(@NSAMPLES){
+		print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
+	}
+	print "\n";
 	open(FH, "$TEMP/$sname.s");
 	while (<FH>){
 		chomp;
@@ -243,7 +253,12 @@ elsif($CALLER eq "STRELKA_S"){
 }
 elsif($CALLER eq 'STRELKA_I'){
 	`perl $convert2annovar --format vcf4old --includeinfo $input 2>/dev/null| cut -f 1-5,11-1000 > $TEMP/$sname.i 2>$TEMP/.err_$sname.i`;
-	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+#	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName\tNormal.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\tTumor.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq\n";
+	print "Chr\tStart\tEnd\tRef\tAlt\tQUAL\tFILTER\tINFO\tSampleName";
+        foreach(@NSAMPLES){
+                print "\t$_.GT\tTotalCoverage\tRefCoverage\tVarCoverage\tVariant Allele Freq";
+        }
+	print "\n";
 	open(FH, "$TEMP/$sname.i");
 	while (<FH>){
 		chomp;
@@ -419,9 +434,12 @@ sub GATK{
 	my $idx_DP = first { $format[$_] eq 'DP' } 0..$#format;
 	if(defined $idx_GT and defined $idx_AD and defined $idx_DP){
 		my @AD = split(",", $arr[$idx_AD]);
-		if($#AD eq '1' and $AD[1] >=1 and $arr[$idx_DP] >=1){
+		if($#AD eq '1' and $AD[1] <1 and $arr[$idx_DP] >=1){
+			return($arr[$idx_GT], $arr[$idx_DP], $AD[0], $AD[1], $vaf);
+		}
+		elsif($#AD eq '1' and $AD[1] >=1 and $arr[$idx_DP] >=1){
 			$vaf = sprintf("%.2f", $AD[1]/$arr[$idx_DP]);
-			return($arr[$idx_GT], $arr[$idx_DP], $AD[0], $AD[1], $vaf);			
+			return($arr[$idx_GT], $arr[$idx_DP], $AD[0], $AD[1], $vaf);
 		}
 		else{
 			return($arr[$idx_GT], $arr[$idx_DP], $arr[$idx_AD], $arr[$idx_AD], $vaf);
@@ -486,7 +504,7 @@ sub Platypus{
 	my $vaf = 0;
 	my $total =0;
 	if($arr[$idx_NR] !~ /,/ and $arr[$idx_NV] !~ /,/){
-		$total = $arr[$idx_NR] + $arr[$idx_NV];
+		$total = $arr[$idx_NR]+$arr[$idx_NV];
 		if($arr[$idx_NV] >0){
 			$vaf =sprintf ("%.2f", ($arr[$idx_NV]/$total));
 		}

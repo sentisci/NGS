@@ -79,9 +79,11 @@
                                 }
 	},
 	"annovar_data":		"/ref/clinomics/annovar/",
-	"AnnotationInput_file": "/projects/Clinomics/Tools/serpentine_Tgen/scripts/AnnotationInput_file",
-	"addBack":		"addAnnotations2vcf.pl",
-	"SiftParse":		"ParseSIFT.pl",
-	"PPH2Parse":		"ParsePPH2.pl",
-	"block":		"block_for_jobid.pl"
+	"CombineAnnotations":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/CombineAnnotations.pl",
+	"GeneAnnotation":	"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/GeneAnnotation.pl",
+	"AnnotationInput_file": "/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/AnnotationInput_file",
+	"addBack":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/addAnnotations2vcf.pl",
+	"SiftParse":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/ParseSIFT.pl",
+	"PPH2Parse":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/ParsePPH2.pl",
+	"block":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/block_for_jobid.pl"
 }

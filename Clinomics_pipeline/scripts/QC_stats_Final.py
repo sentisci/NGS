@@ -156,8 +156,7 @@ def _ontarget(bam):
     ontarget_bam = "%s_ontarget.bam" % (os.path.basename(bam)) 
 
     ## os.getenv('USER', default_value)
-    ##temp = tempfile.NamedTemporaryFile(dir='/scratch/tyagim/') 
-    temp = argv[3]
+    temp = tempfile.NamedTemporaryFile(dir=argv[3]) 
     cmd  = '%s -abam "%s" -b %s' % (intersectbed, bam, targets) 
     args = shlex.split(cmd)
 

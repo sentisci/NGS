@@ -14,7 +14,7 @@ try:
     RESULT_DIR=os.environ['RESULT_DIR']
     WORKING_DIR=os.environ['WORKING_DIR']
 except KeyError:
-    SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_working/"
+    SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_validation/"
     NOW=time.strftime("%d_%m_%Y")
     pass
 

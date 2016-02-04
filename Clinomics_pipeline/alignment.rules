@@ -407,7 +407,7 @@ rule Bam2MPG:
 
 	module load bam2mpg/{version}
 	module load vcftools/{params.vcftools_version}
-	module load vcftools/{params.samtools_version}
+	module load samtools/{params.samtools_version}
 
 	mkdir /projects/scratch/${{PBS_JOBID}}
 	temp_dir="/projects/scratch/${{PBS_JOBID}}"
@@ -422,22 +422,24 @@ rule Bam2MPG:
 	##Sort, bzip and index the above files
 	for CHR in `seq 1 22` X Y;
 	do
-		cat ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort > ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf
-		bgzip ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf
-		tabix -p -f vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf.gz
+		cat ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf | vcf-sort > ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
+		bgzip ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf
+		tabix -p -f vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.tmp.vcf.gz
 		
 		cat ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf | vcf-sort > ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf
-		bgzip ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf
-		tabix -p -f vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf.gz
+		bgzip ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf
+		tabix -p -f vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.tmp.vcf.gz
+
+		rm ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf
 	done
 
 	echo "Combine chr level vcf files"
-	vcf-concat ${{temp_dir}}/chr*{wildcards.sample}.*.vcf.gz > ${{temp_dir}}/{wildcards.sample}.snps.vcf
+	vcf-concat ${{temp_dir}}/chr*{wildcards.sample}.*.vcf.gz > ${{temp_dir}}/{wildcards.sample}.vcf
 	
 	echo "Restrict to Bed file"
-	vcftools --vcf ${{temp_dir}}/{wildcards.sample}.snps.vcf --bed {params.target_intervals} --out {wildcards.sample} --recode --keep-INFO-all
+	vcftools --vcf ${{temp_dir}}/{wildcards.sample}.vcf --bed {params.target_intervals} --out {wildcards.sample} --recode --keep-INFO-all
 
-	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf | vcf-sort > SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam2mpg/{wildcards.sample}.{wildcards.aligner}.bam2mpg.raw.vcf
+	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf | vcf-sort > SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam2mpg/{wildcards.sample}.{wildcards.aligner}.bam2mpg.raw.vcf
 
 	rm -rf {wildcards.sample}.recode.vcf
 
@@ -760,8 +762,8 @@ rule formatInput:
         run:
                 inputVCFs = ' '.join(input.vcfs)
                 shell("""
-                        cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/Annotation/AnnotationInput
-                        perl $SERPENTINE_HOME/scripts/MakeAnnotationInputs.pl SUBJECT/{wildcards.subject}/Annotation/AnnotationInput 2>{log}
+                        cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput
+                        perl $SERPENTINE_HOME/scripts/MakeAnnotationInputs.pl SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput 2>{log}
                 """)
 
 #7c.	In-house Annotaion Pipeline : Genetic variant annotation using knowledge base databases ( ~60 Sources).
@@ -781,15 +783,15 @@ rule Annovar_annotation:
 
         module load annovar/{version}
 
-        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{wildcards.subject}/Annotation/ AnnotationInput $SERPENTINE_HOME/scripts/addAnnotation.pl 2>> {log}
+        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{wildcards.subject}/{NOW}/Annotation/ AnnotationInput $SERPENTINE_HOME/scripts/addAnnotation.pl 2>> {log}
                 """
 
 #7d.	PolyPhen2 :	Annotation tool for annotating coding nonsynonymous SNPs.	
 rule PolyPhen2:
 	input:
 		"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph",
-		convertor  = SERPENTINE_HOME + "/scripts/" + config["PPH2Parse"],
-		##block      = SERPENTINE_HOME + "/scripts/" + config["block"]
+		convertor    = config["PPH2Parse"],
+		##block      = config["block"]
 	output:
 		"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
 	version:
@@ -807,7 +809,7 @@ rule PolyPhen2:
 rule Sift:
 	input:
 		sift		="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift",
-		convertor	= SERPENTINE_HOME + "/scripts/" + config["SiftParse"]
+		convertor	= config["SiftParse"]
 	output:
 		sift_out	="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
 	version:
@@ -837,8 +839,8 @@ rule Combine_ASP_annotation:
 		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm",
 		pph2="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
 		sift="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
-		convertor  = SERPENTINE_HOME + "/scripts/" + "CombineAnnotations.pl",
-		geneanno   = SERPENTINE_HOME + "/scripts/" + "GeneAnnotation.pl"
+		convertor  = config["CombineAnnotations"],
+		geneanno   = config["GeneAnnotation"]
 	output:
 		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.annotations.final.txt"
 	params:
@@ -850,10 +852,10 @@ rule Combine_ASP_annotation:
 		"log_error/{subject}.CombineAnnotation"
 	shell: """
 		
-		for i in `cat {params.AnnotationInput_file}`;do  echo "SUBJECT/{wildcards.subject}/Annotation/$i" >> SUBJECT/{wildcards.subject}/Annotation/list ; done	
-		sed 's/^[\t ]*//g' -i SUBJECT/{wildcards.subject}/Annotation/list
+		for i in `cat {params.AnnotationInput_file}`;do  echo "SUBJECT/{wildcards.subject}/{NOW}/Annotation/$i" >> SUBJECT/{wildcards.subject}/{NOW}/Annotation/list ; done	
+		sed 's/^[\t ]*//g' -i SUBJECT/{wildcards.subject}/{NOW}/Annotation/list
 			
-		perl {input.convertor} SUBJECT/{wildcards.subject}/Annotation/list > {output}.tmp
+		perl {input.convertor} SUBJECT/{wildcards.subject}/{NOW}/Annotation/list > {output}.tmp
 		perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
 		rm -rf {output}.tmp
 
@@ -863,7 +865,7 @@ rule Attach_ASP_Annotation:
 	input:
 		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt",
 		ref="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.annotations.final.txt",
-		convertor  = SERPENTINE_HOME + "scripts/" + config["addBack"]
+		convertor  = config["addBack"]
 	output:
 		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.annotated.txt"
 	params:

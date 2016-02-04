@@ -1,81 +1,35 @@
 {
   "studies": {
-  	"ClinVal": ["NCI0274","NCI0276"]
+    "ClinVal": ["NA19735"]
   },
   "subjects": {
-    "NCI0274": ["NCI0274_B_Panel", "NCI0274_T_Panel","NCI0274_B_Exome", "NCI0274_T_Exome"],
-    "NCI0276": ["NCI0276_B_Exome", "NCI0276_B_Panel","NCI0276_T_Exome", "NCI0276_T_Panel"]
+    "NA19735": ["NCIC007_200_P", "NCIC007_100_P"]
   },
   "samples": {
-    "NCI0274_B_Panel": ["NCI0274_B_Panel_100ng","NCI0274_B_Panel_200ng"],
-    "NCI0274_T_Panel": ["NCI0274_T_Panel_100ng","NCI0274_T_Panel_200ng"],
-    "NCI0274_B_Exome": ["NCI0274_B_Exome"],
-    "NCI0274_T_Exome": ["NCI0274_T_Exome"],
-    "NCI0276_B_Exome": ["NCI0276_B_Exome"],
-    "NCI0276_B_Panel": ["NCI0276_B_Panel_100ng","NCI0276_B_Panel_200ng"],
-    "NCI0276_T_Exome": ["NCI0276_T_Exome"],
-    "NCI0276_T_Panel": ["NCI0276_T_Panel_100ng","NCI0276_T_Panel_200ng"]
+    "NCIC007_200_P": ["NCIC007_200_P"],
+    "NCIC007_100_P": ["NCIC007_100_P"]
   },
   "libraries": {
-    "NCI0274_B_Panel_100ng": ["6898690"],
-    "NCI0274_B_Panel_200ng": ["6898689"],
-    "NCI0274_T_Panel_100ng": ["6898687"],
-    "NCI0274_T_Panel_200ng": ["6898686"],
-    "NCI0274_B_Exome": ["6898688"],
-    "NCI0274_T_Exome": ["6898685"],
-    "NCI0276_B_Exome": ["6908692"],
-    "NCI0276_B_Panel_100ng": ["6908696"],
-    "NCI0276_B_Panel_200ng": ["6908695"],
-    "NCI0276_T_Exome": ["6908691"],
-    "NCI0276_T_Panel_100ng": ["6908694"],
-    "NCI0276_T_Panel_200ng": ["6908693"]
+    "NCIC007_200_P": ["8261504"],
+    "NCIC007_100_P": ["8261505"]
   },
   "units": {
-    "6898690": ["/projects/Clinomics/DATA/Sample_NCI0274blood_100ng_P_HGCG3BGXX/Sample_NCI0274blood_100ng_P_HGCG3BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0274blood_100ng_P_HGCG3BGXX/Sample_NCI0274blood_100ng_P_HGCG3BGXX_R2.fastq.gz"],
-    "6898689": ["/projects/Clinomics/DATA/Sample_NCI0274blood_200ng_P_HGCG3BGXX/Sample_NCI0274blood_200ng_P_HGCG3BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0274blood_200ng_P_HGCG3BGXX/Sample_NCI0274blood_200ng_P_HGCG3BGXX_R2.fastq.gz"],
-    "6898687": ["/projects/Clinomics/DATA/Sample_NCI0274tumor_100ng_P_HGCG3BGXX/Sample_NCI0274tumor_100ng_P_HGCG3BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0274tumor_100ng_P_HGCG3BGXX/Sample_NCI0274tumor_100ng_P_HGCG3BGXX_R2.fastq.gz"],
-    "6898686": ["/projects/Clinomics/DATA/Sample_NCI0274tumor_200ng_P_HGCG3BGXX/Sample_NCI0274tumor_200ng_P_HGCG3BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0274tumor_200ng_P_HGCG3BGXX/Sample_NCI0274tumor_200ng_P_HGCG3BGXX_R2.fastq.gz"],
-    "6898688": ["/projects/Clinomics/DATA/Sample_NCI0274blood_E_HGCG3BGXX/Sample_NCI0274blood_E_HGCG3BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0274blood_E_HGCG3BGXX/Sample_NCI0274blood_E_HGCG3BGXX_R2.fastq.gz"],
-    "6898685": ["/projects/Clinomics/DATA/Sample_NCI0274tumor_E_HGCG3BGXX/Sample_NCI0274tumor_E_HGCG3BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0274tumor_E_HGCG3BGXX/Sample_NCI0274tumor_E_HGCG3BGXX_R2.fastq.gz"],
-    "6908692": ["/projects/Clinomics/DATA/Sample_NCI0276blood_E_HGCGYBGXX/Sample_NCI0276blood_E_HGCGYBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0276blood_E_HGCGYBGXX/Sample_NCI0276blood_E_HGCGYBGXX_R2.fastq.gz"],
-    "6908696": ["/projects/Clinomics/DATA/Sample_NCI0276blood_100ng_P_HGCGYBGXX/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0276blood_100ng_P_HGCGYBGXX/Sample_NCI0276blood_100ng_P_HGCGYBGXX_R2.fastq.gz"],
-    "6908695": ["/projects/Clinomics/DATA/Sample_NCI0276blood_200ng_P_HGCGYBGXX/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0276blood_200ng_P_HGCGYBGXX/Sample_NCI0276blood_200ng_P_HGCGYBGXX_R2.fastq.gz"],
-    "6908691": ["/projects/Clinomics/DATA/Sample_NCI0276tumor_E_HGCGYBGXX/Sample_NCI0276tumor_E_HGCGYBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0276tumor_E_HGCGYBGXX/Sample_NCI0276tumor_E_HGCGYBGXX_R2.fastq.gz"],
-    "6908694": ["/projects/Clinomics/DATA/Sample_NCI0276tumor_100ng_P_HGCGYBGXX/Sample_NCI0276tumor_100ng_P_HGCGYBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0276tumor_100ng_P_HGCGYBGXX/Sample_NCI0276tumor_100ng_P_HGCGYBGXX_R2.fastq.gz"],
-    "6908693": ["/projects/Clinomics/DATA/Sample_NCI0276tumor_200ng_P_HGCGYBGXX/Sample_NCI0276tumor_200ng_P_HGCGYBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0276tumor_200ng_P_HGCGYBGXX/Sample_NCI0276tumor_200ng_P_HGCGYBGXX_R2.fastq.gz"]
+    "8261504": ["/projects/Clinomics/DATA/Sample_NCIC007_200_P_HGCNNBGXX/Sample_NCIC007_200_P_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC007_200_P_HGCNNBGXX/Sample_NCIC007_200_P_HGCNNBGXX_R2.fastq.gz"],
+    "8261505": ["/projects/Clinomics/DATA/Sample_NCIC007_100_P_HGCNNBGXX/Sample_NCIC007_100_P_HGCNNBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC007_100_P_HGCNNBGXX/Sample_NCIC007_100_P_HGCNNBGXX_R2.fastq.gz"]
   },
   "sample_TN": {
-    "NCI0274_B_Panel": ["Normal"],
-    "NCI0274_T_Panel": ["Tumor"],
-    "NCI0274_B_Exome": ["Normal"],
-    "NCI0274_T_Exome": ["Tumor"],
-    "NCI0276_B_Exome": ["Normal"],
-    "NCI0276_B_Panel": ["Normal"],
-    "NCI0276_T_Exome": ["Tumor"],
-    "NCI0276_T_Panel": ["Tumor"]
+    "NCIC007_200_P": ["Normal"],
+    "NCIC007_100_P": ["Normal"]
   },
   "subject_TN": {
-    "NCI0274": ["Normal", "Tumor"],
-    "NCI0276": ["Normal", "Tumor"]
+    "NA19735": ["Normal"]
   },
   "subject_captures": {
-    "NCI0274": ["clin.snv.v1", "clin.ex.v1"],
-    "NCI0276": ["clin.ex.v1", "clin.snv.v1"]
+    "NA19735": ["clin.snv.v1"]
   },
   "sample_captures": {
-    "NCI0274_B_Panel": ["clin.snv.v1"],
-    "NCI0274_T_Panel": ["clin.snv.v1"],
-    "NCI0274_B_Exome": ["clin.ex.v1"],
-    "NCI0274_T_Exome": ["clin.ex.v1"],
-    "NCI0276_B_Exome": ["clin.ex.v1"],
-    "NCI0276_B_Panel": ["clin.snv.v1"],
-    "NCI0276_T_Exome": ["clin.ex.v1"],
-    "NCI0276_T_Panel": ["clin.snv.v1"]
+    "NCIC007_200_P": ["clin.snv.v1"],
+    "NCIC007_100_P": ["clin.snv.v1"]
   },
-  "sample_references": {
-    "NCI0274_T_Panel": ["NCI0274_B_Panel"],
-    "NCI0274_T_Exome": ["NCI0274_B_Exome"],
-    "NCI0276_T_Exome": ["NCI0276_B_Exome"],
-    "NCI0276_T_Panel": ["NCI0276_B_Panel"]
-  }
+  "sample_references": []
 }

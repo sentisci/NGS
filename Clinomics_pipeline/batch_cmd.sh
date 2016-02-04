@@ -1,24 +1,28 @@
 #!/bin/sh
 module load python/3.4.3
 module load snakemake/20150924
-##module load R/3.2.0
+module load R/3.2.0
 
 #Initialize Serpentine directory
-export SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_working/"
+export SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_validation/"
 export RESULT_DIR="/projects/Clinomics/Tools/"
 export NOW=$(date +"%m_%d_%y")
-export WORKING_DIR="${RESULT_DIR}/Clinomics_Run_Test_Novoalign_3/"
+export WORKING_DIR="${RESULT_DIR}/Validation/"
+export SNAKEFILE=${SERPENTINE_HOME}/Snakefile
 
-#Initialize Basic Variables
-
-
-SNAKEFILE=${SERPENTINE_HOME}/Snakefile
-
+#Make project result directories
 mkdir $WORKING_DIR/TEMP
+mkdir $WORKING_DIR/SUBJECT
+mkdir $WORKING_DIR/log_error
 chmod -R 770 $WORKING_DIR
 chgrp -R clinomics $WORKING_DIR
 
+#Make samplesheet.json file
+R --vanilla --slave --args -s ${SERPENTINE_HOME}/${samplesheet} -o ${SERPENTINE_HOME} < /projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/do_samplesheet2json.R
+
+#Execute and Launch SnakeMake , Clinomics pipeline
 cd $WORKING_DIR
+
 snakemake\
 	--nolock \
         --jobname 'cln.{rulename}.{jobid}' \
