@@ -117,6 +117,7 @@ rule readDepth:
 	params:
 		rulename	= "readDepth",
 		target_intervals=lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		read_depth_script=config['readDepth_script'],
 		batch		= config['readDepth_clust']
 	log:	"log_error/{sample}.final.bam.depth.log"
 	shell: """
@@ -124,7 +125,7 @@ rule readDepth:
 	module load bedtools/{version}
 	module load R
 		
-	{SERPENTINE_HOME}/scripts/readDepth.sh {input.bam} {params.target_intervals} {wildcards.base}/qc/ > {log} 2>&1	
+	{params.read_depth_script} {input.bam} {params.target_intervals} {wildcards.base}/qc/ > {log} 2>&1	
 		"""
 
 #2d.	In-house script - failedExons
@@ -135,13 +136,14 @@ rule  failedExons:
 		failed_exon_stats="{base}/qc/{sample}.{aligner}.final.bam.failExons",
 		failed_gene_stats="{base}/qc/{sample}.{aligner}.final.bam.failGenes"
 	params:
-		rulename	="failedExons",
-		threshold	=lambda wildcards: config['failed_exon_params'][config['sample_captures'][wildcards.sample][0]][config['sample_TN'][wildcards.sample][0]],
-		batch		=config['failedExons_clust']
+		rulename	=	"failedExons",
+		threshold	=	lambda wildcards: config['failed_exon_params'][config['sample_captures'][wildcards.sample][0]][config['sample_TN'][wildcards.sample][0]],
+		failed_Exons_script=	config['failedExons_script'],
+		batch		=	config['failedExons_clust']
 	log:    "log_error/{sample}.failed.exon.log"
 	shell:	"""
 
-	perl {SERPENTINE_HOME}/scripts/failed_Exon_Final.pl {input.depth_file} {params.threshold} {output.failed_exon_stats} {output.failed_gene_stats}
+	perl {params.failed_Exons_script} {input.depth_file} {params.threshold} {output.failed_exon_stats} {output.failed_gene_stats}
 		"""
 
 
@@ -181,7 +183,8 @@ rule consolidated_QC:
 	params:
 		rulename		=	"consolidated_QC",
 		target_intervals	=	lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
-		bedtools_version	=	config['bedtools'],	
+		bedtools_version	=	config['bedtools'],
+		consolidated_QC_script	=	config['consolidated_QC_script'],	
 		batch   		=	config['consolidated_QC_clust']
 	log:
 		"log_error/{sample}.consolidated_QC.log"
@@ -194,7 +197,7 @@ rule consolidated_QC:
 	
 	mkdir /projects/scratch/${{PBS_JOBID}}
 	
-	python {SERPENTINE_HOME}/scripts/QC_stats_Final.py {input.bam} {params.target_intervals} /projects/scratch/${{PBS_JOBID}}  > {output.consolidated_QC_output}		
+	python {params.consolidated_QC_script} {input.bam} {params.target_intervals} /projects/scratch/${{PBS_JOBID}}  > {output.consolidated_QC_output}		
 		"""
 
 #2f.	Picard - CalculateHsMetrics
@@ -724,6 +727,7 @@ rule snpEff:
 		clinvar		=config["resources"]['clinvar'],
 		ESP_snps	=config["resources"]['ESP_snps'],
 		annovar_ver     =config['annovar'],
+		vcf2txt_script  =config['vcf2txt_script'],
 		batch		=config["snpEff_clust"] 
 	log:
 		"log_error/{caller}.snpEff.vcf.log"
@@ -741,7 +745,7 @@ rule snpEff:
 
 	java -Xmx${{mem}}g -Djava.io.tmpdir=/project/scratch/${{PBS_JOBID}}/ -jar $SnpSift_path dbnsfp -c {params.snpEff_config} -a {input.vcf} | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.CosmicCodingMuts} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.dbsnp} - | java -Xmx${{mem}}g -jar $SnpSift_path annotate {params.clinvar} - | java -Xmx${{mem}}g -jar $SnpEff_path -t -canon {params.snpEff_genome} > {output.vcf} 2> {log}
 	
-	perl $SERPENTINE_HOME/scripts/vcf2txt.pl {output.vcf} /projects/scratch/${{PBS_JOBID}} >{output.txt}
+	perl {params.vcf2txt_script} {output.vcf} /projects/scratch/${{PBS_JOBID}} >{output.txt}
 		"""
 
 #7b.	Format VCFS for In-house Annotation pipeline.
@@ -756,14 +760,15 @@ rule formatInput:
                 "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift"
         params:
                 rulename   = "FormatInput",
-                batch      = config["formatinput_clust"],
+		MakeAnnotationInputs_script=config['MakeAnnotationInputs_script'],
+                batch      = config["formatinput_clust"]
         log:
                 "log_error/{subject}.FormatInput"
         run:
                 inputVCFs = ' '.join(input.vcfs)
                 shell("""
                         cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput
-                        perl $SERPENTINE_HOME/scripts/MakeAnnotationInputs.pl SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput 2>{log}
+                        perl {params.MakeAnnotationInputs_script} SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput 2>{log}
                 """)
 
 #7c.	In-house Annotaion Pipeline : Genetic variant annotation using knowledge base databases ( ~60 Sources).
@@ -775,22 +780,24 @@ rule Annovar_annotation:
         version:
                 config['annovar'],
         params:
-                rulename   = "Annotation",
-                batch      = config["annovar_clust"],
+                rulename   = 	"Annotation",
+                batch      = 	config["annovar_clust"],
+		TableAnno_script=config["TableAnno_script"],
+		addAnnotation_script=config["addAnnotation_script"]
         log:
                 "log_error/{subject}.Annovar"
         shell: """
 
         module load annovar/{version}
 
-        perl $SERPENTINE_HOME/scripts/TableAnno.sh SUBJECT/{wildcards.subject}/{NOW}/Annotation/ AnnotationInput $SERPENTINE_HOME/scripts/addAnnotation.pl 2>> {log}
+        perl {params.TableAnno_script} SUBJECT/{wildcards.subject}/{NOW}/Annotation/ AnnotationInput {params.addAnnotation_script} addAnnotation.pl 2>> {log}
                 """
 
 #7d.	PolyPhen2 :	Annotation tool for annotating coding nonsynonymous SNPs.	
 rule PolyPhen2:
 	input:
 		"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph",
-		convertor    = config["PPH2Parse"],
+		convertor    = config["PPH2Parse_script"],
 		##block      = config["block"]
 	output:
 		"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
@@ -809,7 +816,7 @@ rule PolyPhen2:
 rule Sift:
 	input:
 		sift		="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift",
-		convertor	= config["SiftParse"]
+		convertor	= config["SiftParse_script"]
 	output:
 		sift_out	="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
 	version:
@@ -839,8 +846,8 @@ rule Combine_ASP_annotation:
 		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm",
 		pph2="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
 		sift="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
-		convertor  = config["CombineAnnotations"],
-		geneanno   = config["GeneAnnotation"]
+		convertor  = config["CombineAnnotations_script"],
+		geneanno   = config["GeneAnnotation_script"]
 	output:
 		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.annotations.final.txt"
 	params:
