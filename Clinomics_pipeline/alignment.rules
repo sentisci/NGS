@@ -844,7 +844,7 @@ rule Sift:
 rule Combine_ASP_annotation:
 	input:
 		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm",
-		pph2="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
+		#pph2="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
 		sift="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
 		convertor  = config["CombineAnnotations_script"],
 		geneanno   = config["GeneAnnotation_script"]

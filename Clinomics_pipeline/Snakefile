@@ -161,7 +161,7 @@ Annot_Annovar	= [] ; Annot_SIFT = [] ; Annot_PPH2 = []
 
 Annot_Annovar =["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm".format(subject=s) for s in config['subjects'].keys()] 
 Annot_SIFT = ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()] 
-Annot_PPH2 = ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] 
+#Annot_PPH2 = ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] 
 Annot_ALL = Annot_Annovar + Annot_SIFT + Annot_PPH2
 #print(Annot_SIFT)
 
@@ -183,10 +183,10 @@ rule final:
 		#Annot_ALL
 		#BAMS,
 		#test_input
-	output:
-		msg_string="PIPELINE COMPLETED on "+NOW
-	shell:	"""
-		chmod -R 770 RESULT_DIR		
-		chgrp -R clinomics RESULT_DIR
-		echo -e "Clinomics pipeline is completed\n.Please check and  verify result folders and files " |mutt -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov
-	"""
+#	output:
+#		msg_string="PIPELINE COMPLETED on "+NOW
+#	shell:	"""
+#		chmod -R 770 RESULT_DIR		
+#		chgrp -R clinomics RESULT_DIR
+#		echo -e "Clinomics pipeline is completed\n.Please check and  verify result folders and files " |mutt -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov
+#	"""
