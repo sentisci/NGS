@@ -15,7 +15,8 @@ try:
     WORKING_DIR=os.environ['WORKING_DIR']
 except KeyError:
     SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_validation/"
-    NOW=time.strftime("%d_%m_%Y")
+    #NOW=time.strftime("%d_%m_%Y")
+    NOW="02_04_16"
     pass
 
 #Basic utility functions
@@ -170,6 +171,8 @@ CombineAnnotation = [w.replace('docm','annotations.final.txt') for w in Annot_AL
 Attach_ASP_Annotation = [w.replace('snpEff', 'annotated') for w in ALL_snpEff_vcf]
 
 #test_input = "batch_out.txt"
+SUBJECT_list = ["{subject}\n".format(subject=s) for s in config['subjects'].keys()]
+
 rule final:
 	input:
 		ALL_QC_files,
@@ -183,10 +186,10 @@ rule final:
 		#Annot_ALL
 		#BAMS,
 		#test_input
-#	output:
-#		msg_string="PIPELINE COMPLETED on "+NOW
-#	shell:	"""
-#		chmod -R 770 RESULT_DIR		
-#		chgrp -R clinomics RESULT_DIR
-#		echo -e "Clinomics pipeline is completed\n.Please check and  verify result folders and files " |mutt -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov
-#	"""
+	output: 
+		#touch("success")
+	shell:	"""
+		chmod -R 770 {WORKING_DIR}		
+		chgrp -R clinomics {WORKING_DIR}
+		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov
+	"""

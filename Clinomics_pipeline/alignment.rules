@@ -153,7 +153,7 @@ rule targetIntervals:
                 bam="{base}/bam/{sample}.{aligner}.final.bam",
                 bam_bai="{base}/bam/{sample}.{aligner}.final.bai"
         output:
-	        bam_probe_intervals = temp("{base}/qc/{sample}.{aligner}.final.bam.probe.intervals"),
+	        bam_probe_intervals  = temp("{base}/qc/{sample}.{aligner}.final.bam.probe.intervals"),
 	        bam_target_intervals = temp("{base}/qc/{sample}.{aligner}.final.bam.target.intervals")
 	version:
                 config['samtools']
@@ -170,34 +170,6 @@ rule targetIntervals:
 
 	cat <(samtools view -H {input.bam}) <(gawk '{{print $1 "\t" $2+1 "\t" $3 "\t+\tinterval_" NR}}' {params.target_intervals} )> {output.bam_target_intervals} 2>> {log}
 
-		"""
-
-#2h.	Python Consolidated QC script
-rule consolidated_QC:
-	input:
-		bam="{base}/bam/{sample}.{aligner}.final.bam"
-	output:
-		consolidated_QC_output="{base}/qc/{sample}.{aligner}.final.bam.consolidated_QC"
-	version:
-		config['samtools']
-	params:
-		rulename		=	"consolidated_QC",
-		target_intervals	=	lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
-		bedtools_version	=	config['bedtools'],
-		consolidated_QC_script	=	config['consolidated_QC_script'],	
-		batch   		=	config['consolidated_QC_clust']
-	log:
-		"log_error/{sample}.consolidated_QC.log"
-	shell:	"""
-	
-	module unload python/3.4.3
-	module load python/2.7.9
-	module load samtools/{version}
-	module load bedtools/{params.bedtools_version}
-	
-	mkdir /projects/scratch/${{PBS_JOBID}}
-	
-	python {params.consolidated_QC_script} {input.bam} {params.target_intervals} /projects/scratch/${{PBS_JOBID}}  > {output.consolidated_QC_output}		
 		"""
 
 #2f.	Picard - CalculateHsMetrics
@@ -247,6 +219,34 @@ rule hotspotCov:
 	
 	samtools view -hF 0x400 -q 30 {input} | samtools view -ShF 0x4 - | samtools view -SuF 0x200 - | bedtools coverage -abam - -b {params.hotspot_intervals} > {output}
 	
+		"""
+
+#2h.	Python Consolidated QC script
+rule consolidated_QC:
+	input:
+		bam="{base}/bam/{sample}.{aligner}.final.bam"
+	output:
+		consolidated_QC_output="{base}/qc/{sample}.{aligner}.final.bam.consolidated_QC"
+	version:
+		config['samtools']
+	params:
+		rulename		=	"consolidated_QC",
+		target_intervals	=	lambda wildcards: config['target_intervals'][config['sample_captures'][wildcards.sample][0]],
+		bedtools_version	=	config['bedtools'],
+		consolidated_QC_script	=	config['consolidated_QC_script'],	
+		batch   		=	config['consolidated_QC_clust']
+	log:
+		"log_error/{sample}.consolidated_QC.log"
+	shell:	"""
+	
+	module unload python/3.4.3
+	module load python/2.7.9
+	module load samtools/{version}
+	module load bedtools/{params.bedtools_version}
+	
+	mkdir /projects/scratch/${{PBS_JOBID}}
+	
+	python {params.consolidated_QC_script} {input.bam} {params.target_intervals} /projects/scratch/${{PBS_JOBID}}  > {output.consolidated_QC_output}		
 		"""
 
 ##3. Alignment Algorithms
@@ -829,6 +829,7 @@ rule Sift:
 	log:
 		"log_error/{subject}.SIFT"
 	shell: """
+		module load python/2.7.9
 		module load SIFT/{version}
 		
 		mkdir /projects/scratch/${{PBS_JOBID}}		
