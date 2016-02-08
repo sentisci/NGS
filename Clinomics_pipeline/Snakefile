@@ -187,9 +187,11 @@ rule final:
 		#BAMS,
 		#test_input
 	output: 
-		#touch("success")
+		touch("success")
+	params:
+                batch   ="-l nodes=1:ppn=1,mem=2gb"
 	shell:	"""
-		chmod -R 770 {WORKING_DIR}		
+		chmod -R 750 {WORKING_DIR}		
 		chgrp -R clinomics {WORKING_DIR}
-		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov
+		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov,khanjav@nih.gov
 	"""
