@@ -147,9 +147,11 @@ if len(config['sample_references']) > 0:
 	for sample in config['sample_references'].keys():
 		subject=SAMPLE_TO_SUBJECT[sample]
 	        if subject in ALL_SUBJECT_VCFS:
-        		ALL_snpEff_vcf2.extend([ ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
-					 		("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt"),
-					 		("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt")])
+			temp_list = [ ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
+                                                        ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt"),
+                                                        ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt")]
+			ALL_snpEff_vcf2.extend(temp_list)
+			ALL_SUBJECT_VCFS[subject].extend(temp_list)
 		else:
 			print("Seems like there is no Germline caller for "+subject)	
 
@@ -187,9 +189,11 @@ rule final:
 		#BAMS,
 		#test_input
 	output: 
-		#touch("success")
+		touch("success")
+	params:
+                batch   ="-l nodes=1:ppn=1,mem=2gb"
 	shell:	"""
-		chmod -R 770 {WORKING_DIR}		
+		chmod -R 750 {WORKING_DIR}		
 		chgrp -R clinomics {WORKING_DIR}
-		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov
+		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov,khanjav@nih.gov
 	"""

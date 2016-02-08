@@ -445,13 +445,6 @@ rule Bam2MPG:
 	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf | vcf-sort > SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam2mpg/{wildcards.sample}.{wildcards.aligner}.bam2mpg.raw.vcf
 
 	rm -rf {wildcards.sample}.recode.vcf
-<<<<<<< HEAD
-=======
-	
-	mkdir SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam
-	cp {input.bam} SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam/{wildcards.sample}.{wildcards.aligner}.final.bam
-	"""
->>>>>>> master
 
 	mkdir -p SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam	
 	cp {input.bam} SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam/{wildcards.sample}.{wildcards.aligner}.final.bam
@@ -737,7 +730,7 @@ rule snpEff:
 		vcf2txt_script  =config['vcf2txt_script'],
 		batch		=config["snpEff_clust"] 
 	log:
-		"log_error/{caller}.snpEff.vcf.log"
+		"log_error/{sample}.{aligner}.{caller}.snpEff.vcf.log"
 	shell: 	"""
 	
 	module load snpEff/{version}
