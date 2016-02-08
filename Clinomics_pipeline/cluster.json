@@ -13,14 +13,14 @@
 	"platypus_clust":	"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",
 	"MuTect_clust":		"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",
 	"Strelka_clust":	"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",
-	"bamqc_clust":		"-l nodes=1:ppn=8,mem=20gb,walltime=96:00:00",
+	"bamqc_clust":		"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"flagstat_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"samtools_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"fastqc_clust":		"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"igvtools_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"readDepth_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
-	"targetIntervals_clust":"-l nodes=1:ppn=8,mem=20gb,walltime=96:00:00",
-	"hsMetrics_clust":	"-l nodes=1:ppn=8,mem=20gb,walltime=96:00:00",
+	"targetIntervals_clust":"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
+	"hsMetrics_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"hotspotCov_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"snpEff_clust":		"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"formatinput_clust":    "-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
@@ -29,8 +29,6 @@
 	"job_addbackann":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"sift_clust":		"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",
 	"polyphen2_clust":	"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",
-	"novoalign_clust":	"-l nodes=2:ppn=16,mem=40gb,walltime=96:00:00",
-	"bam2mpg_clust":	"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",
-	"consolidated_QC_clust":"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",		
-	"failedExons_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00"		
+	"novoalign_clust":	"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",
+	"bam2mpg_clust":	"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00"		
 }

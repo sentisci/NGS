@@ -3,20 +3,14 @@ import itertools
 import os
 import collections
 import pprint
-import time
 from snakemake.utils import R
 from snakemake.exceptions import MissingInputException
 
 # Environment variable for serpentine base directory location
 try:
     SERPENTINE_HOME=os.environ['SERPENTINE_HOME']
-    NOW=os.environ['NOW']
-    RESULT_DIR=os.environ['RESULT_DIR']
-    WORKING_DIR=os.environ['WORKING_DIR']
 except KeyError:
-    SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_validation/"
-    #NOW=time.strftime("%d_%m_%Y")
-    NOW="02_04_16"
+    SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen/"
     pass
 
 #Basic utility functions
@@ -97,22 +91,24 @@ for unit,study in UNIT_TO_STUDY.items():
 
 ###Making BAM & QC files
 ALL_QC_files=[]
+
 BAM_extensions = [".bam",".tdf"]
 for qc_ext in BAM_extensions:
-	format_string = "SUBJECT/{subject}/"+NOW+"/{sample}/{reference_name}.{aligner}/bam/{sample}.{aligner}.final"+qc_ext
+	format_string = "SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/bam/{sample}.{aligner}.final"+qc_ext
 	file=[format_string.format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['samples'].keys() ]
 	ALL_QC_files.append(file)
 
-QC_metric_extensions = [".bam.depth_per_base",".bam.hsmetrics",".bam.hotspot.depth",".bam.flagstat",".bam.qualimapReport.html",".bam.consolidated_QC",".bam.failExons"]
+QC_metric_extensions = [".bam.depth",".bam.hsmetrics",".bam.hotspot.depth",".bam.flagstat",".bam.qualimapReport.html"]
 for qc_ext in QC_metric_extensions:
 	if(qc_ext == ".bam.qualimapReport.html"):	
-		format_string = "SUBJECT/{subject}/"+NOW+"/{sample}/{reference_name}.{aligner}/qc/bamqc/{sample}.{aligner}.final"+qc_ext
+		format_string = "SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/bamqc/{sample}.{aligner}.final"+qc_ext
 	else:
-		format_string = "SUBJECT/{subject}/"+NOW+"/{sample}/{reference_name}.{aligner}/qc/{sample}.{aligner}.final"+qc_ext
+		format_string = "SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/{sample}.{aligner}.final"+qc_ext
 	file=[format_string.format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['samples'].keys() ]
 	ALL_QC_files.append(file)
 
-ALL_QC_files.append( ["SUBJECT/{subject}/{now}/{sample}/{reference_name}.{aligner}/qc/fastqc/{unit}_R1_fastqc.html".format(now=NOW, sample=UNIT_TO_SAMPLE[s], subject=UNIT_TO_SUBJECT[s], unit=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['units'].keys()])
+ALL_QC_files.append( ["SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/qc/fastqc/{unit}_R1_fastqc.html".format(sample=UNIT_TO_SAMPLE[s], subject=UNIT_TO_SUBJECT[s], unit=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['units'].keys()])
+
 
 ###Making pairs for Somatic Callers
 somaticPairs = {}
@@ -121,15 +117,17 @@ PairsCapture = {}
 if len(config['sample_references']) > 0:
 	for Tumor in config['sample_references']:
 		for Normal in config['sample_references'][Tumor]:
-			TumorBam="SUBJECT/{subject}/{now}/{sample}/{reference_name}.{aligner}/bam/{sample}.{aligner}.final".format(now=NOW, subject=SAMPLE_TO_SUBJECT[Tumor],sample=Tumor,reference_name=config['reference_name'],aligner=config['aligner']['bwamem'])
-			NormalBam =  "SUBJECT/{subject}/{now}/{sample}/{reference_name}.{aligner}/bam/{sample}.{aligner}.final".format(now=NOW, subject=SAMPLE_TO_SUBJECT[Normal],sample=Normal,reference_name=config['reference_name'],aligner=config['aligner']['bwamem'])
+			TumorBam="SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/bam/{sample}.{aligner}.final".format(subject=SAMPLE_TO_SUBJECT[Tumor], sample=Tumor, reference_name=config['reference_name'],aligner=config['aligner']['bwamem'])
+			NormalBam =  "SUBJECT/{subject}/{sample}/{reference_name}.{aligner}/bam/{sample}.{aligner}.final".format(subject=SAMPLE_TO_SUBJECT[Normal], sample=Normal, reference_name=config['reference_name'],aligner=config['aligner']['bwamem'])
 			PairsCapture[Tumor] = config['sample_captures'][Tumor]
 			somaticPairs[Tumor] = [NormalBam + ".bam" , NormalBam + ".bai", TumorBam + ".bam", TumorBam + ".bai"]
 
 #snpEff Annotation
 ALL_snpEff_vcf1  = [] ; ALL_snpEff_vcf2  = [] ; ALL_SUBJECT_VCFS = {} 
 reference_name=config['reference_name'] ; aligner=config['aligner']['bwamem']
+##germline_callers_list = ["haplotypecaller","platypus","freebayes"]
 germline_callers_list = ["haplotypecaller","platypus","freebayes","bam2mpg"]
+#germline_callers_list = ["bam2mpg"]
 
 for subject in config["subjects"].keys():
 	ALL_SUBJECT_VCFS[subject]=[]
@@ -137,46 +135,49 @@ for subject in config["subjects"].keys():
 	for sample in samples:
 		for caller in germline_callers_list:
 			if(caller != "bam2mpg"):
-				ALL_SUBJECT_VCFS[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/"+caller+"/"+sample+"."+aligner+"."+caller+".snpEff.txt")
+				ALL_SUBJECT_VCFS[subject].append("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/"+caller+"/"+sample+"."+aligner+"."+caller+".snpEff.txt")
 			else:
-				ALL_SUBJECT_VCFS[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+".novoalign/"+caller+"/"+sample+".novoalign."+caller+".snpEff.txt")
+				ALL_SUBJECT_VCFS[subject].append("SUBJECT/"+subject+"/"+sample+"/"+reference_name+".novoalign/"+caller+"/"+sample+".novoalign."+caller+".snpEff.txt")
 	ALL_snpEff_vcf1.extend(ALL_SUBJECT_VCFS[subject])	
-
 
 if len(config['sample_references']) > 0:
 	for sample in config['sample_references'].keys():
 		subject=SAMPLE_TO_SUBJECT[sample]
 	        if subject in ALL_SUBJECT_VCFS:
-        		ALL_snpEff_vcf2.extend([ ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
-					 		("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt"),
-					 		("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt")])
+        		ALL_SUBJECT_VCFS[subject].extend([ ("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
+					 		("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt"),
+					 		("SUBJECT/"+subject+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt")])
+			ALL_snpEff_vcf2.extend(ALL_SUBJECT_VCFS[subject])	
 		else:
 			print("Seems like there is no Germline caller for "+subject)	
 
 ALL_snpEff_vcf = ALL_snpEff_vcf1 + ALL_snpEff_vcf2
+#print(ALL_snpEff_vcf)
+#print(ALL_SUBJECT_VCFS)
+
 
 #Polyphen2 SIFT In-house Annotation
 Annot_Annovar	= [] ; Annot_SIFT = [] ; Annot_PPH2 = []
-#FormatInput_out = ["SUBJECT/{subject}/"+NOW+"Annotation/AnnotationInput.anno".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()]
+FormatInput_out = ["SUBJECT/{subject}/Annotation/AnnotationInput.anno".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()]
+
 #print(FormatInput_out)
 
-Annot_Annovar =["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm".format(subject=s) for s in config['subjects'].keys()] 
-Annot_SIFT = ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()] 
-#Annot_PPH2 = ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] 
+Annot_Annovar =["SUBJECT/{subject}/Annotation/AnnotationInput.docm".format(subject=s) for s in config['subjects'].keys()] 
+Annot_SIFT = ["SUBJECT/{subject}/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()] 
+Annot_PPH2 = ["SUBJECT/{subject}/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] 
 Annot_ALL = Annot_Annovar + Annot_SIFT + Annot_PPH2
 #print(Annot_SIFT)
 
 CombineAnnotation = [w.replace('docm','annotations.final.txt') for w in Annot_ALL] 
 
 Attach_ASP_Annotation = [w.replace('snpEff', 'annotated') for w in ALL_snpEff_vcf]
+#print(Attach_ASP_Annotation)
 
 #test_input = "batch_out.txt"
-SUBJECT_list = ["{subject}\n".format(subject=s) for s in config['subjects'].keys()]
-
 rule final:
 	input:
 		ALL_QC_files,
-		#ALL_snpEff_vcf
+		#ALL_snpEff_vcf,
 		#FormatInput_out,
 		#Annot_Annovar,
 		#CombineAnnotation,
@@ -186,10 +187,3 @@ rule final:
 		#Annot_ALL
 		#BAMS,
 		#test_input
-	output: 
-		#touch("success")
-	shell:	"""
-		chmod -R 770 {WORKING_DIR}		
-		chgrp -R clinomics {WORKING_DIR}
-		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov
-	"""

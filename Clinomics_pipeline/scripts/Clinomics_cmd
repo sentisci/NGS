@@ -1,1 +1,0 @@
- qsub -l nodes=1:ppn=1,mem=2gb,walltime=96:00:00 batch_cmd.sh -v samplesheet="testsheet.txt" -N Clinomics3

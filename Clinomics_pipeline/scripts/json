@@ -1,4 +1,4 @@
-#!/usr/bin/env /projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/node
+#!/usr/bin/env /projects/Clinomics/Tools/serpentine_Tgen/scripts/node
 /**
  * Copyright (c) 2014 Trent Mick. All rights reserved.
  * Copyright (c) 2014 Joyent Inc. All rights reserved.

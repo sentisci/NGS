@@ -55,42 +55,10 @@
     		"clin.cnv.v2": "/projects/Clinomics/Tools/serpentine_Tgen_extras/clin_cnv_v2_S0784012.target.hg19.merged.bed",
     		"clin.snv.v2": "/projects/Clinomics/Tools/serpentine_Tgen_extras/clin_snv_v2_0783981.target.hg19.merged.bed"
 	},
-	"failed_exon_params": {
-		"clin.ex.v1": 
-				{
-					"Normal":"20",
-					"Tumor":"50"	
-		
-				},
-                "clin.snv.v1":
-                                {
-					"Normal":"20",
-					"Tumor":"50"
-                                },
-                "clin.cnv.v2":
-                                {
-					"Normal":"20",
-					"Tumor":"50"	
-                                },
-                "clin.snv.v2":
-                                {
-					"Normal":"20",
-					"Tumor":"50"
-                                }
-	},
-	"annovar_data":				"/ref/clinomics/annovar/",
-	"readDepth_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/readDepth.sh",
-	"failedExons_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/failed_Exon_Final.pl",
-	"consolidated_QC_script":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/QC_stats_Final.py",
-	"CombineAnnotations_script":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/CombineAnnotations.pl",
-	"GeneAnnotation_script":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/GeneAnnotation.pl",
-	"AnnotationInput_file": 		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/AnnotationInput_file",
-	"addBack":				"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/addAnnotations2vcf.pl",
-	"addAnnotation_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/addAnnotation.pl",
-	"MakeAnnotationInputs_script":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/MakeAnnotationInputs.pl",
-	"vcf2txt_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/vcf2txt.pl",
-	"TableAnno_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/TableAnno.sh",
-	"SiftParse_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/ParseSIFT.pl",
-	"PPH2Parse_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/ParsePPH2.pl",
-	"block":				"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/block_for_jobid.pl"
+	"annovar_data":		"/ref/clinomics/annovar/",
+	"AnnotationInput_file": "/projects/Clinomics/Tools/serpentine_Tgen/scripts/AnnotationInput_file",
+	"addBack":		"addAnnotations2vcf.pl",
+	"SiftParse":		"ParseSIFT.pl",
+	"PPH2Parse":		"ParsePPH2.pl",
+	"block":		"block_for_jobid.pl"
 }
