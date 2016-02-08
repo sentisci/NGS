@@ -3,6 +3,7 @@
 
 col2list <- function (df) {
 	nestedN <- unique(df[,1])
+	print(nestedN)
 	nestedL <- list()
 	
 	for ( Name in nestedN ) {

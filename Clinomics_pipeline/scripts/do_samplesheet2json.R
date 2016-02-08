@@ -29,7 +29,9 @@ if ( opt$verbose ) {
     write("The fun gets started...\n", stderr()) 
 }
 
-s = as.matrix(read.delim(opt$sampleSheetFile, as.is=T, comment.char = "#"))
+df = read.delim(opt$sampleSheetFile, as.is=TRUE, strip.white=TRUE, comment.char = "#")
+## remove all padded leading spaces when doing matrix conversion
+s = as.matrix(data.frame(lapply(df,as.character)))
 
 # colnames(s)
 #  [1] "result_id"    "run_id"       "run_date"     "SampleName"   "source"
@@ -38,19 +40,19 @@ s = as.matrix(read.delim(opt$sampleSheetFile, as.is=T, comment.char = "#"))
 # [16] "study_id"     "note"
 
 objL <- list(
-		'studies' = c('study_id','sample'), 
-		'subjects' = c('source','sample'), 
-		'samples' = c('sample', 'library'),
-		'libraries' = c('library', 'result_id'), 
-		'units' = c('result_id', 'read1', 'read2'),
-		'sample_TN' = c('sample', 'normal.tumor'),
-		'subject_TN' = c('source', 'normal.tumor'),
-		'subject_captures' = c('source', 'partitioning'),
-		'sample_captures' = c('sample', 'partitioning'),
-		'sample_references' = c('sample', 'sampleN')
+                'studies' = c('study_id','source'),
+                'subjects' = c('source','sample'),
+                'samples' = c('sample', 'library'),
+                'libraries' = c('library', 'result_id'),
+                'units' = c('result_id', 'read1', 'read2'),
+                'sample_TN' = c('sample', 'normal.tumor'),
+                'subject_TN' = c('source', 'normal.tumor'),
+                'subject_captures' = c('source', 'partitioning'),
+                'sample_captures' = c('sample', 'partitioning'),
+                'sample_references' = c('sample', 'sampleN')
 )
 
-source("/projects/Clinomics/Tools/serpentine_Tgen/scripts/col2list.R")
+source("/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/col2list.R")
 
 
 objList <- list()
@@ -62,7 +64,7 @@ for (L in names(objL) ) {
 
 library("jsonlite")
 outSample <- file.path(opt$outDir, "config_sample.json")
-outConfig <- file.path(opt$outDir, "config.json")
+outConfig <- file.path(opt$outDir, "samplesheet.json")
 
 jsonS <- toJSON( objList, pretty=T )
 writeLines(jsonS, outSample)
@@ -71,9 +73,7 @@ writeLines(jsonS, outSample)
 if( opt$commonConfigureFile == '' ) {
 	system( paste("cp", outSample, outConfig, sep=' ' ))
 } else {
-	system( paste("cat", opt$commonConfigureFile, outSample, "| /projects/Clinomics/Tools/serpentine_Tgen/scripts/json --merge >", outConfig, sep=" ") )
+	system( paste("cat", opt$commonConfigureFile, outSample, "| /projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/json --merge >", outConfig, sep=" ") )
 }
 
-file.remove("config_sample.json")
-
-
+file.remove(paste(opt$outDir,"config_sample.json",sep="/"))
