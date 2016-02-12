@@ -92,5 +92,8 @@
 	"TableAnno_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/TableAnno.sh",
 	"SiftParse_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/ParseSIFT.pl",
 	"PPH2Parse_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/ParsePPH2.pl",
-	"block":				"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/block_for_jobid.pl"
+	"block":				"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/block_for_jobid.pl",
+	"vcf2genotype_script":			"/projects/Clinomics/Tools/Genotyping/vcf2genotype.pl",
+	"genotype_script":			"/projects/Clinomics/Tools/Genotyping/genotype.sh",
+	"CountOverlap_script":			"/projects/Clinomics/Tools/Genotyping/CountOverlap.pl"
 }

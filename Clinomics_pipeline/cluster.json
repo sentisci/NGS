@@ -32,5 +32,7 @@
 	"novoalign_clust":	"-l nodes=2:ppn=16,mem=40gb,walltime=96:00:00",
 	"bam2mpg_clust":	"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",
 	"consolidated_QC_clust":"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",		
-	"failedExons_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00"		
+	"failedExons_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
+	"genotype_clust":	"-l nodes=1:ppn=5,mem=5gb,walltime=96:00:00",		
+	"mpileupGenotyping_clust":	"-l nodes=1:ppn=5,mem=5gb,walltime=96:00:00"	
 }

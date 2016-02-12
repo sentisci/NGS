@@ -1,4 +1,4 @@
-##1. Pre-processing QC statistics
+##i1. Pre-processing QC statistics
 ##1a. FastQC
 rule fastqc:
 	input:
@@ -127,6 +127,51 @@ rule readDepth:
 		
 	{params.read_depth_script} {input.bam} {params.target_intervals} {wildcards.base}/qc/ > {log} 2>&1	
 		"""
+
+## mpileup snpcalling
+rule mpileupGenotyping:
+	input:
+		bam="{base}/bam/{sample}.{aligner}.final.bam",
+		bai="{base}/bam/{sample}.{aligner}.final.bai",
+	output:
+		"{base}/qc/{sample}.{aligner}.final.bam.gt"
+	params:
+		rulename		="mpileupGenotyping",
+		reference		=config['reference_fasta'][config['reference_name']],
+		genotyping_sites	=config['genotyping_sites'],
+		vcf2genotype_script	=config['vcf2genotype_script'],
+		batch			=config['mpileupGenotyping_clust']
+	version:
+		config['samtools']
+	log:
+		"log_error/{sample}.final.bam.gt.log"
+	shell: """
+        
+	module load samtools/{version}
+
+        samtools mpileup -u -C50  -f {params.reference} -l {params.genotyping_sites} {input.bam} | bcftools view -gc - | {params.vcf2genotype_script} - > {output}	2> {log}
+
+        cp -f {output} /projects/Clinomics/Tools/Genotyping/GenotypeFiles/
+        """
+
+rule genotyping:
+	input:
+		Genotype_files
+	output:	
+		temp("Genotyping_done")
+	params:
+		rulename	= "genotyping",
+		genotype_script	= config['genotype_script'],
+		batch		= config['genotype_clust']
+	shell: """
+	
+	cd /projects/Clinomics/Tools/Genotyping/
+	sh {params.genotype_script} 
+	touch `basename {output}`
+	chmod 770 * 2> /dev/null
+
+	touch Genotyping_done
+	"""
 
 #2d.	In-house script - failedExons
 rule  failedExons:
@@ -445,13 +490,6 @@ rule Bam2MPG:
 	sed -e 's/SAMPLE/{wildcards.sample}/g' {wildcards.sample}.recode.vcf | vcf-sort > SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam2mpg/{wildcards.sample}.{wildcards.aligner}.bam2mpg.raw.vcf
 
 	rm -rf {wildcards.sample}.recode.vcf
-<<<<<<< HEAD
-=======
-	
-	mkdir SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam
-	cp {input.bam} SUBJECT/{wildcards.subject}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam/{wildcards.sample}.{wildcards.aligner}.final.bam
-	"""
->>>>>>> master
 
 	mkdir -p SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam	
 	cp {input.bam} SUBJECT/{wildcards.subject}/{NOW}/{wildcards.sample}/{wildcards.ref}.{wildcards.aligner}/bam/{wildcards.sample}.{wildcards.aligner}.final.bam
@@ -737,7 +775,7 @@ rule snpEff:
 		vcf2txt_script  =config['vcf2txt_script'],
 		batch		=config["snpEff_clust"] 
 	log:
-		"log_error/{caller}.snpEff.vcf.log"
+		"log_error/{sample}.{aligner}.{caller}.snpEff.vcf.log"
 	shell: 	"""
 	
 	module load snpEff/{version}
@@ -891,6 +929,8 @@ rule Attach_ASP_Annotation:
 	shell: """
 	perl {input.convertor} {input.ref} {input.txt} >{output.txt} 2>{log}
 		"""
+
+
 
 rule test1:
 	input:
