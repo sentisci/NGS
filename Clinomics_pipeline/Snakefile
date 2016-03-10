@@ -167,9 +167,14 @@ if len(config['sample_references']) > 0:
 			temp_list = [ ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
                                                         ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt"),
                                                         ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt")]
+<<<<<<< HEAD
 			ALL_snpEff_somatic.extend(temp_list)
 			ALL_SUBJECT_VCFS[subject].extend(temp_list)
 			add_to_SUBJECT_ANNO(subject,"somatic",temp_list)
+=======
+			ALL_snpEff_vcf2.extend(temp_list)
+			ALL_SUBJECT_VCFS[subject].extend(temp_list)
+>>>>>>> refs/remotes/origin/master
 		else:
 			print("Seems like there is no Germline caller for "+subject)	
 				
@@ -209,14 +214,22 @@ rule final:
 		ActionableFiles
 		#test_input
 	output: 
+<<<<<<< HEAD
 		temp("success")
+=======
+		touch("success")
+>>>>>>> refs/remotes/origin/master
 	params:
                 batch   ="-l nodes=1:ppn=1,mem=2gb"
 	shell:	"""
 		chmod -R 750 {WORKING_DIR}		
 		chgrp -R clinomics {WORKING_DIR}
+<<<<<<< HEAD
 		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_toprint}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov
 		touch success
+=======
+		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov,khanjav@nih.gov
+>>>>>>> refs/remotes/origin/master
 	"""
 
 #Include all rule files
