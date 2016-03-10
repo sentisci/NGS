@@ -28,8 +28,4 @@ while (<ORI>){
 	if (exists $ANNOVAR{$val}){
 		print "$val\t$ANNOVAR{$val}\t$vcf\n";
 	}
-	#else{
-	#	print STDERR "can not find $val\n";
-	#	die;
-	#}
 }
