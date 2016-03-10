@@ -1,0 +1,40 @@
+{
+  "studies": {
+    "ClinVal": ["NA19017"]
+  },
+  "subjects": {
+    "NA19017": ["NCIC005_100_E", "NCIC005_100A_P", "NCIC005_100B_P"]
+  },
+  "samples": {
+    "NCIC005_100_E": ["NCIC005_100_E"],
+    "NCIC005_100A_P": ["NCIC005_100A_P"],
+    "NCIC005_100B_P": ["NCIC005_100B_P"]
+  },
+  "libraries": {
+    "NCIC005_100_E": ["9021511"],
+    "NCIC005_100A_P": ["9021515"],
+    "NCIC005_100B_P": ["9021516"]
+  },
+  "units": {
+    "9021511": ["/projects/Clinomics/DATA/Sample_NCIC005_100_E_HH537BGXX/Sample_NCIC005_100_E_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC005_100_E_HH537BGXX/Sample_NCIC005_100_E_HH537BGXX_R2.fastq.gz"],
+    "9021515": ["/projects/Clinomics/DATA/Sample_NCIC005_100A_P_HH537BGXX/Sample_NCIC005_100A_P_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC005_100A_P_HH537BGXX/Sample_NCIC005_100A_P_HH537BGXX_R2.fastq.gz"],
+    "9021516": ["/projects/Clinomics/DATA/Sample_NCIC005_100B_P_HH537BGXX/Sample_NCIC005_100B_P_HH537BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCIC005_100B_P_HH537BGXX/Sample_NCIC005_100B_P_HH537BGXX_R2.fastq.gz"]
+  },
+  "sample_TN": {
+    "NCIC005_100_E": ["Normal"],
+    "NCIC005_100A_P": ["Normal"],
+    "NCIC005_100B_P": ["Normal"]
+  },
+  "subject_TN": {
+    "NA19017": ["Normal"]
+  },
+  "subject_captures": {
+    "NA19017": ["clin.ex.v1", "clin.snv.v1"]
+  },
+  "sample_captures": {
+    "NCIC005_100_E": ["clin.ex.v1"],
+    "NCIC005_100A_P": ["clin.snv.v1"],
+    "NCIC005_100B_P": ["clin.snv.v1"]
+  },
+  "sample_references": []	
+}
