@@ -16,7 +16,7 @@ try:
 except KeyError:
     SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_working/"
     #NOW=time.strftime("%d_%m_%Y")
-    NOW="03_08_16"
+    NOW="02_04_16"
     pass
 
 #Basic utility functions
@@ -131,19 +131,7 @@ if len(config['sample_references']) > 0:
 			somaticPairs[Tumor] = [NormalBam + ".bam" , NormalBam + ".bai", TumorBam + ".bam", TumorBam + ".bai"]
 
 #snpEff Annotation
-SUBJECT_list = ["{subject}".format(subject=s) for s in config['subjects'].keys()]
-SUBJECT_ANNO = dict([(key, {}) for key in SUBJECT_list])
-print(SUBJECT_ANNO)
-
-def add_to_SUBJECT_ANNO(subject, group, file_list):
-	file_list_ext_change = [w.replace('snpEff', 'annotated') for w in file_list]
-	if group not in SUBJECT_ANNO[subject]:
-		SUBJECT_ANNO[subject][group] = file_list_ext_change
-	else:
-		SUBJECT_ANNO[subject][group].extend(file_list_ext_change)
-
-##Make Somatic and Germline annotated files
-ALL_snpEff_germline  = [] ; ALL_snpEff_somatic  = [] ; ALL_SUBJECT_VCFS = {} 
+ALL_snpEff_vcf1  = [] ; ALL_snpEff_vcf2  = [] ; ALL_SUBJECT_VCFS = {} 
 reference_name=config['reference_name'] ; aligner=config['aligner']['bwamem']
 germline_callers_list = ["haplotypecaller","platypus","freebayes","bam2mpg"]
 
@@ -156,8 +144,7 @@ for subject in config["subjects"].keys():
 				ALL_SUBJECT_VCFS[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/"+caller+"/"+sample+"."+aligner+"."+caller+".snpEff.txt")
 			else:
 				ALL_SUBJECT_VCFS[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+".novoalign/"+caller+"/"+sample+".novoalign."+caller+".snpEff.txt")
-	ALL_snpEff_germline.extend(ALL_SUBJECT_VCFS[subject])
-	add_to_SUBJECT_ANNO(subject,"germline",ALL_SUBJECT_VCFS[subject])	
+	ALL_snpEff_vcf1.extend(ALL_SUBJECT_VCFS[subject])	
 
 
 if len(config['sample_references']) > 0:
@@ -167,46 +154,45 @@ if len(config['sample_references']) > 0:
 			temp_list = [ ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
                                                         ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt"),
                                                         ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt")]
-			ALL_snpEff_somatic.extend(temp_list)
+			ALL_snpEff_vcf2.extend(temp_list)
 			ALL_SUBJECT_VCFS[subject].extend(temp_list)
-			add_to_SUBJECT_ANNO(subject,"somatic",temp_list)
 		else:
 			print("Seems like there is no Germline caller for "+subject)	
-				
 
-varFiles=[]
-DBFiles =[]
-ActionableFiles =[]
+ALL_snpEff_vcf = ALL_snpEff_vcf1 + ALL_snpEff_vcf2
 
-#print(config['sample_references'])
-#print(SUBJECT_ANNO)
-for subject in SUBJECT_ANNO.keys():
-	for group in SUBJECT_ANNO[subject].keys():
-		DBFiles +=["SUBJECT/"+subject+"/"+NOW+"/Annotation/db/"+subject+"."+group]
-		ActionableFiles +=["SUBJECT/"+subject+"/"+NOW+"/Actionable/"+subject+"."+group+".actionable.txt"]
-		for varFile in SUBJECT_ANNO[subject][group]:
-			varFiles.append(varFile)
+#Polyphen2 SIFT In-house Annotation
+Annot_Annovar	= [] ; Annot_SIFT = [] ; Annot_PPH2 = []
+#FormatInput_out = ["SUBJECT/{subject}/"+NOW+"Annotation/AnnotationInput.anno".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] + ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()]
+#print(FormatInput_out)
 
-#print(DBFiles)
-#print(ActionableFiles)
-#print(varFiles)
+Annot_Annovar =["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm".format(subject=s) for s in config['subjects'].keys()] 
+Annot_SIFT = ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift".format(subject=s) for s in config['subjects'].keys()] 
+#Annot_PPH2 = ["SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph".format(subject=s) for s in config['subjects'].keys()] 
+Annot_ALL = Annot_Annovar + Annot_SIFT + Annot_PPH2
+#print(Annot_SIFT)
 
-ALL_snpEff_vcf = ALL_snpEff_germline + ALL_snpEff_somatic
+CombineAnnotation = [w.replace('docm','annotations.final.txt') for w in Annot_ALL] 
+
 Attach_ASP_Annotation = [w.replace('snpEff', 'annotated') for w in ALL_snpEff_vcf]
-##CombineAnnotation = [w.replace('docm','annotations.final.txt') for w in Annot_ALL] 
 
-
-SUBJECT_toprint = ["{subject}\n".format(subject=s) for s in config['subjects'].keys()]
 #test_input = "batch_out.txt"
+SUBJECT_list = ["{subject}\n".format(subject=s) for s in config['subjects'].keys()]
+
 rule final:
 	input:
-		#ALL_QC_files,
-		#Genotype_files,
-		#"Genotyping_done",
+		ALL_QC_files,
+		Genotype_files,
+		"Genotyping_done",
+		#ALL_snpEff_vcf
+		#FormatInput_out,
+		#Annot_Annovar,
 		#CombineAnnotation,
-		#Attach_ASP_Annotation,
-		DBFiles,
-		ActionableFiles
+		#Annot_SIFT,
+		#Annot_PPH2,
+		Attach_ASP_Annotation,
+		#Annot_ALL
+		#BAMS,
 		#test_input
 	output: 
 		temp("success")
@@ -215,7 +201,7 @@ rule final:
 	shell:	"""
 		chmod -R 750 {WORKING_DIR}		
 		chgrp -R clinomics {WORKING_DIR}
-		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_toprint}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov
+		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov,khanjav@nih.gov
 		touch success
 	"""
 

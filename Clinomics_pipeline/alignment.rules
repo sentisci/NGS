@@ -796,53 +796,72 @@ rule snpEff:
 #7b.	Format VCFS for In-house Annotation pipeline.
 rule formatInput:
         input:
+                #vcfs=["NCI0276tumor_200ng_P.strelka.indels.annotated.vcf","NCI0276tumor_200ng_P.strelka.indels.annotated.vcf"]
+                #vcfs=ALL_snpEff_vcf
                 vcfs=lambda wildcards:   ALL_SUBJECT_VCFS[wildcards.subject]
         output:
                 "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.anno",
+                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph",
                 "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift"
         params:
-                rulename	=	"FormatInput",
-		converter	=	config['MakeAnnotationInputs_script'],
-		fAEV_script	=	config["fAEV_script"],
-                batch		= 	config["formatinput_clust"]
+                rulename   = "FormatInput",
+		MakeAnnotationInputs_script=config['MakeAnnotationInputs_script'],
+                batch      = config["formatinput_clust"]
         log:
                 "log_error/{subject}.FormatInput"
-	
-	run:
-		inputVCFs = ' '.join(input.vcfs)
+        run:
+                inputVCFs = ' '.join(input.vcfs)
                 shell("""
-                        ##cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/{NOW}/Annotation/allSites
-			touch SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.final.txt
-			perl {params.fAEV_script} SUBJECT/{wildcards.subject}/{NOW}/Annotation/allSites SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.final.txt SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.annotations.final.txt SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput
-                        perl {params.converter} SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput 2>{log}
+                        cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput
+                        perl {params.MakeAnnotationInputs_script} SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput 2>{log}
                 """)
 
 #7c.	In-house Annotaion Pipeline : Genetic variant annotation using knowledge base databases ( ~60 Sources).
 rule Annovar_annotation:
         input:
-                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.anno"
+                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.anno",
         output:
-                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm"
+                "SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm",
         version:
-                config['annovar']
+                config['annovar'],
         params:
-                rulename   	= 	"Annovar_Annotation",
-                batch      	= 	config["annovar_clust"],
-		TableAnno_script=	config["TableAnno_script"],
-		addAnnotation_script=	config["addAnnotation_script"],
-		annovar_data	    =	config["annovar_data"]
+                rulename   = 	"Annotation",
+                batch      = 	config["annovar_clust"],
+		TableAnno_script=config["TableAnno_script"],
+		addAnnotation_script=config["addAnnotation_script"]
         log:
                 "log_error/{subject}.Annovar"
         shell: """
-		module load annovar/{version}
-		perl {params.TableAnno_script} SUBJECT/{wildcards.subject}/{NOW}/Annotation/ AnnotationInput {params.addAnnotation_script} {params.annovar_data} 2>> {log}
+
+        module load annovar/{version}
+
+        perl {params.TableAnno_script} SUBJECT/{wildcards.subject}/{NOW}/Annotation/ AnnotationInput {params.addAnnotation_script} addAnnotation.pl 2>> {log}
+                """
+
+#7d.	PolyPhen2 :	Annotation tool for annotating coding nonsynonymous SNPs.	
+rule PolyPhen2:
+	input:
+		"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph",
+		convertor    = config["PPH2Parse_script"],
+		##block      = config["block"]
+	output:
+		"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
+	version:
+		config['polyphen2'],
+	params:
+		rulename	="PolyPhen2",
+		batch		=config["polyphen2_clust"],
+	log:
+		"log_error/{subject}.PolyPhen2"
+	shell: """
+		module load polyphen2/{version}
 		"""
 
 #7e.    SIFT :     Annotation tool for annotating coding nonsynonymous SNPs.
 rule Sift:
 	input:
 		sift		="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift",
-
+		convertor	= config["SiftParse_script"]
 	output:
 		sift_out	="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
 	version:
@@ -851,7 +870,6 @@ rule Sift:
 		rulename        ="SIFT",
 		build		=config["SIFTbuild"],
 		database	=config["SIFT_db"],
-		convertor	= config["SiftParse_script"],
 		batch           =config["sift_clust"],
 	log:
 		"log_error/{subject}.SIFT"
@@ -865,114 +883,54 @@ rule Sift:
 		cd ${{DIR}}/`dirname {input.sift}`
 		FILE=`basename {input.sift}`
 		SIFT_exome_nssnvs.pl -i ${{FILE}} -d {params.database} -o /projects/scratch/${{PBS_JOBID}} -z ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv
-		perl {params.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv > ${{DIR}}/{output.sift_out}
+		perl {input.convertor} ${{DIR}}/`dirname {input.sift}`/${{FILE}}.sift_predictions.tsv > ${{DIR}}/{output.sift_out}
 		"""
 
 ##8.	PostProcessing of Annotation files.
 rule Combine_ASP_annotation:
 	input:
-		anno			=	"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm",
-		sift			=	"SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
-                blacklisted		=	config["annovar_data"]+ "hg19_blacklistedSites.txt"
+		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.docm",
+		#pph2="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.pph2.out",
+		sift="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.sift.out",
+		convertor  = config["CombineAnnotations_script"],
+		geneanno   = config["GeneAnnotation_script"]
 	output:
-		anno			=	"SUBJECT/{subject}/"+NOW+"/Annotation/Annotations.coding.rare.txt"
+		anno="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.annotations.final.txt"
 	params:
-		rulename		=	"Combine_ASP_annotation",
-		AnnotationInput_file	=	config["AnnotationInput_file"],
-		dataDir			=	config["annovar_data"],
-		convertor		=	config["CombineAnnotations_script"],
-		geneanno		=	config["GeneAnnotation_script"],
-                filter			=	config["filterVars_script"],
-                coding			=	config["proteincoding_script"],
-		batch			=	config["combine_clust"]
+		rulename	="Combine_ASP_annotation",
+		dataDir		=config["annovar_data"],
+		AnnotationInput_file=config["AnnotationInput_file"],
+		batch		=config["job_Combine"],
 	log:
 		"log_error/{subject}.CombineAnnotation"
 	shell: """
 		
-		for i in `cat {params.AnnotationInput_file}`;do  echo "SUBJECT/{wildcards.subject}/{NOW}/Annotation/$i" >> SUBJECT/{wildcards.subject}/{NOW}/Annotation/list ; done
+		for i in `cat {params.AnnotationInput_file}`;do  echo "SUBJECT/{wildcards.subject}/{NOW}/Annotation/$i" >> SUBJECT/{wildcards.subject}/{NOW}/Annotation/list ; done	
 		sed 's/^[\t ]*//g' -i SUBJECT/{wildcards.subject}/{NOW}/Annotation/list
 			
-		perl {params.convertor} SUBJECT/{wildcards.subject}/{NOW}/Annotation/list > {output}.tmp
-		perl {params.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >> SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.annotations.final.txt
-		perl {params.coding} SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.annotations.final.txt | perl {params.filter} - {input.blacklisted} 0.1 |sort |uniq >{output}
-		
-		rm -rf {output}.tmp {output}.final.txt 
+		perl {input.convertor} SUBJECT/{wildcards.subject}/{NOW}/Annotation/list > {output}.tmp
+		perl {input.geneanno} {params.dataDir}/hg19_ACMG.txt {output}.tmp >{output}
+		rm -rf {output}.tmp
 
 		"""
 
 rule Attach_ASP_Annotation:
 	input:
-		txt		=	"SUBJECT/{subject}/"+NOW+"/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt",
-		ref		=	"SUBJECT/{subject}/"+NOW+"/Annotation/Annotations.coding.rare.txt",
+		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt",
+		ref="SUBJECT/{subject}/"+NOW+"/Annotation/AnnotationInput.annotations.final.txt",
+		convertor  = config["addBack"]
 	output:
-		txt		=	"SUBJECT/{subject}/"+NOW+"/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.annotated.txt"
+		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref_aligner}/{caller}/{sample}.{aligner}.{base_caller}.annotated.txt"
 	params:
-		rulename   	=	"Attach_ASP_Annotation",
-		convertor  	= 	config["addBack"],
-		batch      	=	config["addbackann_clust"]
+		rulename   = "Attach_ASP_Annotation",
+		batch      = config["job_addbackann"],
 	log:
 		"log_error/{subject}.AttachAnnotation"
 	shell: """
-	perl {params.convertor} {input.ref} {input.txt} > {output.txt} 2>{log}
+	perl {input.convertor} {input.ref} {input.txt} >{output.txt} 2>{log}
 		"""
 
-rule makeDBinput:
-	input:
-		txtFiles	=	lambda wildcards:	SUBJECT_ANNO[wildcards.subject][wildcards.group],
-	output:	
-		txt		=	"SUBJECT/{subject}/"+NOW+"/Annotation/db/{subject}.{group}"
-	params:
-		rulename	=	"makeDBinput",
-		convertor	=	config["DBinput_script"],
-		batch           =       config["makeDBinput_clust"]
-	shell: """
-	perl {params.convertor} {input.txtFiles} >{output.txt}
-	"""
 
-rule Actionable_Somatic:
-	input:
-		somatic		=	"SUBJECT/{subject}/"+NOW+"/Annotation/db/{subject}.somatic",
-		annotation	=	"SUBJECT/{subject}/"+NOW+"/Annotation/Annotations.coding.rare.txt",
-		refFile		=	config["annovar_data"]+"hg19_SomaticActionableSites.txt",
-		cgc             =       config["annovar_data"]+"geneLists/CancerGeneCensus.v76.txt"
-	output:
-		somatic		=	"SUBJECT/{subject}/"+NOW+"/Actionable/{subject}.somatic.actionable.txt",
-	params:
-		rulename	=	"Actionable_Somatic",
-		convertor	=	config["Actionable_mutation_script"],
-		batch		=	config["Act_somatic_clust"]
-	shell: """
-	perl {params.convertor} somatic  {input.refFile} {input.cgc} {input.somatic} {input.annotation} >{output.somatic}
-        """
-
-
-rule Actionable_Germline:
-	input:
-		germline	=	"SUBJECT/{subject}/"+NOW+"/Annotation/db/{subject}.germline",
-		annotation	=	"SUBJECT/{subject}/"+NOW+"/Annotation/Annotations.coding.rare.txt",
-		cancerGeneCensus=	config["annovar_data"]+"geneLists/CGCensus_Hereditary.txt",
-		hotspot		=	config["annovar_data"]+"hg19_SomaticActionableSites.txt",
-		tsid   		=	config["annovar_data"]+"geneLists/TruSightInheritedDiseases.txt",
-		jsw		=	config["annovar_data"]+"geneLists/CancerGenes_JSW.txt",
-		clt2		=	config["annovar_data"]+"geneLists/ClinomicsTier2GeneList.txt",
-		ghr    		= 	config["annovar_data"]+"geneLists/Genetics_HumanRef.3.8.16.txt"
-	output:
-		germline	=	"SUBJECT/{subject}/"+NOW+"/Actionable/{subject}.germline.actionable.txt",
-	params:
-		rulename  	=	"Actionable_Germline",
-		convertor	=	config["Actionable_mutation_script"],
-		batch    	=	config['Act_germline_clust']
-	shell: """
-
-	if [ -e SUBJECT/{subject}/"+NOW+"/Annotation/db/{subject}.somatic ]
-	then
-		perl {params.convertor} germline SUBJECT/{subject}/"+NOW+"/Annotation/db/{subject}.somatic {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
-	else
-		mkdir -p /projects/scratch/${{PBS_JOBID}}
-		touch /projects/scratch/${{PBS_JOBID}}/temp
-		perl {params.convertor} germline /projects/scratch/${{PBS_JOBID}}/temp {input.germline} {input.annotation} {input.cancerGeneCensus} {input.hotspot} {input.tsid} {input.jsw} {input.clt2} {input.ghr} > {output.germline}
-	fi
-        """
 
 rule test1:
 	input:
@@ -987,4 +945,4 @@ rule test1:
 	mem=`echo "{params.batch}" | sed 's/,/\t/g' | sed 's/,/\t/g' | awk '{{split($3,a,"=");print a[2]}}'| sed 's/gb//g'` 
 	echo ${{mem}} > {output.file}
 		
-	"""
+		"""
