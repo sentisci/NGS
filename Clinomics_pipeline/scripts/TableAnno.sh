@@ -1,13 +1,13 @@
 #!/bin/sh
 #PBS -N ANNOVAR
 cd $1 ###
+echo `pwd`
 file="$2.anno"   ###
-DATADIR="/ref/clinomics/annovar/"
+DATADIR=$4
 CUSTOM=$3    ###
 BUILD=hg19
 ###############################
 # Add gene, cytoband,dbsnp, 1000g, ESP, CG69, NCI60 annotations
-#
 ###############################
 #       --dot2underline\
 table_annovar.pl\
@@ -16,8 +16,8 @@ table_annovar.pl\
 	-buildver ${BUILD}\
 	-out $file\
 	-remove\
-        -protocol refGene,cytoBand,snp138,1000g2014oct_all,1000g2014oct_eur,1000g2014oct_afr,1000g2014oct_amr,1000g2014oct_eas,1000g2014oct_sas,esp6500_all,esp6500_ea,esp6500_aa,exac03nontcga,cg69,nci60\
-        -operation g,r,f,f,f,f,f,f,f,f,f,f,f,f,f\
+	-protocol refGene,cytoBand,snp138,1000g2014oct_all,1000g2014oct_eur,1000g2014oct_afr,1000g2014oct_amr,1000g2014oct_eas,1000g2014oct_sas,esp6500_all,esp6500_ea,esp6500_aa,exac03nontcga,cg69,nci60\
+	-operation g,r,f,f,f,f,f,f,f,f,f,f,f,f,f\
 	-nastring "-1"
 mv $file.hg19_multianno.txt $file.gene
 rm -rf $file.refGene.invalid_input
@@ -37,7 +37,7 @@ annotate_variation.pl\
 awk '{OFS="\t"};{print $3,$4,$5,$6,$7,$2}' $file.${BUILD}_exac03_dropped |sed -e 's/,/\t/g' >$file.exac.3
 head -1 $DATADIR/${BUILD}_exac03.txt >>$file.exac.3
 rm -rf $file.${BUILD}_exac03_dropped $file.${BUILD}_exac03_filtered
-################################
+################################nno.sh
 # Add clinseq annotation
 #
 ################################
@@ -88,10 +88,10 @@ table_annovar.pl\
 	--dot2underline\
 	-out $file\
 	-remove\
-	-protocol clinvar_20150330,cosmic70\
-	-operation f,f\
+	-protocol cosmic76\
+	-operation f\
 	-nastring "NA"
-mv $file.hg19_multianno.txt $file.clinvar
+mv $file.hg19_multianno.txt $file.cosmic
 ################################
 # Add PCG 
 #
@@ -112,7 +112,13 @@ rm -rf $file.${BUILD}_generic_dropped $file.${BUILD}_generic_filtered
 #
 ################################
 OUT=`echo $file |sed -e 's/.anno//g'`
-$CUSTOM $DATADIR/${BUILD}_hgmd.2015.3.txt $file >$OUT.hgmd
+$CUSTOM $DATADIR/${BUILD}_clinvar_20160203.txt $file >$OUT.clinvar
+################################
+# Add HGMD
+#
+################################
+OUT=`echo $file |sed -e 's/.anno//g'`
+$CUSTOM $DATADIR/${BUILD}_hgmd.2015.4.txt $file >$OUT.hgmd
 ################################
 # Add MATCH Trial
 #
