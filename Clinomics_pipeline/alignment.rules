@@ -811,7 +811,7 @@ rule formatInput:
 	run:
 		inputVCFs = ' '.join(input.vcfs)
                 shell("""
-                        ##cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/{NOW}/Annotation/allSites
+                        cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/{NOW}/Annotation/allSites
 			touch SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.final.txt
 			perl {params.fAEV_script} SUBJECT/{wildcards.subject}/{NOW}/Annotation/allSites SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.final.txt SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.annotations.final.txt SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput
                         perl {params.converter} SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput 2>{log}
@@ -925,6 +925,8 @@ rule makeDBinput:
 		rulename	=	"makeDBinput",
 		convertor	=	config["DBinput_script"],
 		batch           =       config["makeDBinput_clust"]
+	log:
+		"log_error/{subject}.makeDBinput"
 	shell: """
 	perl {params.convertor} {input.txtFiles} >{output.txt}
 	"""
@@ -941,6 +943,8 @@ rule Actionable_Somatic:
 		rulename	=	"Actionable_Somatic",
 		convertor	=	config["Actionable_mutation_script"],
 		batch		=	config["Act_somatic_clust"]
+	log:
+		"log_error/{subject}.Actionable_Somatic"
 	shell: """
 	perl {params.convertor} somatic  {input.refFile} {input.cgc} {input.somatic} {input.annotation} >{output.somatic}
         """
@@ -962,6 +966,8 @@ rule Actionable_Germline:
 		rulename  	=	"Actionable_Germline",
 		convertor	=	config["Actionable_mutation_script"],
 		batch    	=	config['Act_germline_clust']
+	log:
+		"log_error/{subject}.Actionable_Germline"
 	shell: """
 
 	if [ -e SUBJECT/{subject}/"+NOW+"/Annotation/db/{subject}.somatic ]
