@@ -133,7 +133,7 @@ if len(config['sample_references']) > 0:
 #snpEff Annotation
 SUBJECT_list = ["{subject}".format(subject=s) for s in config['subjects'].keys()]
 SUBJECT_ANNO = dict([(key, {}) for key in SUBJECT_list])
-print(SUBJECT_ANNO)
+#print(SUBJECT_ANNO)
 
 def add_to_SUBJECT_ANNO(subject, group, file_list):
 	file_list_ext_change = [w.replace('snpEff', 'annotated') for w in file_list]

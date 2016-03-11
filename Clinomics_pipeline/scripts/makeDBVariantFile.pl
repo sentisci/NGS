@@ -33,7 +33,7 @@ foreach my $file(@ARGV){
 		exit;
 	}
 	my @a = split(/[.]/, basename($file));
-	my $caller = $a[1];
+	my $caller = $a[2];
 	my %samples;
 	while(<FH>){
 		chomp;
