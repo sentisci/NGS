@@ -16,7 +16,7 @@ try:
 except KeyError:
     SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_working/"
     #NOW=time.strftime("%d_%m_%Y")
-    NOW="03_08_16"
+    NOW="02_04_16"
     pass
 
 #Basic utility functions
@@ -215,6 +215,7 @@ rule final:
 	shell:	"""
 		chmod -R 750 {WORKING_DIR}		
 		chgrp -R clinomics {WORKING_DIR}
+		chmod -R 770 {WORKING_DIR}/.snakemake 
 		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_toprint}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov
 		touch success
 	"""
