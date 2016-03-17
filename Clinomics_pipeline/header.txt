@@ -1,0 +1,1 @@
+result_id	run_id	run_date	SampleName	source	sample	normal/tumor	sampleN	library	library_id	lane_id	partitioning	sample_type	read1	read2	study_id	note
