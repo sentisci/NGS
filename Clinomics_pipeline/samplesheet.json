@@ -1,103 +1,48 @@
 {
   "studies": {
-    "ClinVal": ["M720", "NCI0307", "M719", "M948", "M966", "M967"]
+    "ClinVal": ["NCI0041"]
   },
   "subjects": {
-    "M720": ["CL0031_T_E", "CL0031_T_P"],
-    "NCI0307": ["CL0030_B_E", "CL0030_B_P"],
-    "M719": ["CL0030_T_P"],
-    "M948": ["CL0033_B_E", "CL0033_B_P"],
-    "M966": ["CL0033_T_E", "CL0033_T_P"],
-    "M967": ["CL0034_T_E", "CL0034_T_P"]
+    "NCI0041": ["NCI0041_T_E", "NCI0041_B_E", "NCI0041_T_P", "NCI0041_B_P"]
   },
   "samples": {
-    "CL0031_T_E": ["CL0031_T_E"],
-    "CL0030_B_E": ["CL0030_B_E"],
-    "CL0030_T_P": ["CL0030_T_P"],
-    "CL0031_T_P": ["CL0031_T_P"],
-    "CL0030_B_P": ["CL0030_B_P"],
-    "CL0033_B_E": ["CL0033_B_E"],
-    "CL0033_T_E": ["CL0033_T_E"],
-    "CL0034_T_E": ["CL0034_T_E"],
-    "CL0033_B_P": ["CL0033_B_P"],
-    "CL0033_T_P": ["CL0033_T_P"],
-    "CL0034_T_P": ["CL0034_T_P"]
+    "NCI0041_T_E": ["NCI0041_T_E"],
+    "NCI0041_B_E": ["NCI0041_B_E"],
+    "NCI0041_T_P": ["NCI0041_T_P"],
+    "NCI0041_B_P": ["NCI0041_B_P"]
   },
   "libraries": {
-    "CL0031_T_E": ["1131602"],
-    "CL0030_B_E": ["1131603"],
-    "CL0030_T_P": ["1131604"],
-    "CL0031_T_P": ["1131605"],
-    "CL0030_B_P": ["1131606"],
-    "CL0033_B_E": ["3021601"],
-    "CL0033_T_E": ["3021602"],
-    "CL0034_T_E": ["3021603"],
-    "CL0033_B_P": ["3021604"],
-    "CL0033_T_P": ["3021605"],
-    "CL0034_T_P": ["3021606"]
+    "NCI0041_T_E": ["10141501"],
+    "NCI0041_B_E": ["10141503"],
+    "NCI0041_T_P": ["10141505"],
+    "NCI0041_B_P": ["10141507"]
   },
   "units": {
-    "1131602": ["/projects/Clinomics/DATA/Sample_CL0031_T_E_HKMMWBGXX/Sample_CL0031_T_E_HKMMWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0031_T_E_HKMMWBGXX/Sample_CL0031_T_E_HKMMWBGXX_R2.fastq.gz"],
-    "1131603": ["/projects/Clinomics/DATA/Sample_CL0030_B_E_HKMMWBGXX/Sample_CL0030_B_E_HKMMWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0030_B_E_HKMMWBGXX/Sample_CL0030_B_E_HKMMWBGXX_R2.fastq.gz"],
-    "1131604": ["/projects/Clinomics/DATA/Sample_CL0030_T_P_HKMMWBGXX/Sample_CL0030_T_P_HKMMWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0030_T_P_HKMMWBGXX/Sample_CL0030_T_P_HKMMWBGXX_R2.fastq.gz"],
-    "1131605": ["/projects/Clinomics/DATA/Sample_CL0031_T_P_HKMMWBGXX/Sample_CL0031_T_P_HKMMWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0031_T_P_HKMMWBGXX/Sample_CL0031_T_P_HKMMWBGXX_R2.fastq.gz"],
-    "1131606": ["/projects/Clinomics/DATA/Sample_CL0030_B_P_HKMMWBGXX/Sample_CL0030_B_P_HKMMWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0030_B_P_HKMMWBGXX/Sample_CL0030_B_P_HKMMWBGXX_R2.fastq.gz"],
-    "3021601": ["/projects/Clinomics/DATA/Sample_CL0033_B_E_HKV2HBGXX/Sample_CL0033_B_E_HKV2HBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0033_B_E_HKV2HBGXX/Sample_CL0033_B_E_HKV2HBGXX_R2.fastq.gz"],
-    "3021602": ["/projects/Clinomics/DATA/Sample_CL0033_T_E_HKV2HBGXX/Sample_CL0033_T_E_HKV2HBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0033_T_E_HKV2HBGXX/Sample_CL0033_T_E_HKV2HBGXX_R2.fastq.gz"],
-    "3021603": ["/projects/Clinomics/DATA/Sample_CL0034_T_E_HKV2HBGXX/Sample_CL0034_T_E_HKV2HBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0034_T_E_HKV2HBGXX/Sample_CL0034_T_E_HKV2HBGXX_R2.fastq.gz"],
-    "3021604": ["/projects/Clinomics/DATA/Sample_CL0033_B_P_HKV2HBGXX/Sample_CL0033_B_P_HKV2HBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0033_B_P_HKV2HBGXX/Sample_CL0033_B_P_HKV2HBGXX_R2.fastq.gz"],
-    "3021605": ["/projects/Clinomics/DATA/Sample_CL0033_T_P_HKV2HBGXX/Sample_CL0033_T_P_HKV2HBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0033_T_P_HKV2HBGXX/Sample_CL0033_T_P_HKV2HBGXX_R2.fastq.gz"],
-    "3021606": ["/projects/Clinomics/DATA/Sample_CL0034_T_P_HKV2HBGXX/Sample_CL0034_T_P_HKV2HBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0034_T_P_HKV2HBGXX/Sample_CL0034_T_P_HKV2HBGXX_R2.fastq.gz"]
+    "10141501": ["/projects/Clinomics/DATA/Sample_NCI0041_T_E_HH7TLBGXX/Sample_NCI0041_T_E_HH7TLBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0041_T_E_HH7TLBGXX/Sample_NCI0041_T_E_HH7TLBGXX_R2.fastq.gz"],
+    "10141503": ["/projects/Clinomics/DATA/Sample_NCI0041_B_E_HH7TLBGXX/Sample_NCI0041_B_E_HH7TLBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0041_B_E_HH7TLBGXX/Sample_NCI0041_B_E_HH7TLBGXX_R2.fastq.gz"],
+    "10141505": ["/projects/Clinomics/DATA/Sample_NCI0041_T_P_HH7TLBGXX/Sample_NCI0041_T_P_HH7TLBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0041_T_P_HH7TLBGXX/Sample_NCI0041_T_P_HH7TLBGXX_R2.fastq.gz"],
+    "10141507": ["/projects/Clinomics/DATA/Sample_NCI0041_B_P_HH7TLBGXX/Sample_NCI0041_B_P_HH7TLBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0041_B_P_HH7TLBGXX/Sample_NCI0041_B_P_HH7TLBGXX_R2.fastq.gz"]
   },
   "sample_TN": {
-    "CL0031_T_E": ["Tumor"],
-    "CL0030_B_E": ["Normal"],
-    "CL0030_T_P": ["Tumor"],
-    "CL0031_T_P": ["Tumor"],
-    "CL0030_B_P": ["Normal"],
-    "CL0033_B_E": ["Normal"],
-    "CL0033_T_E": ["Tumor"],
-    "CL0034_T_E": ["Tumor"],
-    "CL0033_B_P": ["Normal"],
-    "CL0033_T_P": ["Tumor"],
-    "CL0034_T_P": ["Tumor"]
+    "NCI0041_T_E": ["Tumor"],
+    "NCI0041_B_E": ["Normal"],
+    "NCI0041_T_P": ["Tumor"],
+    "NCI0041_B_P": ["Normal"]
   },
   "subject_TN": {
-    "M720": ["Tumor"],
-    "NCI0307": ["Normal"],
-    "M719": ["Tumor"],
-    "M948": ["Normal"],
-    "M966": ["Tumor"],
-    "M967": ["Tumor"]
+    "NCI0041": ["Tumor", "Normal"]
   },
   "subject_captures": {
-    "M720": ["clin.ex.v1", "clin.snv.v1"],
-    "NCI0307": ["clin.ex.v1", "clin.snv.v1"],
-    "M719": ["clin.snv.v1"],
-    "M948": ["clin.ex.v1", "clin.snv.v1"],
-    "M966": ["clin.ex.v1", "clin.snv.v1"],
-    "M967": ["clin.ex.v1", "clin.snv.v1"]
+    "NCI0041": ["clin.ex.v1", "clin.snv.v1"]
   },
   "sample_captures": {
-    "CL0031_T_E": ["clin.ex.v1"],
-    "CL0030_B_E": ["clin.ex.v1"],
-    "CL0030_T_P": ["clin.snv.v1"],
-    "CL0031_T_P": ["clin.snv.v1"],
-    "CL0030_B_P": ["clin.snv.v1"],
-    "CL0033_B_E": ["clin.ex.v1"],
-    "CL0033_T_E": ["clin.ex.v1"],
-    "CL0034_T_E": ["clin.ex.v1"],
-    "CL0033_B_P": ["clin.snv.v1"],
-    "CL0033_T_P": ["clin.snv.v1"],
-    "CL0034_T_P": ["clin.snv.v1"]
+    "NCI0041_T_E": ["clin.ex.v1"],
+    "NCI0041_B_E": ["clin.ex.v1"],
+    "NCI0041_T_P": ["clin.snv.v1"],
+    "NCI0041_B_P": ["clin.snv.v1"]
   },
   "sample_references": {
-    "CL0031_T_E": ["CL0030_B_E"],
-    "CL0030_T_P": ["CL0030_B_P"],
-    "CL0031_T_P": ["CL0030_B_P"],
-    "CL0033_T_E": ["CL0033_B_E"],
-    "CL0034_T_E": ["CL0033_B_E"],
-    "CL0033_T_P": ["CL0033_B_P"],
-    "CL0034_T_P": ["CL0033_B_P"]
+    "NCI0041_T_E": ["NCI0041_B_E"],
+    "NCI0041_T_P": ["NCI0041_B_P"]
   }
 }

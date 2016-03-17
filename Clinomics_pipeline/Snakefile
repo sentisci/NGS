@@ -145,7 +145,7 @@ def add_to_SUBJECT_ANNO(subject, group, file_list):
 ##Make Somatic and Germline annotated files
 ALL_snpEff_germline  = [] ; ALL_snpEff_somatic  = [] ; ALL_SUBJECT_VCFS = {} 
 reference_name=config['reference_name'] ; aligner=config['aligner']['bwamem']
-germline_callers_list = ["haplotypecaller","platypus","freebayes","bam2mpg"]
+germline_callers_list = ["haplotypecaller","platypus","bam2mpg","freebayes"]
 
 for subject in config["subjects"].keys():
 	ALL_SUBJECT_VCFS[subject]=[]
@@ -164,14 +164,15 @@ if len(config['sample_references']) > 0:
 	for sample in config['sample_references'].keys():
 		subject=SAMPLE_TO_SUBJECT[sample]
 	        if subject in ALL_SUBJECT_VCFS:
-			temp_list = [ ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
-                                                        ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt"),
-                                                        ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt")]
+			temp_list = [ 			("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt"),
+							("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
+                                                        ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt")
+                                    ]
 			ALL_snpEff_somatic.extend(temp_list)
 			ALL_SUBJECT_VCFS[subject].extend(temp_list)
 			add_to_SUBJECT_ANNO(subject,"somatic",temp_list)
 		else:
-			print("Seems like there is no Germline caller for "+subject)	
+			print("Seems like there is no Germline caller for "+subject)
 				
 
 varFiles=[]
@@ -201,8 +202,8 @@ SUBJECT_toprint = ["{subject}\n".format(subject=s) for s in config['subjects'].k
 rule final:
 	input:
 		#ALL_QC_files,
-		#Genotype_files,
-		#"Genotyping_done",
+		Genotype_files,
+		"Genotyping_done",
 		#CombineAnnotation,
 		#Attach_ASP_Annotation,
 		DBFiles,
