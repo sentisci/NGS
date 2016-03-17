@@ -148,7 +148,7 @@ rule mpileupGenotyping:
 		"log_error/{sample}.final.bam.gt.log"
 	shell: """
         
-	module load samtools/{version}
+	module load samtools/{version} 
 
         samtools mpileup -u -C50  -f {params.reference} -l {params.genotyping_sites} {input.bam} | bcftools view -gc - >{output.vcf} 2>{log}
 	perl {params.vcf2genotype_script} {output.vcf} > {output.gt} 2>> {log}
@@ -763,9 +763,28 @@ rule strelka:
 
 ##7	SNVs and Indel Annotation pipeline 
 #7a.	SnpEff: Genetic variant annotation and effect prediction toolbox. It annotates and predicts the effects of variants on genes.
+rule VCFfieldEditor:
+	input:
+		vcf = "SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
+	output
+		vcf = "SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.VAF.vcf"
+	version:
+		config['VCFfieldEditor']
+	params:
+		rulename = "VCFfieldEditor",
+		VCF_field_script=config["VCFfieldEditor_script"],
+		batch	= config["VCFfieldEditor_clust"]
+	log:
+		"log_error/{sample}.{aligner}.{caller}.snpEff.vcf.log"
+	shell:	"""		
+		module load R
+
+		cat {params.VCF_field_script} | R --vanilla --slave --args {wildcards.caller} {input.vcf} 			
+	"""
+
 rule snpEff:
 	input:
-		vcf ="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
+		vcf ="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.VAF.vcf",
 	output:
 		vcf="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.vcf",
 		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt"
