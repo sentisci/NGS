@@ -778,7 +778,6 @@ rule VCFfieldEditor:
 		"log_error/{sample}.{aligner}.{caller}.snpEff.vcf.log"
 	shell:	"""		
 		module load R
-
 		cat {params.VCF_field_script} | R --vanilla --slave --args {wildcards.caller} {input.vcf} 			
 	"""
 
