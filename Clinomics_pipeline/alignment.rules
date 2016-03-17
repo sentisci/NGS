@@ -762,7 +762,7 @@ rule strelka:
                """
 
 ##7	SNVs and Indel Annotation pipeline 
-#7a.	SnpEff: Genetic variant annotation and effect prediction toolbox. It annotates and predicts the effects of variants on genes.
+#7a.	VCFfieldEditor.
 rule VCFfieldEditor:
 	input:
 		vcf = "SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
@@ -772,15 +772,6 @@ rule VCFfieldEditor:
 		config['VCFfieldEditor']
 	params:
 		rulename = "VCFfieldEditor",
-<<<<<<< HEAD
-		batch	= config["VCFfieldEditor_clust"]
-	log:
-		"log_error/{sample}.{aligner}.{caller}.snpEff.vcf.log"
-	shell:	"""
-	module load R
-        cat {params.VCF_field_script} | R --vanilla --slave --args {wildcards.caller} {input.vcf}
-		"""
-=======
 		VCF_field_script=config["VCFfieldEditor_script"],
 		batch	= config["VCFfieldEditor_clust"]
 	log:
@@ -790,7 +781,7 @@ rule VCFfieldEditor:
 		cat {params.VCF_field_script} | R --vanilla --slave --args {wildcards.caller} {input.vcf} 			
 	"""
 
->>>>>>> VCFfieldEditor
+#7b.	SnpEff: Genetic variant annotation and effect prediction toolbox. It annotates and predicts the effects of variants on genes.
 rule snpEff:
 	input:
 		vcf ="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.VAF.vcf",
