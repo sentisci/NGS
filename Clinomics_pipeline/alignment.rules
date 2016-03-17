@@ -764,6 +764,7 @@ rule strelka:
 ##7	SNVs and Indel Annotation pipeline 
 
 #7a.	VCFfieldEditor.
+
 rule VCFfieldEditor:
 	input:
 		vcf = "SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
