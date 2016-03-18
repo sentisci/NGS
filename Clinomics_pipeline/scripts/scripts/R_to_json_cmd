@@ -1,0 +1,1 @@
+R --vanilla --slave --args -s NCI0274_samplesheet.txt < /data/Clinomics/Tools/serpentine2/scripts/do_samplesheet2json.R

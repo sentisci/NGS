@@ -16,7 +16,7 @@ try:
 except KeyError:
     SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_working/"
     #NOW=time.strftime("%d_%m_%Y")
-    NOW="03_08_16"
+    NOW="02_04_16"
     pass
 
 #Basic utility functions
@@ -133,7 +133,7 @@ if len(config['sample_references']) > 0:
 #snpEff Annotation
 SUBJECT_list = ["{subject}".format(subject=s) for s in config['subjects'].keys()]
 SUBJECT_ANNO = dict([(key, {}) for key in SUBJECT_list])
-print(SUBJECT_ANNO)
+#print(SUBJECT_ANNO)
 
 def add_to_SUBJECT_ANNO(subject, group, file_list):
 	file_list_ext_change = [w.replace('snpEff', 'annotated') for w in file_list]
@@ -145,7 +145,7 @@ def add_to_SUBJECT_ANNO(subject, group, file_list):
 ##Make Somatic and Germline annotated files
 ALL_snpEff_germline  = [] ; ALL_snpEff_somatic  = [] ; ALL_SUBJECT_VCFS = {} 
 reference_name=config['reference_name'] ; aligner=config['aligner']['bwamem']
-germline_callers_list = ["haplotypecaller","platypus","freebayes","bam2mpg"]
+germline_callers_list = ["haplotypecaller","platypus","bam2mpg","freebayes"]
 
 for subject in config["subjects"].keys():
 	ALL_SUBJECT_VCFS[subject]=[]
@@ -164,19 +164,15 @@ if len(config['sample_references']) > 0:
 	for sample in config['sample_references'].keys():
 		subject=SAMPLE_TO_SUBJECT[sample]
 	        if subject in ALL_SUBJECT_VCFS:
-			temp_list = [ ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
-                                                        ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt"),
-                                                        ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt")]
-<<<<<<< HEAD
+			temp_list = [ 			("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/mutect/"+sample+"."+aligner+".mutect.snpEff.txt"),
+							("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.snvs.snpEff.txt"),
+                                                        ("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/strelka/"+sample+"."+aligner+".strelka.indels.snpEff.txt")
+                                    ]
 			ALL_snpEff_somatic.extend(temp_list)
 			ALL_SUBJECT_VCFS[subject].extend(temp_list)
 			add_to_SUBJECT_ANNO(subject,"somatic",temp_list)
-=======
-			ALL_snpEff_vcf2.extend(temp_list)
-			ALL_SUBJECT_VCFS[subject].extend(temp_list)
->>>>>>> refs/remotes/origin/master
 		else:
-			print("Seems like there is no Germline caller for "+subject)	
+			print("Seems like there is no Germline caller for "+subject)
 				
 
 varFiles=[]
@@ -206,30 +202,23 @@ SUBJECT_toprint = ["{subject}\n".format(subject=s) for s in config['subjects'].k
 rule final:
 	input:
 		#ALL_QC_files,
-		#Genotype_files,
-		#"Genotyping_done",
+		Genotype_files,
+		"Genotyping_done",
 		#CombineAnnotation,
 		#Attach_ASP_Annotation,
 		DBFiles,
 		ActionableFiles
 		#test_input
 	output: 
-<<<<<<< HEAD
 		temp("success")
-=======
-		touch("success")
->>>>>>> refs/remotes/origin/master
 	params:
                 batch   ="-l nodes=1:ppn=1,mem=2gb"
 	shell:	"""
 		chmod -R 750 {WORKING_DIR}		
 		chgrp -R clinomics {WORKING_DIR}
-<<<<<<< HEAD
+		chmod -R 770 {WORKING_DIR}/.snakemake 
 		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_toprint}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov
 		touch success
-=======
-		echo -e "Hi,\nClinomics pipeline, processed following Subjects on TGen Server. \n{SUBJECT_list}\n Please check and  verify result folders and files in \n {WORKING_DIR}\n\nThanks,\nTeam Clinomics" |/bin/mail -s "Clinomics Pipeline finished"  `whoami`@mail.nih.gov -c sindiris@mail.nih.gov,manoj.tyagi@nih.gov,khanjav@nih.gov
->>>>>>> refs/remotes/origin/master
 	"""
 
 #Include all rule files

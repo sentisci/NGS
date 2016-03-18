@@ -134,7 +134,8 @@ rule mpileupGenotyping:
 		bam="{base}/bam/{sample}.{aligner}.final.bam",
 		bai="{base}/bam/{sample}.{aligner}.final.bai",
 	output:
-		"{base}/qc/{sample}.{aligner}.final.bam.gt"
+		vcf="{base}/{sample}/calls/{sample}.{aligner}.samtools.vcf",
+		gt="{base}/qc/{sample}.{aligner}.final.bam.gt"
 	params:
 		rulename		="mpileupGenotyping",
 		reference		=config['reference_fasta'][config['reference_name']],
@@ -147,11 +148,12 @@ rule mpileupGenotyping:
 		"log_error/{sample}.final.bam.gt.log"
 	shell: """
         
-	module load samtools/{version}
+	module load samtools/{version} 
 
-        samtools mpileup -u -C50  -f {params.reference} -l {params.genotyping_sites} {input.bam} | bcftools view -gc - | {params.vcf2genotype_script} - > {output}	2> {log}
+        samtools mpileup -u -C50  -f {params.reference} -l {params.genotyping_sites} {input.bam} | bcftools view -gc - >{output.vcf} 2>{log}
+	perl {params.vcf2genotype_script} {output.vcf} > {output.gt} 2>> {log}
 
-        cp -f {output} /projects/Clinomics/Tools/Genotyping/GenotypeFiles/
+        cp -f {output.gt} /projects/Clinomics/Tools/Genotyping/GenotypeFiles/{wildcards.sample}.gt 2>>{log}
         """
 
 rule genotyping:
@@ -682,6 +684,7 @@ rule platypus:
 	
 	gawk '{{print $1 ":" $2 "-" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.txt
 	platypus callVariants --nCPU=16 --bufferSize=1000000 --maxReads=100000000 --bamFiles={input.bam} --regions=/projects/scratch/${{PBS_JOBID}}/target_intervals.txt --output={output.vcf} --refFile={params.reference} --logFileName={log}
+	sed -i 's/.bwamem.final//g' {output.vcf}
                """
 
 #6D.	Somatic Callers	:	MuTect - Bayesian classifier to detect somatic mutations from sequencing data of matched tumor–normal samples  .
@@ -719,21 +722,21 @@ rule mutect:
 #6D.	Somatic Callers	:	Strelka - Bayesian classifier to detect somatic mutations from sequencing data of matched tumor–normal samples	.
 rule strelka:
         input:
-                lambda wildcards: somaticPairs[wildcards.somaticPair]
+                lambda wildcards: somaticPairs[wildcards.sample]
         output:
-	        snv_vcf="{anything}/strelka/{somaticPair}.{aligner}.strelka.snvs.raw.vcf",
-	        indel_vcf="{anything}/strelka/{somaticPair}.{aligner}.strelka.indels.raw.vcf"
+	        snv_vcf="{anything}/strelka/{sample}.{aligner}.strelka.snvs.raw.vcf",
+	        indel_vcf="{anything}/strelka/{sample}.{aligner}.strelka.indels.raw.vcf"
 	version:
                 config['Strelka']
 	params:
         	rulename        ="Strelka",
         	reference       =config['reference_fasta'][config['reference_name']],
 		strelka_config  =config['strelka_config'],
-        	target_intervals=lambda wildcards: config['target_intervals'][PairsCapture[wildcards.somaticPair][0]],
+        	target_intervals=lambda wildcards: config['target_intervals'][PairsCapture[wildcards.sample][0]],
 		vcftools_version=config['vcftools'],
         	batch           = config['Strelka_clust']
 	log :
-                "log_error/{somaticPair}.strelka.raw.vcf.log"
+                "log_error/{sample}.strelka.raw.vcf.log"
 	shell: """
 	module load strelka/{version}
 	module load vcftools/{params.vcftools_version}
@@ -745,19 +748,45 @@ rule strelka:
 	
 	make -j 16 -f /projects/scratch/${{PBS_JOBID}}/strelka/Makefile 2>> {log}
 
-	vcftools --vcf /projects/scratch/${{PBS_JOBID}}/strelka/results/all.somatic.snvs.vcf --bed {params.target_intervals} --out {output.snv_vcf} --recode --keep-INFO-all
+	vcftools --vcf /projects/scratch/${{PBS_JOBID}}/strelka/results/passed.somatic.snvs.vcf --bed {params.target_intervals} --out {output.snv_vcf} --recode --keep-INFO-all
 	mv {output.snv_vcf}.recode.vcf {output.snv_vcf}
 
-	vcftools --vcf /projects/scratch/${{PBS_JOBID}}/strelka/results/all.somatic.indels.vcf --bed {params.target_intervals} --out {output.indel_vcf} --recode --keep-INFO-all
+	vcftools --vcf /projects/scratch/${{PBS_JOBID}}/strelka/results/passed.somatic.indels.vcf --bed {params.target_intervals} --out {output.indel_vcf} --recode --keep-INFO-all
 	mv {output.indel_vcf}.recode.vcf {output.indel_vcf}
 
+        NORMAL=`basename {input[0]} | sed 's/.bwamem.final.bam//g'`
+	TUMOR=`basename {input[2]} | sed 's/.bwamem.final.bam//g'`
+        sed -i "s/FORMAT\\tNORMAL\\tTUMOR/FORMAT\\t${{NORMAL}}\\t${{TUMOR}}/g" {output.snv_vcf}
+        sed -i "s/FORMAT\\tNORMAL\\tTUMOR/FORMAT\\t${{NORMAL}}\\t${{TUMOR}}/g" {output.indel_vcf}
+	
                """
 
 ##7	SNVs and Indel Annotation pipeline 
-#7a.	SnpEff: Genetic variant annotation and effect prediction toolbox. It annotates and predicts the effects of variants on genes.
+
+#7a.	VCFfieldEditor.
+
+rule VCFfieldEditor:
+	input:
+		vcf = "SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
+	output:
+		vcf = "SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.VAF.vcf"
+	version:
+		config['VCFfieldEditor']
+	params:
+		rulename = "VCFfieldEditor",
+		VCF_field_script=config["VCFfieldEditor_script"],
+		batch	= config["VCFfieldEditor_clust"]
+	log:
+		"log_error/{sample}.{aligner}.{caller}.snpEff.vcf.log"
+	shell:	"""		
+		module load R
+		cat {params.VCF_field_script} | R --vanilla --slave --args {wildcards.caller} {input.vcf} 			
+	"""
+
+#7b.	SnpEff: Genetic variant annotation and effect prediction toolbox. It annotates and predicts the effects of variants on genes.
 rule snpEff:
 	input:
-		vcf ="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
+		vcf ="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.VAF.vcf",
 	output:
 		vcf="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.vcf",
 		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt"
@@ -811,7 +840,7 @@ rule formatInput:
 	run:
 		inputVCFs = ' '.join(input.vcfs)
                 shell("""
-                        ##cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/{NOW}/Annotation/allSites
+                        cut -f 1-5 {inputVCFs} |sort |uniq > SUBJECT/{wildcards.subject}/{NOW}/Annotation/allSites
 			touch SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.final.txt
 			perl {params.fAEV_script} SUBJECT/{wildcards.subject}/{NOW}/Annotation/allSites SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.final.txt SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput.annotations.final.txt SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput
                         perl {params.converter} SUBJECT/{wildcards.subject}/{NOW}/Annotation/AnnotationInput 2>{log}
@@ -925,6 +954,8 @@ rule makeDBinput:
 		rulename	=	"makeDBinput",
 		convertor	=	config["DBinput_script"],
 		batch           =       config["makeDBinput_clust"]
+	log:
+		"log_error/{subject}.makeDBinput"
 	shell: """
 	perl {params.convertor} {input.txtFiles} >{output.txt}
 	"""
@@ -941,6 +972,8 @@ rule Actionable_Somatic:
 		rulename	=	"Actionable_Somatic",
 		convertor	=	config["Actionable_mutation_script"],
 		batch		=	config["Act_somatic_clust"]
+	log:
+		"log_error/{subject}.Actionable_Somatic"
 	shell: """
 	perl {params.convertor} somatic  {input.refFile} {input.cgc} {input.somatic} {input.annotation} >{output.somatic}
         """
@@ -962,6 +995,8 @@ rule Actionable_Germline:
 		rulename  	=	"Actionable_Germline",
 		convertor	=	config["Actionable_mutation_script"],
 		batch    	=	config['Act_germline_clust']
+	log:
+		"log_error/{subject}.Actionable_Germline"
 	shell: """
 
 	if [ -e SUBJECT/{subject}/"+NOW+"/Annotation/db/{subject}.somatic ]

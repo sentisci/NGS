@@ -22,6 +22,7 @@
 	"targetIntervals_clust":"-l nodes=1:ppn=8,mem=20gb,walltime=96:00:00",
 	"hsMetrics_clust":	"-l nodes=1:ppn=8,mem=20gb,walltime=96:00:00",
 	"hotspotCov_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
+	"VCFfieldEditor_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"snpEff_clust":		"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"formatinput_clust":    "-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"annovar_clust":	"-l nodes=1:ppn=16,mem=40gb,walltime=96:00:00",

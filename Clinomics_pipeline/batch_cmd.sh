@@ -7,7 +7,7 @@ module load R/3.2.0
 export SERPENTINE_HOME="/projects/Clinomics/Tools/serpentine_Tgen_working/"
 export RESULT_DIR="/projects/Clinomics/Tools/"
 #export NOW=$(date +"%m_%d_%y")
-export NOW="03_08_16"
+export NOW="02_04_16"
 export WORKING_DIR="${RESULT_DIR}/Testing/"
 export SNAKEFILE=${SERPENTINE_HOME}/Snakefile
 
