@@ -16,7 +16,8 @@ echo -e "done" >>main.sh
 
 
 
-echo "sh main.sh" >swarm
+echo "cd $DIR" > swarm
+echo "sh main.sh" >>swarm
 
 cd $DIR/GenotypeFiles
 
@@ -28,9 +29,9 @@ echo -e "file=\`basename $i .gt\`" >>../$i.sh
 echo -e "echo \${file} >RATIO/\${file}.ratio">>../$i.sh
 echo -e "for j in GenotypeFiles/*.gt" >>../$i.sh
 echo -e "do">>../$i.sh
-echo -e "/data/Clinomics/Tools/Genotyping/CountOverlap.pl GenotypeFiles/$i \$j >>RATIO/\${file}.ratio">>../$i.sh
+echo -e "/projects/Clinomics/Tools/Genotyping/CountOverlap.pl GenotypeFiles/$i \$j >>RATIO/\${file}.ratio">>../$i.sh
 echo -e "done">>../$i.sh
-echo -e "rm $DIR/$i.sh">>../$i.sh
+##echo -e "rm $DIR/$i.sh">>../$i.sh
 echo -e "sh $i.sh" >>../swarm
 done
 
@@ -41,12 +42,12 @@ echo -e "cd $DIR" >>Final
 echo "paste RATIO/FirstColumn RATIO/*.ratio >MATRIX_${da}.txt">>Final
 echo "samp=\`wc -l RATIO/FirstColumn |sed -e 's/ /\\t/g' |cut -f 1\`">>Final
 echo "samp=\$((\$samp - 1))">>Final
-echo "rm -rf rm -rf main.sh swarm Final GT_*.e GT_*.o">>Final
-echo "chgrp -R Clinomics $DIR/">>Final
+##echo "rm -rf rm -rf main.sh swarm Final GT_*.e GT_*.o">>Final
+echo "chgrp -R clinomics $DIR/">>Final
 ##echo -e "echo -e \"Genotyping matrix attached.\\\n\\\n\\\tSamples Processed \$samp\\\n\\\nRegards,\\\nClinOmics Team, NCI\" |mutt -s \"Genotyping Job Status\" -a MATRIX_${da}.txt -- patidarr@mail.nih.gov `whoami`@mail.nih.gov CLINOMICS-BIOINFO@LIST.NIH.GOV " >>Final
 
 d=`qsub -N GT $DIR/swarm`
-final_run=`qsub -o $DIR/gt.o -e $DIR/gt.e depend=afterany:$d $DIR/Final`
+final_run=`qsub -o $DIR/gt.o -e $DIR/gt.e -W depend=afterany:$d $DIR/Final`
 
 
 #d=`swarm -q ccr -f $DIR/swarm -N GT --jobarray --singleout`
