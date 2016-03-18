@@ -14,6 +14,7 @@
 	"fastqc"		: "0.11.2",
 	"igvtools"		: "2.3.31",
 	"bedtools"		: "2.22.0",
+	"VCFfieldEditor"	: "v1",
 	"snpEff"		: "4.1c",
 	"annovar"		: "20150322",
 	"polyphen2"		: "2.2.2r405b",
