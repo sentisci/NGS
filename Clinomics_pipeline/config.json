@@ -82,6 +82,7 @@
 	"readDepth_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/readDepth.sh",
 	"failedExons_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/failed_Exon_Final.pl",
 	"consolidated_QC_script":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/QC_stats_Final.py",
+	"VCFfieldEditor_script":		"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/VCF_field_editor_v1.R",
 	"vcf2txt_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/vcf2txt.pl",
 	"PPH2Parse_script":			"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/ParsePPH2.pl",
 	"block":				"/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/block_for_jobid.pl",
