@@ -205,7 +205,7 @@ rule final:
 		Genotype_files,
 		"Genotyping_done",
 		#CombineAnnotation,
-		#Attach_ASP_Annotation,
+		Attach_ASP_Annotation,
 		DBFiles,
 		ActionableFiles
 		#test_input
