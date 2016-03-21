@@ -121,17 +121,20 @@ vcf <- readVcf(sample_vcf, "hg19")
 #Call Caller Command
 VAF_result = switch(CallerType,
                     UnifiedGenotyper  = HaplotypeCaller(vcf),
-                    HaplotypeCaller   = HaplotypeCaller(vcf),
-                    FreeBayes         = FreeBayes(vcf),
-                    PlatyPus          = PlatyPus(vcf),
-                    MuTect            = MuTect(vcf),
-                    Strelka           = Strelka(vcf)
+                    haplotypecaller   = HaplotypeCaller(vcf),
+                    freebayes         = FreeBayes(vcf),
+                    platypus          = PlatyPus(vcf),
+                    mutect            = MuTect(vcf),
+                    strelka           = Strelka(vcf),
+		    "Variant Called not recognizable.Caller names are Case sensitive.Use one of the following only : UnifiedGenotyper , haplotypecaller, freebayes, platypus, mutect, strelka "
 )
 
+
 #Making the final vcf file
+tryCatch(  
 for( i in 1:length(colnames(VAF_result)) ) {
 vcf <- sapply(colnames(VAF_result)[i],add_a_field,vcf = vcf , VAF_result = VAF_result)[[1]]
-}
+}, error= function(e) print(VAF_result))
 
 ##Write the VCF file
 outfile <- gsub("vcf","VAF.vcf",filename )
