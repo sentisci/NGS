@@ -96,6 +96,8 @@ for unit,study in UNIT_TO_STUDY.items():
 #END ##########################################################
 
 ###Making BAM & QC files
+SUBJECT_list = ["{subject}".format(subject=s) for s in config['subjects'].keys()]
+
 ALL_QC_files=[];Genotype_files=[]
 BAM_extensions = [".bam",".tdf"]
 for qc_ext in BAM_extensions:
@@ -115,8 +117,11 @@ for qc_ext in QC_metric_extensions:
 ALL_QC_files.append( ["SUBJECT/{subject}/{now}/{sample}/{reference_name}.{aligner}/qc/fastqc/{unit}_R1_fastqc.html".format(now=NOW, sample=UNIT_TO_SAMPLE[s], subject=UNIT_TO_SUBJECT[s], unit=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['units'].keys()])
 
 ##Genotyping
-gt_string= "SUBJECT/{subject}/"+NOW+"/{sample}/{reference_name}.{aligner}/qc/{sample}.{aligner}.final"+".bam.gt"
-Genotype_files=[gt_string.format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['samples'].keys() ]
+gt_string_sample= "SUBJECT/{subject}/"+NOW+"/{sample}/{reference_name}.{aligner}/qc/{sample}.{aligner}.final.bam.gt"
+gt_string_subject="SUBJECT/{subject}/"+NOW+"/Genotype/{subject}.genotyping.txt"
+Genotype_files=[gt_string_sample.format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['samples'].keys() ]
+Genotype_files.extend([gt_string_subject.format(subject=s for s in config['subjects'].keys() ]))
+
 
 ###Making pairs for Somatic Callers
 somaticPairs = {}
@@ -142,15 +147,17 @@ def add_to_SUBJECT_ANNO(subject, group, file_list):
 	else:
 		SUBJECT_ANNO[subject][group].extend(file_list_ext_change)
 
-##Make Somatic and Germline annotated files
-ALL_snpEff_germline  = [] ; ALL_snpEff_somatic  = [] ; ALL_SUBJECT_VCFS = {} 
+##Make Subject level Somatic , Germline & Genotype files
+ALL_snpEff_germline  = [] ; ALL_snpEff_somatic  = [] ; ALL_SUBJECT_VCFS = {}; ALL_SUBJECT_GENOTYPE = {} 
 reference_name=config['reference_name'] ; aligner=config['aligner']['bwamem']
 germline_callers_list = ["haplotypecaller","platypus","bam2mpg","freebayes"]
 
 for subject in config["subjects"].keys():
 	ALL_SUBJECT_VCFS[subject]=[]
+	ALL_SUBJECT_GENOTYPE[subject]=[]
 	samples = SUBJECT_TO_SAMPLE[subject]
 	for sample in samples:
+		ALL_SUBJECT_GENOTYPE[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/qc/Genotype/"+sample+"."+aligner+".final.bam.gt")
 		for caller in germline_callers_list:
 			if(caller != "bam2mpg"):
 				ALL_SUBJECT_VCFS[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/"+caller+"/"+sample+"."+aligner+"."+caller+".snpEff.txt")
@@ -178,6 +185,7 @@ if len(config['sample_references']) > 0:
 varFiles=[]
 DBFiles =[]
 ActionableFiles =[]
+
 
 #print(config['sample_references'])
 #print(SUBJECT_ANNO)
