@@ -134,8 +134,8 @@ rule mpileupGenotyping:
 		bam="{base}/bam/{sample}.{aligner}.final.bam",
 		bai="{base}/bam/{sample}.{aligner}.final.bai",
 	output:
-		vcf="{base}/{sample}/calls/{sample}.{aligner}.samtools.vcf",
-		gt="{base}/qc/{sample}.{aligner}.final.bam.gt"
+		vcf="{base}/{sample}/calls/Genotype/{sample}.{aligner}.samtools.vcf",
+		gt="{base}/qc/Genotype/{sample}.{aligner}.final.bam.gt"
 	params:
 		rulename		="mpileupGenotyping",
 		reference		=config['reference_fasta'][config['reference_name']],
@@ -173,6 +173,42 @@ rule genotyping:
 	chmod 770 * 2> /dev/null
 
 	touch Genotyping_done
+	"""
+
+rule subject_genotyping:
+	input:
+		gtFiles=lambda wildcards: SUB_GT[wildcards.subject],
+
+	output:
+		"SUBJECT/{subject}/"+NOW+"/Genotype/{subject}.genotyping.txt",
+	params:
+		rulename = "subject_genotyping",
+		mail_script=NGS_PIPELINE + "/scripts/tsv2html.sh",
+		score_script=NGS_PIPELINE + "/scripts/scoreGenotyes.pl",
+		batch    = config["sample_genotyping_clust"]
+	shell: """
+	
+	mkdir -p SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/GT
+	mkdir -p SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/RATIO
+	cp {input.gtFiles} SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/GT/
+	echo Sample > SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/RATIO/FirstColumn
+
+	for file in SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/GT/*
+	do
+        	sample=`basename ${{file}} .gt`
+        	echo ${{sample}} >>{wildcards.subject}/qc/RATIO/FirstColumn
+        	echo ${{sample}} >>{wildcards.subject}/qc/RATIO/${{sample}}.ratio
+        	for file2 in {wildcards.subject}/qc/GT/*
+        	do
+			perl {input.score} ${{file}} ${{file2}} >>{wildcards.subject}/qc/RATIO/${{sample}}.ratio
+        	done
+	done
+	paste {wildcards.subject}/qc/RATIO/FirstColumn {wildcards.subject}/qc/RATIO/*.ratio >{wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
+	rm -rf {wildcards.subject}/qc/GT/ {wildcards.subject}/qc/RATIO/
+	sed -i 's/Sample_//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
+	sed -i 's/.bwa//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
+	sed -i 's/.star//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
+	sh {input.mail} --name {wildcards.subject} --head {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | mutt -e "my_hdr Content-Type: text/html" sivasish.sindiri@nih.gov -c sivasish.sindiri@nih.gov -s 'Genotyping Result on {wildcards.subject}'
 	"""
 
 #2d.	In-house script - failedExons
@@ -786,7 +822,7 @@ rule VCFfieldEditor:
 #7b.	SnpEff: Genetic variant annotation and effect prediction toolbox. It annotates and predicts the effects of variants on genes.
 rule snpEff:
 	input:
-		vcf ="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.VAF.vcf",
+		vcf ="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.raw.vcf",
 	output:
 		vcf="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.vcf",
 		txt="SUBJECT/{subject}/"+NOW+"/{sample}/{ref}.{aligner}/{caller}/{sample}.{aligner}.{base_caller}.snpEff.txt"
