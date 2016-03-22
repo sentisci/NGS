@@ -777,7 +777,7 @@ rule VCFfieldEditor:
 		VCF_field_script=config["VCFfieldEditor_script"],
 		batch	= config["VCFfieldEditor_clust"]
 	log:
-		"log_error/{sample}.{aligner}.{caller}.snpEff.vcf.log"
+		"log_error/{sample}.{aligner}.{caller}.VCFfieldEditor.log"
 	shell:	"""		
 		module load R
 		cat {params.VCF_field_script} | R --vanilla --slave --args {wildcards.caller} {input.vcf} 			
