@@ -177,38 +177,41 @@ rule genotyping:
 
 rule subject_genotyping:
 	input:
-		gtFiles=lambda wildcards: SUB_GT[wildcards.subject],
+		gtFiles=lambda wildcards: ALL_SUBJECT_GENOTYPE[wildcards.subject],
 
 	output:
 		"SUBJECT/{subject}/"+NOW+"/Genotype/{subject}.genotyping.txt",
 	params:
-		rulename = "subject_genotyping",
-		mail_script=NGS_PIPELINE + "/scripts/tsv2html.sh",
-		score_script=NGS_PIPELINE + "/scripts/scoreGenotyes.pl",
-		batch    = config["sample_genotyping_clust"]
+		rulename	=	"subject_genotyping",
+		mail_script	=	config["tsv2html_script"],
+		score_script	=	config["scoreGenotyes_script"],
+		batch		=	config["sample_genotyping_clust"]
 	shell: """
-	
-	mkdir -p SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/GT
-	mkdir -p SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/RATIO
-	cp {input.gtFiles} SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/GT/
-	echo Sample > SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/RATIO/FirstColumn
 
-	for file in SUBJECT/{wildcards.subject}/"+NOW+"/Genotype/GT/*
+	genotype_dir=SUBJECT/{wildcards.subject}/"+NOW+"/Genotype	
+	
+	mkdir -p ${{genotype_dir}}/GT
+	mkdir -p ${{genotype_dir}}/RATIO
+	cp {input.gtFiles} ${{genotype_dir}}/GT/
+	echo Sample > ${{genotype_dir}}/RATIO/FirstColumn
+
+	for file in ${{genotype_dir}}/GT/*
 	do
-        	sample=`basename ${{file}} .gt`
-        	echo ${{sample}} >>{wildcards.subject}/qc/RATIO/FirstColumn
-        	echo ${{sample}} >>{wildcards.subject}/qc/RATIO/${{sample}}.ratio
-        	for file2 in {wildcards.subject}/qc/GT/*
+        	sample=`basename ${{file}} | sed 's/bwamem.final.bam.gt//g'`
+        	echo ${{sample}} >> ${{genotype_dir}}/RATIO/FirstColumn
+        	echo ${{sample}} >> ${{genotype_dir}}/RATIO/${{sample}}.ratio
+        	for file2 in ${{genotype_dir}}/GT/*
         	do
-			perl {input.score} ${{file}} ${{file2}} >>{wildcards.subject}/qc/RATIO/${{sample}}.ratio
+			perl {params.score_script} ${{file}} ${{file2}} >> ${{genotype_dir}}/RATIO/${{sample}}.ratio
         	done
 	done
-	paste {wildcards.subject}/qc/RATIO/FirstColumn {wildcards.subject}/qc/RATIO/*.ratio >{wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	rm -rf {wildcards.subject}/qc/GT/ {wildcards.subject}/qc/RATIO/
-	sed -i 's/Sample_//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	sed -i 's/.bwa//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	sed -i 's/.star//g' {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt
-	sh {input.mail} --name {wildcards.subject} --head {wildcards.subject}/qc/{wildcards.subject}.genotyping.txt | mutt -e "my_hdr Content-Type: text/html" sivasish.sindiri@nih.gov -c sivasish.sindiri@nih.gov -s 'Genotyping Result on {wildcards.subject}'
+	
+	paste ${{genotype_dir}}/RATIO/FirstColumn ${{genotype_dir}}/RATIO/*.ratio > ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
+	rm -rf ${{genotype_dir}}/GT/ ${{genotype_dir}}/RATIO/
+	sed -i 's/Sample_//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
+	sed -i 's/.bwa//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
+	sed -i 's/.star//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
+	sh {params.mail_script} --name {wildcards.subject} --head ${{genotype_dir}}/{wildcards.subject}.genotyping.txt | mutt -e "my_hdr Content-Type: text/html" sivasish.sindiri@nih.gov -c sivasish.sindiri@nih.gov -s 'Genotyping Result on {wildcards.subject}'
 	"""
 
 #2d.	In-house script - failedExons
