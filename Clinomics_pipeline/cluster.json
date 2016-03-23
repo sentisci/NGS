@@ -35,6 +35,7 @@
 	"consolidated_QC_clust":"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"failedExons_clust":	"-l nodes=1:ppn=5,mem=10gb,walltime=96:00:00",
 	"genotype_clust":	"-l nodes=1:ppn=5,mem=5gb,walltime=96:00:00",
+	"sample_genotyping_clust":"-l nodes=1:ppn=5,mem=5gb,walltime=96:00:00",
 	"mpileupGenotyping_clust":"-l nodes=1:ppn=5,mem=5gb,walltime=96:00:00",
 	"makeDBinput_clust":	"-l nodes=1:ppn=5,mem=5gb,walltime=96:00:00",
 	"Act_somatic_clust":	"-l nodes=1:ppn=5,mem=5gb,walltime=96:00:00",

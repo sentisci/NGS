@@ -98,7 +98,7 @@ for unit,study in UNIT_TO_STUDY.items():
 ###Making BAM & QC files
 SUBJECT_list = ["{subject}".format(subject=s) for s in config['subjects'].keys()]
 
-ALL_QC_files=[];Genotype_files=[]
+ALL_QC_files=[];Genotype_files={}
 BAM_extensions = [".bam",".tdf"]
 for qc_ext in BAM_extensions:
 	format_string = "SUBJECT/{subject}/"+NOW+"/{sample}/{reference_name}.{aligner}/bam/{sample}.{aligner}.final"+qc_ext
@@ -117,10 +117,12 @@ for qc_ext in QC_metric_extensions:
 ALL_QC_files.append( ["SUBJECT/{subject}/{now}/{sample}/{reference_name}.{aligner}/qc/fastqc/{unit}_R1_fastqc.html".format(now=NOW, sample=UNIT_TO_SAMPLE[s], subject=UNIT_TO_SUBJECT[s], unit=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['units'].keys()])
 
 ##Genotyping
-gt_string_sample= "SUBJECT/{subject}/"+NOW+"/{sample}/{reference_name}.{aligner}/qc/{sample}.{aligner}.final.bam.gt"
+gt_string_sample= "SUBJECT/{subject}/"+NOW+"/{sample}/{reference_name}.{aligner}/qc/Genotype/{sample}.{aligner}.final.bam.gt"
 gt_string_subject="SUBJECT/{subject}/"+NOW+"/Genotype/{subject}.genotyping.txt"
-Genotype_files=[gt_string_sample.format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['samples'].keys() ]
-Genotype_files.extend([gt_string_subject.format(subject=s for s in config['subjects'].keys() ]))
+Genotype_files["sample"]=[] ; Genotype_files["subject"]=[];
+Genotype_files["sample"]=[gt_string_sample.format(subject=SAMPLE_TO_SUBJECT[s], sample=s, reference_name=config['reference_name'], aligner=config['aligner']['bwamem']) for s in config['samples'].keys() ]
+Genotype_files["subject"]=[gt_string_subject.format(subject=s) for s in config['subjects'].keys()]
+#print(Genotype_files)
 
 
 ###Making pairs for Somatic Callers
@@ -157,7 +159,7 @@ for subject in config["subjects"].keys():
 	ALL_SUBJECT_GENOTYPE[subject]=[]
 	samples = SUBJECT_TO_SAMPLE[subject]
 	for sample in samples:
-		ALL_SUBJECT_GENOTYPE[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/qc/Genotype/"+sample+"."+aligner+".final.bam.gt")
+		ALL_SUBJECT_GENOTYPE[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/qc/Genotype/"+sample+"."+aligner+".final.bam.gt")
 		for caller in germline_callers_list:
 			if(caller != "bam2mpg"):
 				ALL_SUBJECT_VCFS[subject].append("SUBJECT/"+subject+"/"+NOW+"/"+sample+"/"+reference_name+"."+aligner+"/"+caller+"/"+sample+"."+aligner+"."+caller+".snpEff.txt")
@@ -166,6 +168,7 @@ for subject in config["subjects"].keys():
 	ALL_snpEff_germline.extend(ALL_SUBJECT_VCFS[subject])
 	add_to_SUBJECT_ANNO(subject,"germline",ALL_SUBJECT_VCFS[subject])	
 
+##print(ALL_SUBJECT_GENOTYPE)
 
 if len(config['sample_references']) > 0:
 	for sample in config['sample_references'].keys():
@@ -210,12 +213,12 @@ SUBJECT_toprint = ["{subject}\n".format(subject=s) for s in config['subjects'].k
 rule final:
 	input:
 		#ALL_QC_files,
-		Genotype_files,
-		"Genotyping_done",
-		#CombineAnnotation,
-		Attach_ASP_Annotation,
-		DBFiles,
-		ActionableFiles
+		Genotype_files["sample"],
+		Genotype_files["subject"],
+		#"Genotyping_done",
+		#Attach_ASP_Annotation,
+		#DBFiles,
+		#ActionableFiles
 		#test_input
 	output: 
 		temp("success")
