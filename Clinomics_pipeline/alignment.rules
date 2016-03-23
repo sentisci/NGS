@@ -158,7 +158,7 @@ rule mpileupGenotyping:
 
 rule genotyping:
 	input:
-		Genotype_files
+		Genotype_files["sample"]
 	output:	
 		temp("Genotyping_done")
 	params:
@@ -186,9 +186,12 @@ rule subject_genotyping:
 		mail_script	=	config["tsv2html_script"],
 		score_script	=	config["scoreGenotyes_script"],
 		batch		=	config["sample_genotyping_clust"]
+	log:
+		"log_error/{wildcards.subject}.subject_genotyping.log"
 	shell: """
 
-	genotype_dir=SUBJECT/{wildcards.subject}/"+NOW+"/Genotype	
+	genotype_dir="SUBJECT/{wildcards.subject}/{NOW}/Genotype"
+	echo ${{genotype_dir}}
 	
 	mkdir -p ${{genotype_dir}}/GT
 	mkdir -p ${{genotype_dir}}/RATIO
@@ -211,7 +214,6 @@ rule subject_genotyping:
 	sed -i 's/Sample_//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
 	sed -i 's/.bwa//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
 	sed -i 's/.star//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
-	sh {params.mail_script} --name {wildcards.subject} --head ${{genotype_dir}}/{wildcards.subject}.genotyping.txt | mutt -e "my_hdr Content-Type: text/html" sivasish.sindiri@nih.gov -c sivasish.sindiri@nih.gov -s 'Genotyping Result on {wildcards.subject}'
 	"""
 
 #2d.	In-house script - failedExons
