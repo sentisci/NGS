@@ -214,6 +214,9 @@ rule subject_genotyping:
 	sed -i 's/Sample_//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
 	sed -i 's/.bwa//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
 	sed -i 's/.star//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
+
+	ssh login01 "sh {params.mail_script} --name {wildcards.subject} --head {WORKING_DIR}SUBJECT/{wildcards.subject}/{NOW}/Genotype/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on Tgen {wildcards.subject}' sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov"
+	
 	"""
 
 #2d.	In-house script - failedExons

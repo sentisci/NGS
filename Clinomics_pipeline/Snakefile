@@ -215,7 +215,7 @@ rule final:
 		#ALL_QC_files,
 		Genotype_files["sample"],
 		Genotype_files["subject"],
-		"Genotyping_done",
+		#"Genotyping_done",
 		#Attach_ASP_Annotation,
 		#DBFiles,
 		#ActionableFiles
