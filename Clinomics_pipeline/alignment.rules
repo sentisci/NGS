@@ -134,7 +134,7 @@ rule mpileupGenotyping:
 		bam="{base}/bam/{sample}.{aligner}.final.bam",
 		bai="{base}/bam/{sample}.{aligner}.final.bai",
 	output:
-		vcf="{base}/{sample}/calls/Genotype/{sample}.{aligner}.samtools.vcf",
+		vcf="{base}/qc/Genotype/{sample}.{aligner}.samtools.vcf",
 		gt="{base}/qc/Genotype/{sample}.{aligner}.final.bam.gt"
 	params:
 		rulename		="mpileupGenotyping",
