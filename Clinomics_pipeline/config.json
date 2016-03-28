@@ -59,7 +59,7 @@
 		"clin.ex.v1": 
 				{
 					"Normal":"20",
-					"Tumor":"50"	
+					"Tumor":"20"	
 		
 				},
                 "clin.snv.v1":
@@ -70,7 +70,7 @@
                 "clin.cnv.v2":
                                 {
 					"Normal":"20",
-					"Tumor":"50"	
+					"Tumor":"20"	
                                 },
                 "clin.snv.v2":
                                 {

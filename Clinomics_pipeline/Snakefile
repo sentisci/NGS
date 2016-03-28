@@ -212,13 +212,13 @@ SUBJECT_toprint = ["{subject}\n".format(subject=s) for s in config['subjects'].k
 #test_input = "batch_out.txt"
 rule final:
 	input:
-		#ALL_QC_files,
+		ALL_QC_files,
 		Genotype_files["sample"],
 		Genotype_files["subject"],
-		#"Genotyping_done",
-		#Attach_ASP_Annotation,
-		#DBFiles,
-		#ActionableFiles
+		"Genotyping_done",
+		Attach_ASP_Annotation,
+		DBFiles,
+		ActionableFiles
 		#test_input
 	output: 
 		temp("success")

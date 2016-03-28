@@ -760,7 +760,7 @@ rule mutect:
 	mkdir /projects/scratch/${{PBS_JOBID}}	
 	
 	gawk '{{print $1 "\t" $2-1 "\t" $3}}' {params.target_intervals} > /projects/scratch/${{PBS_JOBID}}/target_intervals.bed
-	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/muTect/{version}/mutect-{version}.jar -T MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --vcf  {output.vcf} --max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4 > {log} 2>&1
+	java -Xmx${{mem}}g -Djava.io.tmpdir=/projects/scratch/${{PBS_JOBID}} -jar /apps/muTect/{version}/mutect-{version}.jar -T MuTect --reference_sequence {params.reference} --cosmic {params.cosmic} --dbsnp {params.dbsnp} --input_file:normal {input[0]} --input_file:tumor {input[2]} --out {output.call_stats} --coverage_file {output.coverage} --intervals /projects/scratch/${{PBS_JOBID}}/target_intervals.bed --vcf  {output.vcf} --min_qscore 20 -rf MappingQuality -mmq 30 --max_alt_allele_in_normal_fraction 0.05 --max_alt_alleles_in_normal_count 4 > {log} 2>&1
 	"""
 
 #6D.	Somatic Callers	:	Strelka - Bayesian classifier to detect somatic mutations from sequencing data of matched tumor–normal samples	.
