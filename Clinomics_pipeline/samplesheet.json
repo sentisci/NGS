@@ -43,5 +43,12 @@
     "NCI0291_B_P_Normal": ["clin.snv.v1"],
     "NCI0291_T_E_Tumor": ["clin.ex.v1"],
     "NCI0291_T_P_Tumor": ["clin.snv.v1"]
+  },
+  "seq_type": {
+    "NCI0291_B_E_Normal": ["GenomicDNA"],
+    "NCI0291_B_P_Normal": ["GenomicDNA"],
+    "NCI0291_T_E_Tumor": ["GenomicDNA"],
+    "NCI0291_T_P_Tumor": ["GenomicDNA"],
+    "NCI0291_T_T_Tumor": ["RNASeq"]
   }
 }
