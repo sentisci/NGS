@@ -1,35 +1,47 @@
 {
-  "studies": {
-    "RX": ["CL0035"]
-  },
-  "subjects": {
-    "CL0035": ["CL0035_T1D_E", "CL0035_T1D_P"]
+  "subject": {
+    "NCI0291": ["NCI0291_B_E_Normal", "NCI0291_B_P_Normal", "NCI0291_T_E_Tumor", "NCI0291_T_P_Tumor", "NCI0291_T_T_Tumor"]
   },
   "samples": {
-    "CL0035_T1D_E": ["CL0035_T1D_E"],
-    "CL0035_T1D_P": ["CL0035_T1D_P"]
+    "NCI0291_B_E": ["NCI0291_B_E"],
+    "NCI0291_B_P": ["NCI0291_B_P"],
+    "NCI0291_T_E": ["NCI0291_T_E"],
+    "NCI0291_T_P": ["NCI0291_T_P"],
+    "NCI0291_T_T": ["NCI0291_T_T"]
   },
   "libraries": {
-    "CL0035_T1D_E": ["3241601"],
-    "CL0035_T1D_P": ["3241602"]
+    "NCI0291_B_E": ["11191507"],
+    "NCI0291_B_P": ["11191508"],
+    "NCI0291_T_E": ["11191509"],
+    "NCI0291_T_P": ["11191510"],
+    "NCI0291_T_T": ["3241607"]
   },
   "units": {
-    "3241601": ["/projects/Clinomics/DATA/Sample_CL0035_T1D_E_HWJW5BGXX/Sample_CL0035_T1D_E_HWJW5BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0035_T1D_E_HWJW5BGXX/Sample_CL0035_T1D_E_HWJW5BGXX_R2.fastq.gz"],
-    "3241602": ["/projects/Clinomics/DATA/Sample_CL0035_T1D_P_HWJW5BGXX/Sample_CL0035_T1D_P_HWJW5BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_CL0035_T1D_P_HWJW5BGXX/Sample_CL0035_T1D_P_HWJW5BGXX_R2.fastq.gz"]
+    "11191507": ["/projects/Clinomics/DATA/Sample_NCI0291_B_E_HH3CWBGXX/Sample_NCI0291_B_E_HH3CWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0291_B_E_HH3CWBGXX/Sample_NCI0291_B_E_HH3CWBGXX_R2.fastq.gz"],
+    "11191508": ["/projects/Clinomics/DATA/Sample_NCI0291_B_P_HH3CWBGXX/Sample_NCI0291_B_P_HH3CWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0291_B_P_HH3CWBGXX/Sample_NCI0291_B_P_HH3CWBGXX_R2.fastq.gz"],
+    "11191509": ["/projects/Clinomics/DATA/Sample_NCI0291_T_E_HH3CWBGXX/Sample_NCI0291_T_E_HH3CWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0291_T_E_HH3CWBGXX/Sample_NCI0291_T_E_HH3CWBGXX_R2.fastq.gz"],
+    "11191510": ["/projects/Clinomics/DATA/Sample_NCI0291_T_P_HH3CWBGXX/Sample_NCI0291_T_P_HH3CWBGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0291_T_P_HH3CWBGXX/Sample_NCI0291_T_P_HH3CWBGXX_R2.fastq.gz"],
+    "3241607": ["/projects/Clinomics/DATA/Sample_NCI0291_T_T_HWJW5BGXX/Sample_NCI0291_T_T_HWJW5BGXX_R1.fastq.gz", "/projects/Clinomics/DATA/Sample_NCI0291_T_T_HWJW5BGXX/Sample_NCI0291_T_T_HWJW5BGXX_R2.fastq.gz"]
   },
   "sample_TN": {
-    "CL0035_T1D_E": ["Tumor"],
-    "CL0035_T1D_P": ["Tumor"]
+    "NCI0291_B_E": ["Normal"],
+    "NCI0291_B_P": ["Normal"],
+    "NCI0291_T_E": ["Tumor"],
+    "NCI0291_T_P": ["Tumor"],
+    "NCI0291_T_T": ["Tumor"]
   },
-  "subject_TN": {
-    "CL0035": ["Tumor"]
+  "DNA_DNAref": {
+    "NCI0291_T_E_Tumor": ["NCI0291_B_E"],
+    "NCI0291_T_P_Tumor": ["NCI0291_B_P"]
   },
-  "subject_captures": {
-    "CL0035": ["clin.ex.v1", "clin.snv.v1"]
+  "DNA_RNAref": {
+    "NCI0291_T_E_Tumor": ["NCI0291_T_T"],
+    "NCI0291_T_P_Tumor": ["NCI0291_T_T"]
   },
   "sample_captures": {
-    "CL0035_T1D_E": ["clin.ex.v1"],
-    "CL0035_T1D_P": ["clin.snv.v1"]
-  },
-  "sample_references": []
+    "NCI0291_B_E_Normal": ["clin.ex.v1"],
+    "NCI0291_B_P_Normal": ["clin.snv.v1"],
+    "NCI0291_T_E_Tumor": ["clin.ex.v1"],
+    "NCI0291_T_P_Tumor": ["clin.snv.v1"]
+  }
 }
