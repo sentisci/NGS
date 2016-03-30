@@ -44,14 +44,15 @@ s = data.frame(lapply(df, as.character))
 # [11] "read1"        "read2"        "note"
 
 objL <- list(
-        'subject' = c('source','sampleName'),
+        'subjects' = c('source','sample'),
 	'samples' = c('sample', 'library'),
 	'libraries' = c('library', 'result_id'),
 	'units' = c('result_id', 'read1', 'read2'), 
         'sample_TN' = c('sample', 'normal.tumor'),
-	'DNA_DNAref' = c('sampleName', 'DNAref'),
-        'DNA_RNAref' = c('sampleName', 'RNAref'),
-        'sample_captures' = c('sampleName', 'capture')
+	'DNA_DNAref' = c('sample', 'DNAref'),
+        'DNA_RNAref' = c('sample', 'RNAref'),
+        'sample_captures' = c('sample', 'capture'),
+        'seq_type' = c('sample_type','sample')
 )
 
 source("/projects/Clinomics/Tools/serpentine_Tgen_extras/scripts/col2list.R")
@@ -66,10 +67,10 @@ for (L in names(objL) ) {
 
 library("jsonlite")
 outSample <- file.path(opt$outDir, "samplesheet.json")
-if( file.exists(outSample) ) {
-    timestamp <- format(Sys.time(), "_%Y%m%d_%H%M%S")
-    file.rename(outSample, sub('.json', paste(timestamp, '.json', sep=''), outSample))
-}
+#if( file.exists(outSample) ) {
+#    timestamp <- format(Sys.time(), "_%Y%m%d_%H%M%S")
+#    file.rename(outSample, sub('.json', paste(timestamp, '.json', sep=''), outSample))
+#}
 jsonS <- toJSON( objList, pretty=T )
 writeLines(jsonS, outSample)
 
