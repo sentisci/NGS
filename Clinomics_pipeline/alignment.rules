@@ -99,7 +99,7 @@ rule bamtdf:
 	log:    "log_error/{sample}.final.bam.tdf.log"
 	shell:  """
 	
-	module load IGVTools/{version}
+	module load igvtools/{version}
 	
 	igvtools count {input.bam} {output} {params.genome} > {log} 2>&1
 
@@ -215,7 +215,7 @@ rule subject_genotyping:
 	sed -i 's/.bwa//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
 	sed -i 's/.star//g' ${{genotype_dir}}/{wildcards.subject}.genotyping.txt
 
-	ssh login01 "sh {params.mail_script} --name {wildcards.subject} --head {WORKING_DIR}SUBJECT/{wildcards.subject}/{NOW}/Genotype/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on Tgen {wildcards.subject}' sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov"
+	ssh login01 "sh {params.mail_script} --name {wildcards.subject} --head {WORKING_DIR}SUBJECT/{wildcards.subject}/{NOW}/Genotype/{wildcards.subject}.genotyping.txt | /usr/bin/mutt -e \\\"my_hdr Content-Type: text/html\\\" -s 'Genotyping Result on Tgen {wildcards.subject}' sivasish.sindiri@nih.gov -c manoj.tyagi@nih.gov -c patidarr@mail.nih.gov -c weij@mail.nih.gov -c khanjav@nih.gov"
 	
 	"""
 
@@ -509,8 +509,9 @@ rule Bam2MPG:
 	##Run Bam2mpg for each chromosome
 	for CHR in `seq 1 22` X Y;
 	do
-		bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf {params.reference} {input.bam} &
+		echo "bam2mpg --qual_filter 20 -bam_filter '-q31' --region chr${{CHR}} --only_nonref --snv_vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.snps.vcf --div_vcf ${{temp_dir}}/chr${{CHR}}{wildcards.sample}.indel.vcf {params.reference} {input.bam}" >> ${{temp_dir}}/runBam2Mpg
 	done
+	sh ${{temp_dir}}/runBam2Mpg
 	wait
 
 	##Sort, bzip and index the above files
@@ -722,7 +723,7 @@ rule platypus:
         log :
                 "log_error/{sample}.platypus.raw.vcf.log"
         shell: """
-        module load Platypus/{version}
+        module load platypus/{version}
 
 	mkdir /projects/scratch/${{PBS_JOBID}}
 	
